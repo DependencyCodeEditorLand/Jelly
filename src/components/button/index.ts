@@ -11,6 +11,8 @@
 import { JellyElement }   from '../../element/index.js';
 import type { Shape }      from '../../element/index.js';
 
+import { jellyNoise, jellyQuantize } from '../../utilities/noise.js';
+
 import buttonStyles        from './button.css?inline';
 import variantStyles       from '../../styles/variants.css?inline';
 
@@ -101,17 +103,45 @@ export class JellyButton extends JellyElement {
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
 
-    // Hover: subtle position-aware wobble when the pointer enters the
-    // button. Uses the same one-shot ripple as the typing-feedback path
-    // (pulseAt), so it never touches pointerActive / the press hold-state
-    // and cannot conflict with a concurrent pointerdown press. Under
-    // reduced motion the envelope is a no-op.
-    this.addEventListener('pointerenter', (event: PointerEvent) => {
-      if (this.hasAttribute('disabled') || this.reducedMotion) return;
-      const local = this.toLocal(event.clientX, event.clientY);
-      this.body?.pulseAt(local.x, local.y, 0.35);
-      this.requestFrame();
-    });
+    // Hover: continuous, noise-modulated wobble that follows the pointer.
+    // Unlike the one-shot pulseAt (typing feedback), this uses the same
+    // sustained hold-state as a press but with a much lighter influence
+    // (0.32 vs 1.0) — so a concurrent click instantly overrides the whisper
+    // and the hover resumes when the press ends.  Simplex noise (same
+    // createNoise2D / Quantize pattern as the website's Staccato system)
+    // modulates the influence per frame, giving every button an organic,
+    // non-repeating spread that never fights the page's own noise cycle.
+    //
+    // Reduced motion skips the effect entirely.
+    if (!this.reducedMotion) {
+      // Per-element noise seed: each button on the page gets a different
+      // deterministic offset so they don't all pulse in sync.
+      const elIndex = [...document.querySelectorAll('jelly-button')].indexOf(this);
+
+      this.addEventListener('pointerenter', (event: PointerEvent) => {
+        if (this.hasAttribute('disabled')) return;
+
+        const t      = performance.now() * 0.0004;
+        const raw    = jellyNoise(t, elIndex * 1.73);
+        const level  = jellyQuantize(raw, 6);          // 6 discrete levels
+        const infl   = 0.48 + level * 0.52;            // 0.48 → 1.0
+        this.hoverEnter(event.clientX, event.clientY, infl);
+      });
+
+      this.addEventListener('pointermove', (event: PointerEvent) => {
+        if (!this._hoverActive) return;
+
+        const t      = performance.now() * 0.0004;
+        const raw    = jellyNoise(t + 0.37, elIndex * 1.73);
+        const level  = jellyQuantize(raw, 6);
+        const infl   = 0.48 + level * 0.52;
+        this.hoverMove(event.clientX, event.clientY, infl);
+      });
+
+      this.addEventListener('pointerleave', () => {
+        this.hoverLeave();
+      });
+    }
 
     // Drive the closest light-DOM form for submit / reset buttons
     this.button.addEventListener('click', () => this.driveForm());

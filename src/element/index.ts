@@ -804,6 +804,47 @@ export class JellyElement extends HTMLElement implements JellyComponent {
     });
   }
 
+  /* ---- Hover (continuous gentle wobble, non-conflicting with press) ---- */
+
+  // True while the pointer is hovering over the host (not pressing).
+  _hoverActive = false;
+
+  /**
+   * Begin a gentle, sustained bulge that follows the pointer.  Uses the
+   * same `pointerActive` hold-state as a press, but with a much lighter
+   * influence so a concurrent pointerdown press instantly overrides the
+   * hover feel and takes over, then the hover resumes when the press
+   * ends.  Under reduced motion the call is a no-op.
+   */
+  hoverEnter(clientX: number, clientY: number, influence = 0.32): void {
+    if (this._hoverActive || this.reducedMotion || !this.body) return;
+    this._hoverActive = true;
+
+    const local = this.toLocal(clientX, clientY);
+    this.body.state.pointerIndex  = this.body.nearestMembraneIndex(local.x, local.y);
+    this.body.state.pointerActive = true;
+    this.body.updatePressTargets(local.x, local.y, influence);
+    this.requestFrame();
+  }
+
+  /** Follow the pointer while hovering (no impulse, just re-target). */
+  hoverMove(clientX: number, clientY: number, influence = 0.32): void {
+    if (!this._hoverActive || !this.body) return;
+
+    const local = this.toLocal(clientX, clientY);
+    this.body.state.pointerIndex = this.body.nearestMembraneIndex(local.x, local.y);
+    this.body.updatePressTargets(local.x, local.y, influence);
+    this.requestFrame();
+  }
+
+  /** Let the hover settle so the engine can sleep. */
+  hoverLeave(): void {
+    if (!this._hoverActive || !this.body) return;
+    this._hoverActive = false;
+    this.body.release();
+    this.requestFrame();
+  }
+
 }
 
 /*

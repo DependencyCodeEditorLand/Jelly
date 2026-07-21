@@ -9,6 +9,8 @@
 import { JellyElement }  from '../../element/index.js';
 import type { Shape }    from '../../element/index.js';
 
+import { jellyNoise, jellyQuantize } from '../../utilities/noise.js';
+
 import iconButtonStyles  from './icon-button.css?inline';
 import variantStyles     from '../../styles/variants.css?inline';
 
@@ -80,14 +82,36 @@ export class JellyIconButton extends JellyElement {
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
 
-    // Hover: subtle ripple when the pointer enters (same one-shot pulse as
-    // jelly-button, so it never conflicts with the press hold-state).
-    this.addEventListener('pointerenter', (event: PointerEvent) => {
-      if (this.hasAttribute('disabled') || this.reducedMotion) return;
-      const local = this.toLocal(event.clientX, event.clientY);
-      this.body?.pulseAt(local.x, local.y, 0.35);
-      this.requestFrame();
-    });
+    // Hover: continuous, noise-modulated wobble (see jelly-button for
+    // detailed rationale — same simplex-noise / Quantize pattern, same
+    // non-conflicting hold-state sharing).
+    if (!this.reducedMotion) {
+      const elIndex = [...document.querySelectorAll('jelly-icon-button')].indexOf(this);
+
+      this.addEventListener('pointerenter', (event: PointerEvent) => {
+        if (this.hasAttribute('disabled')) return;
+
+        const t      = performance.now() * 0.0004;
+        const raw    = jellyNoise(t, elIndex * 1.73);
+        const level  = jellyQuantize(raw, 6);
+        const infl   = 0.48 + level * 0.52;
+        this.hoverEnter(event.clientX, event.clientY, infl);
+      });
+
+      this.addEventListener('pointermove', (event: PointerEvent) => {
+        if (!this._hoverActive) return;
+
+        const t      = performance.now() * 0.0004;
+        const raw    = jellyNoise(t + 0.37, elIndex * 1.73);
+        const level  = jellyQuantize(raw, 6);
+        const infl   = 0.48 + level * 0.52;
+        this.hoverMove(event.clientX, event.clientY, infl);
+      });
+
+      this.addEventListener('pointerleave', () => {
+        this.hoverLeave();
+      });
+    }
   }
 
   // Pointer capture keeps a drag routed to the button after the pointer leaves
