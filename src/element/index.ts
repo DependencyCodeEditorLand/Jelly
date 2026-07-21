@@ -20,6 +20,9 @@ import { canonicalizeSize }     from '../utilities/index.js';
 import { prefersReducedMotion } from '../utilities/index.js';
 import { triggerHaptic }        from '../utilities/index.js';
 
+// Noise channels for the hover frame loop (same Staccato pattern)
+import { jellyNoise, jellyQuantize } from '../utilities/noise.js';
+
 import { ensureThemeTokens }    from '../theme/index.js';
 import { notifyThemeChange }    from '../theme/index.js';
 import { FOCUS_RING }           from '../theme/index.js';
@@ -804,46 +807,96 @@ export class JellyElement extends HTMLElement implements JellyComponent {
     });
   }
 
-  /* ---- Hover (continuous gentle wobble, non-conflicting with press) ---- */
+  /* ---- Hover (continuous noise-driven membrane force, independent) ---- */
 
-  // True while the pointer is hovering over the host (not pressing).
-  _hoverActive = false;
+  // Hover frame-loop state — completely independent of press/click so a
+  // click adds its own force on top instead of overriding the hover;
+  // when the click releases, the hover energy is still there.
+  _hoverRafId = 0;
+  _hoverPointerX = 0;
+  _hoverPointerY = 0;
+  _hoverElIndex = 0;
 
   /**
-   * Begin a gentle, sustained bulge that follows the pointer.  Uses the
-   * same `pointerActive` hold-state as a press, but with a much lighter
-   * influence so a concurrent pointerdown press instantly overrides the
-   * hover feel and takes over, then the hover resumes when the press
-   * ends.  Under reduced motion the call is a no-op.
+   * Start the per-frame hover loop.  Called on pointerenter.
+   * `elIndex` gives each element a unique noise seed so they don't
+   * pulse in lockstep.
    */
-  hoverEnter(clientX: number, clientY: number, influence = 0.32): void {
-    if (this._hoverActive || this.reducedMotion || !this.body) return;
-    this._hoverActive = true;
-
-    const local = this.toLocal(clientX, clientY);
-    this.body.state.pointerIndex  = this.body.nearestMembraneIndex(local.x, local.y);
-    this.body.state.pointerActive = true;
-    this.body.updatePressTargets(local.x, local.y, influence);
-    this.requestFrame();
+  startHoverLoop(elIndex: number): void {
+    if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
+    this._hoverElIndex = elIndex;
+    this._hoverRafId = requestAnimationFrame(this._hoverFrame);
   }
 
-  /** Follow the pointer while hovering (no impulse, just re-target). */
-  hoverMove(clientX: number, clientY: number, influence = 0.32): void {
-    if (!this._hoverActive || !this.body) return;
-
-    const local = this.toLocal(clientX, clientY);
-    this.body.state.pointerIndex = this.body.nearestMembraneIndex(local.x, local.y);
-    this.body.updatePressTargets(local.x, local.y, influence);
-    this.requestFrame();
+  /** Stop the hover loop and let residual energy dissipate naturally. */
+  stopHoverLoop(): void {
+    if (this._hoverRafId === 0) return;
+    cancelAnimationFrame(this._hoverRafId);
+    this._hoverRafId = 0;
+    // Don't zero hoverForce instantly — let the membrane settle through
+    // its natural damping, which reads as a smooth exhale.
+    if (this.body) {
+      this.body.state.hoverForce = 0;
+      this.requestFrame();
+    }
   }
 
-  /** Let the hover settle so the engine can sleep. */
-  hoverLeave(): void {
-    if (!this._hoverActive || !this.body) return;
-    this._hoverActive = false;
-    this.body.release();
-    this.requestFrame();
+  /** Update the pointer position for the hover membrane force. */
+  updateHoverPointer(clientX: number, clientY: number): void {
+    this._hoverPointerX = clientX;
+    this._hoverPointerY = clientY;
   }
+
+  /**
+   * One frame of the hover loop.  Samples multi-channel simplex noise
+   * (matching the website's Staccato Phase/Color/Morph pattern) and
+   * applies the resulting force to the membrane through
+   * JellyState.hoverForce, which updateMembrane reads independently
+   * of the press/click hold state.
+   */
+  _hoverFrame = (): void => {
+    if (!this._hoverRafId || !this.body) return;
+    this._hoverRafId = requestAnimationFrame(this._hoverFrame);
+
+    // Update pointer-local position for the membrane influence
+    const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
+    this.body.state.pointerLocalX = local.x;
+    this.body.state.pointerLocalY = local.y;
+
+    // ── Multi-channel noise (Staccato pattern) ──
+    const t = performance.now();
+    const i = this._hoverElIndex;
+    const s = 0.0001; // HOVER_NOISE_SPEED (matching Staccato)
+
+    // Force channel: drives the membrane bulge amplitude (6 levels)
+    const rawForce = jellyNoise(t * s,            i * 101);
+    const force    = jellyQuantize(rawForce, 6);
+    // Map from quantized [-1, 1] → [0.65, 1.0] so it's always pronounced
+    const fMapped  = 0.65 + ((force + 1) / 2) * 0.35;
+
+    // Phase channel: biases the spread toward one side (4 levels)
+    const rawPhase = jellyNoise(t * s * 0.18,     i * 203);
+    const phase    = jellyQuantize(rawPhase, 4);
+
+    // Morph channel: spreads or tightens the bulge (5 levels)
+    const rawMorph = jellyNoise(t * s * 0.25,     i * 307);
+    const morph    = jellyQuantize(rawMorph, 5);
+    const morphM   = 0.85 + ((morph + 1) / 2) * 0.3;  // [0.85, 1.15]
+
+    // Combine channels into a single hoverForce that updateMembrane
+    // multiplies by insideLocalHoldBulgeForce * 1.8.
+    this.body.state.hoverForce = fMapped * morphM;
+
+    // Nudge the membrane with a tiny directional bias from phase
+    if (Math.abs(phase) > 0.02 && this.body) {
+      const angle = phase * Math.PI;           // phase ∈ [-1, 1] → angle ∈ [-π, π]
+      const dx = Math.cos(angle) * 0.08;
+      const dy = Math.sin(angle) * 0.08;
+      this.body.stretchAlong(dx, dy, 0.12);
+    }
+
+    this.requestFrame();
+  };
 
 }
 

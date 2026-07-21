@@ -11,8 +11,6 @@
 import { JellyElement }   from '../../element/index.js';
 import type { Shape }      from '../../element/index.js';
 
-import { jellyNoise, jellyQuantize } from '../../utilities/noise.js';
-
 import buttonStyles        from './button.css?inline';
 import variantStyles       from '../../styles/variants.css?inline';
 
@@ -103,43 +101,29 @@ export class JellyButton extends JellyElement {
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
 
-    // Hover: continuous, noise-modulated wobble that follows the pointer.
-    // Unlike the one-shot pulseAt (typing feedback), this uses the same
-    // sustained hold-state as a press but with a much lighter influence
-    // (0.32 vs 1.0) — so a concurrent click instantly overrides the whisper
-    // and the hover resumes when the press ends.  Simplex noise (same
-    // createNoise2D / Quantize pattern as the website's Staccato system)
-    // modulates the influence per frame, giving every button an organic,
-    // non-repeating spread that never fights the page's own noise cycle.
-    //
-    // Reduced motion skips the effect entirely.
+    // Hover: continuous multi-channel simplex-noise wobble driven by a
+    // dedicated requestAnimationFrame loop (startHoverLoop / _hoverFrame)
+    // inside the JellyElement base class.  The loop applies membrane force
+    // through JellyState.hoverForce — completely independent of the press
+    // hold-state — so clicking adds its own energy on top without killing
+    // the hover, and the wobble persists at full amplitude as long as the
+    // pointer remains over the button.  Reduced motion skips entirely.
     if (!this.reducedMotion) {
-      // Per-element noise seed: each button on the page gets a different
-      // deterministic offset so they don't all pulse in sync.
+      // Per-element noise seed so buttons don't pulse in lockstep
       const elIndex = [...document.querySelectorAll('jelly-button')].indexOf(this);
 
       this.addEventListener('pointerenter', (event: PointerEvent) => {
         if (this.hasAttribute('disabled')) return;
-
-        const t      = performance.now() * 0.0004;
-        const raw    = jellyNoise(t, elIndex * 1.73);
-        const level  = jellyQuantize(raw, 6);          // 6 discrete levels
-        const infl   = 0.48 + level * 0.52;            // 0.48 → 1.0
-        this.hoverEnter(event.clientX, event.clientY, infl);
+        this.updateHoverPointer(event.clientX, event.clientY);
+        this.startHoverLoop(elIndex);
       });
 
       this.addEventListener('pointermove', (event: PointerEvent) => {
-        if (!this._hoverActive) return;
-
-        const t      = performance.now() * 0.0004;
-        const raw    = jellyNoise(t + 0.37, elIndex * 1.73);
-        const level  = jellyQuantize(raw, 6);
-        const infl   = 0.48 + level * 0.52;
-        this.hoverMove(event.clientX, event.clientY, infl);
+        this.updateHoverPointer(event.clientX, event.clientY);
       });
 
       this.addEventListener('pointerleave', () => {
-        this.hoverLeave();
+        this.stopHoverLoop();
       });
     }
 

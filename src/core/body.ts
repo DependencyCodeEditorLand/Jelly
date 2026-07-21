@@ -74,6 +74,10 @@ interface JellyState {
   pointerIndex: number;
   pointerLocalX: number;
   pointerLocalY: number;
+
+  // Continuous hover wobble — driven by the per-frame noise loop in
+  // JellyElement._hoverFrame, independent of press/click hold state.
+  hoverForce: number;
 }
 
 // Options for constructing a JellyBody
@@ -371,6 +375,8 @@ export class JellyBody {
       pointerIndex:          0,
       pointerLocalX:         0,
       pointerLocalY:         0,
+
+      hoverForce:            0,
     };
 
     this.baseArea = polygonArea(this.getSurfacePoints());
@@ -752,6 +758,21 @@ export class JellyBody {
 
         membraneAccel[i] += c.insideLocalHoldBulgeForce * influence.local * this.state.pointerInsideWeight;
         membraneAccel[i] -= c.insideLocalHoldBulgeForce * 0.18 * influence.halo * this.state.pointerInsideWeight;
+      }
+    }
+
+    // Hover wobble: continuous outward force that does NOT use pointerActive
+    // (independent of press/click hold state), driven entirely by the
+    // per-frame noise loop.  The force scales with hoverForce (0–1) so the
+    // ambient wobble can be modulated without fighting the click press.
+    if (this.state.hoverForce > 0.005) {
+      for (let i = 0; i < length; i++) {
+        const influence = this.insidePointInfluence(i);
+        // Stronger than the pointer-active hold — hover is meant to be a
+        // visible energy source, not a subtle tracking nudge.
+        const f = this.state.hoverForce * 1.8;
+        membraneAccel[i] += c.insideLocalHoldBulgeForce * f * influence.local;
+        membraneAccel[i] -= c.insideLocalHoldBulgeForce * 0.18 * f * influence.halo;
       }
     }
 

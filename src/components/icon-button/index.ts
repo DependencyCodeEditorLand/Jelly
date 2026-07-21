@@ -9,8 +9,6 @@
 import { JellyElement }  from '../../element/index.js';
 import type { Shape }    from '../../element/index.js';
 
-import { jellyNoise, jellyQuantize } from '../../utilities/noise.js';
-
 import iconButtonStyles  from './icon-button.css?inline';
 import variantStyles     from '../../styles/variants.css?inline';
 
@@ -82,34 +80,21 @@ export class JellyIconButton extends JellyElement {
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
 
-    // Hover: continuous, noise-modulated wobble (see jelly-button for
-    // detailed rationale — same simplex-noise / Quantize pattern, same
-    // non-conflicting hold-state sharing).
     if (!this.reducedMotion) {
       const elIndex = [...document.querySelectorAll('jelly-icon-button')].indexOf(this);
 
       this.addEventListener('pointerenter', (event: PointerEvent) => {
         if (this.hasAttribute('disabled')) return;
-
-        const t      = performance.now() * 0.0004;
-        const raw    = jellyNoise(t, elIndex * 1.73);
-        const level  = jellyQuantize(raw, 6);
-        const infl   = 0.48 + level * 0.52;
-        this.hoverEnter(event.clientX, event.clientY, infl);
+        this.updateHoverPointer(event.clientX, event.clientY);
+        this.startHoverLoop(elIndex);
       });
 
       this.addEventListener('pointermove', (event: PointerEvent) => {
-        if (!this._hoverActive) return;
-
-        const t      = performance.now() * 0.0004;
-        const raw    = jellyNoise(t + 0.37, elIndex * 1.73);
-        const level  = jellyQuantize(raw, 6);
-        const infl   = 0.48 + level * 0.52;
-        this.hoverMove(event.clientX, event.clientY, infl);
+        this.updateHoverPointer(event.clientX, event.clientY);
       });
 
       this.addEventListener('pointerleave', () => {
-        this.hoverLeave();
+        this.stopHoverLoop();
       });
     }
   }
