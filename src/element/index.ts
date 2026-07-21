@@ -866,34 +866,24 @@ export class JellyElement extends HTMLElement implements JellyComponent {
     // ── Multi-channel noise (Staccato pattern) ──
     const t = performance.now();
     const i = this._hoverElIndex;
-    const s = 0.0001; // HOVER_NOISE_SPEED (matching Staccato)
+    // Faster than Staccato's 0.0001 — hover needs visible variation
+    // within a second, not ~8 seconds.  0.0005 gives ~2s cycles.
+    const s = 0.0005;
 
     // Force channel: drives the membrane bulge amplitude (6 levels)
     const rawForce = jellyNoise(t * s,            i * 101);
     const force    = jellyQuantize(rawForce, 6);
-    // Map from quantized [-1, 1] → [0.65, 1.0] so it's always pronounced
-    const fMapped  = 0.65 + ((force + 1) / 2) * 0.35;
-
-    // Phase channel: biases the spread toward one side (4 levels)
-    const rawPhase = jellyNoise(t * s * 0.18,     i * 203);
-    const phase    = jellyQuantize(rawPhase, 4);
+    // Map from quantized [-1, 1] → [0.75, 1.0] — always pronounced
+    const fMapped  = 0.75 + ((force + 1) / 2) * 0.25;
 
     // Morph channel: spreads or tightens the bulge (5 levels)
     const rawMorph = jellyNoise(t * s * 0.25,     i * 307);
     const morph    = jellyQuantize(rawMorph, 5);
-    const morphM   = 0.85 + ((morph + 1) / 2) * 0.3;  // [0.85, 1.15]
+    const morphM   = 0.8 + ((morph + 1) / 2) * 0.4;   // [0.8, 1.2]
 
-    // Combine channels into a single hoverForce that updateMembrane
-    // multiplies by insideLocalHoldBulgeForce * 1.8.
+    // Combine channels into hoverForce.
+    // updateMembrane multiplies by insideLocalHoldBulgeForce * 24.
     this.body.state.hoverForce = fMapped * morphM;
-
-    // Nudge the membrane with a tiny directional bias from phase
-    if (Math.abs(phase) > 0.02 && this.body) {
-      const angle = phase * Math.PI;           // phase ∈ [-1, 1] → angle ∈ [-π, π]
-      const dx = Math.cos(angle) * 0.08;
-      const dy = Math.sin(angle) * 0.08;
-      this.body.stretchAlong(dx, dy, 0.12);
-    }
 
     this.requestFrame();
   };

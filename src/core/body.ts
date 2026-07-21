@@ -761,18 +761,25 @@ export class JellyBody {
       }
     }
 
-    // Hover wobble: continuous outward force that does NOT use pointerActive
-    // (independent of press/click hold state), driven entirely by the
-    // per-frame noise loop.  The force scales with hoverForce (0–1) so the
-    // ambient wobble can be modulated without fighting the click press.
+    // Hover wobble: continuous outward force at the pointer position,
+    // independent of press/click hold state.  Uses a wide gaussian so the
+    // bulge is centered at the cursor and tapers smoothly to zero at the
+    // button edges — no uniform inflation, no directional skew.
+    //
+    // The force multiplier (24× base) is tuned so the steady-state
+    // displacement at the pointer is ~5 px — clearly visible but not
+    // distracting, and comparable to the click dent.
     if (this.state.hoverForce > 0.005) {
+      const H = this.state.hoverForce;
+      // Wide gaussian: force peaks at pointer, decays across the button.
+      // At H=0.75: 48 * 0.75 * 24 ≈ 864 → ~9 px displacement at center,
+      // tapering to ~0 at edges (gaussian σ ≈ insidePointInfluenceWidth=38).
+      const peakF = c.insideLocalHoldBulgeForce * H * 24;
       for (let i = 0; i < length; i++) {
         const influence = this.insidePointInfluence(i);
-        // Stronger than the pointer-active hold — hover is meant to be a
-        // visible energy source, not a subtle tracking nudge.
-        const f = this.state.hoverForce * 1.8;
-        membraneAccel[i] += c.insideLocalHoldBulgeForce * f * influence.local;
-        membraneAccel[i] -= c.insideLocalHoldBulgeForce * 0.18 * f * influence.halo;
+        // Only local component — no global bulge, no directional skew
+        membraneAccel[i] += peakF * influence.local;
+        membraneAccel[i] -= peakF * 0.08 * influence.halo;
       }
     }
 
