@@ -101,6 +101,18 @@ export class JellyButton extends JellyElement {
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
 
+    // Hover: subtle position-aware wobble when the pointer enters the
+    // button. Uses the same one-shot ripple as the typing-feedback path
+    // (pulseAt), so it never touches pointerActive / the press hold-state
+    // and cannot conflict with a concurrent pointerdown press. Under
+    // reduced motion the envelope is a no-op.
+    this.addEventListener('pointerenter', (event: PointerEvent) => {
+      if (this.hasAttribute('disabled') || this.reducedMotion) return;
+      const local = this.toLocal(event.clientX, event.clientY);
+      this.body?.pulseAt(local.x, local.y, 0.35);
+      this.requestFrame();
+    });
+
     // Drive the closest light-DOM form for submit / reset buttons
     this.button.addEventListener('click', () => this.driveForm());
   }

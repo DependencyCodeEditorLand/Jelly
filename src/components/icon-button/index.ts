@@ -79,6 +79,15 @@ export class JellyIconButton extends JellyElement {
     this.trackFocus(this.button);
     this.preventReleaseOutsideActivation();
     this.wirePress(this.button);
+
+    // Hover: subtle ripple when the pointer enters (same one-shot pulse as
+    // jelly-button, so it never conflicts with the press hold-state).
+    this.addEventListener('pointerenter', (event: PointerEvent) => {
+      if (this.hasAttribute('disabled') || this.reducedMotion) return;
+      const local = this.toLocal(event.clientX, event.clientY);
+      this.body?.pulseAt(local.x, local.y, 0.35);
+      this.requestFrame();
+    });
   }
 
   // Pointer capture keeps a drag routed to the button after the pointer leaves
