@@ -2,7 +2,10 @@
   display:               inline-flex;
   height:                24px;
   --jelly-badge-radius:  999px;
-  font:                  640 12.5px/1 var(--jelly-font-display);
+  font-family:           var(--jelly-font-display);
+  font-weight:           640;
+  font-size:             var(--jelly-badge-font-size, 12.5px);
+  line-height:           1;
 }
 
 :host([size="small"]) {

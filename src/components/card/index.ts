@@ -65,8 +65,14 @@ export class JellyCard extends JellyElement {
     return { width, height, radius: Math.min(radius, Math.min(width, height) / 2) };
   }
 
-  // A hairline on the jelly surface, resolved through the theme
+  // A hairline on the jelly surface, resolved through the theme.
+  // Set --jelly-card-border: none on the host to suppress the canvas
+  // border entirely (useful when the card has its own CSS border via
+  // Tailwind or an accent colour on a single side).
   override surfaceBorder (): Border {
+    const declared = getComputedStyle(this).getPropertyValue('--jelly-card-border').trim();
+    if (declared === 'none' || declared === '0') return null as unknown as Border;
+
     return {
       color: this.resolveColor(`var(--jelly-color-border-default, ${PALETTE['border-default']})`),
       width: 1,
