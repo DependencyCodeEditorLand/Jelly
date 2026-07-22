@@ -83,6 +83,27 @@ export class JellyCard extends JellyElement {
     }
 
     this.syncSquish();
+
+    // Hover: continuous multi-channel simplex-noise wobble driven by a
+    // dedicated requestAnimationFrame loop — same as jelly-button.
+    // Runs independently of the press hold-state so clicking adds its
+    // own force on top without killing the hover wobble.
+    if (!this.reducedMotion) {
+      const elIndex = [...document.querySelectorAll('jelly-card')].indexOf(this);
+
+      this.addEventListener('pointerenter', (event: PointerEvent) => {
+        this.updateHoverPointer(event.clientX, event.clientY);
+        this.startHoverLoop(elIndex);
+      });
+
+      this.addEventListener('pointermove', (event: PointerEvent) => {
+        this.updateHoverPointer(event.clientX, event.clientY);
+      });
+
+      this.addEventListener('pointerleave', () => {
+        this.stopHoverLoop();
+      });
+    }
   }
 
   /*
