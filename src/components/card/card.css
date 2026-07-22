@@ -8,8 +8,11 @@
   --jelly-card-padding-inline: 24px;
   --jelly-card-font-size:      15px;
 
-  color: var(--jelly-color-foreground-default);
-  font:  400 var(--jelly-card-font-size)/1.55 var(--jelly-font-text);
+  color:        var(--jelly-card-color, var(--jelly-color-foreground-default));
+  font-family:  var(--jelly-card-font-family, var(--jelly-font-text));
+  font-size:    var(--jelly-card-font-size, 15px);
+  font-weight:  var(--jelly-card-font-weight, 400);
+  line-height:  var(--jelly-card-line-height, 1.55);
 }
 
 :host([size="small"]) {
