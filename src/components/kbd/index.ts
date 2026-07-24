@@ -66,6 +66,24 @@ export class JellyKbd extends JellyElement implements EventListenerObject {
     this.addEventListener('blur', this);
 
     this.armKeyMirror();
+
+    // Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
+    if (!this.reducedMotion) {
+      const elIndex = [...document.querySelectorAll('jelly-kbd')].indexOf(this);
+
+      this.addEventListener('pointerenter', (event: PointerEvent) => {
+        this.updateHoverPointer(event.clientX, event.clientY);
+        this.startHoverLoop(elIndex);
+      });
+
+      this.addEventListener('pointermove', (event: PointerEvent) => {
+        this.updateHoverPointer(event.clientX, event.clientY);
+      });
+
+      this.addEventListener('pointerleave', () => {
+        this.stopHoverLoop();
+      });
+    }
   }
 
   // Lifecycle method: Fires when observed HTML attributes change dynamically
