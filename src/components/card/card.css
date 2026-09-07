@@ -3,7 +3,7 @@
   position: relative;
 
   --jelly-fill:                var(--jelly-color-background-surface);
-  --jelly-radius:              22px;
+  --jelly-radius:              0;
   --jelly-card-padding-block:  22px;
   --jelly-card-padding-inline: 24px;
   --jelly-card-font-size:      15px;
@@ -16,14 +16,14 @@
 }
 
 :host([size="small"]) {
-  --jelly-radius:              18px;
+  --jelly-radius:              0;
   --jelly-card-padding-block:  16px;
   --jelly-card-padding-inline: 18px;
   --jelly-card-font-size:      13.5px;
 }
 
 :host([size="large"]) {
-  --jelly-radius:              26px;
+  --jelly-radius:              0;
   --jelly-card-padding-block:  28px;
   --jelly-card-padding-inline: 30px;
   --jelly-card-font-size:      16.5px;
@@ -40,6 +40,7 @@
   padding-inline: var(--jelly-card-padding-inline);
   outline:        none;
   touch-action:   manipulation;
+  border-radius:  0;
 }
 
 /* The focus ring is painted on the canvas; this ::after is only for
@@ -49,7 +50,7 @@
   position:       absolute;
   inset:          -2px;
   border:         var(--jelly-ring-width) solid transparent;
-  border-radius:  calc(var(--jelly-radius) + 3px);
+  border-radius:  0;
   pointer-events: none;
 }
 

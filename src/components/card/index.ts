@@ -60,7 +60,7 @@ export class JellyCard extends JellyElement {
 
   // The rounded surface the physics body takes (radius follows the token)
   override shape (width: number, height: number): Shape {
-    const radius = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-radius')) || 22;
+    const radius = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-radius')) || 0;
 
     return { width, height, radius: Math.min(radius, Math.min(width, height) / 2) };
   }
@@ -91,7 +91,7 @@ export class JellyCard extends JellyElement {
     this.syncSquish();
 
     // Hover: continuous multi-channel simplex-noise wobble driven by a
-    // dedicated requestAnimationFrame loop — same as jelly-button.
+    // dedicated requestAnimationFrame loop - same as jelly-button.
     // Runs independently of the press hold-state so clicking adds its
     // own force on top without killing the hover wobble.
     if (!this.reducedMotion) {

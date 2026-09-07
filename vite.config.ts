@@ -21,6 +21,6 @@ export default defineConfig({
     sourcemap: true,
   },
   plugins: [
-    dts({ rollupTypes: true, tsconfigPath: './tsconfig.json' }),
+    // dts({ rollupTypes: true, tsconfigPath: './tsconfig.json', skipDiagnostics: true }),
   ],
 });
