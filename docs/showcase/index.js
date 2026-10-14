@@ -18,21 +18,29 @@ import '../../package.js';
 import { jellyToast }       from '../../package.js';
 
 import { escapeHTML }       from '../shared/common.js';
+
 import { formatInlineCode } from '../shared/common.js';
+
 import { wireMotionToggle } from '../shared/common.js';
+
 import { wireThemeToggle }  from '../shared/common.js';
 
 import { COMPONENTS }       from '../content/data.js';
+
 import { GROUP_ORDER }      from '../content/data.js';
 
 import { PLAYGROUNDS }      from './playgrounds.js';
+
 import { NO_PANEL }         from './playgrounds.js';
 
 import { initLottie }       from '../lottie/index.js';
 
 wireMotionToggle(document.getElementById('motionToggle'));
+
 wireThemeToggle(document.getElementById('themeToggle'));
+
 initLottie(document.getElementById('heroLottie'), './docs/lottie/hero-lottie.json');
+
 initLottie(document.getElementById('footerLottie'), './docs/lottie/footer-lottie.json');
 
 // The hero and subnav call-to-action buttons are jelly-buttons, not links, so
@@ -41,12 +49,15 @@ initLottie(document.getElementById('footerLottie'), './docs/lottie/footer-lottie
 document.querySelector('[data-hero-scroll]')?.addEventListener('click', () => {
   document.getElementById('panels')?.scrollIntoView({ behavior: 'smooth' });
 });
+
 document.querySelector('[data-hero-api]')?.addEventListener('click', () => {
   window.location.href = './api/';
 });
+
 document.querySelector('[data-subnav-showcase]')?.addEventListener('click', () => {
   document.getElementById('panels')?.scrollIntoView({ behavior: 'smooth' });
 });
+
 document.querySelector('[data-subnav-api]')?.addEventListener('click', () => {
   window.location.href = './api/';
 });
@@ -60,6 +71,7 @@ const ordered = GROUP_ORDER
 const countStat = document.querySelector('[data-stat-count]');
 
 if (countStat) {
+
   countStat.textContent = `${COMPONENTS.length} custom elements`;
 }
 
@@ -68,11 +80,13 @@ if (countStat) {
 // Resolve an attribute's starting value: an explicit playground default,
 // else the documented default parsed for the control's kind
 function controlDefault (item, spec, cfg) {
+
   if (cfg.defaults && spec.attr in cfg.defaults) {
     return cfg.defaults[spec.attr];
   }
 
   const attr = (item.attributes || []).find((a) => a.name === spec.attr);
+
   const raw  = String(attr?.default ?? '').replace(/^["']|["']$/g, '').trim();
 
   if (spec.kind === 'bool')   return raw === 'true';
@@ -156,7 +170,9 @@ function valueControl (spec, value) {
 
     return `<jelly-input class="attr-field" data-value="${spec.attr}" size="small" type="${type}"`
       + ` value="${escapeHTML(String(value ?? ''))}"`
+
       + ` placeholder="${escapeHTML(spec.placeholder || '')}"`
+
       + ` label="Current ${escapeHTML(spec.attr)}"></jelly-input>`;
   }
 
@@ -164,6 +180,7 @@ function valueControl (spec, value) {
     const selected = String(option) === String(value);
 
     return `<jelly-chip class="attr-chip" data-opt="${escapeHTML(String(option))}"`
+
       + ` shape="square" selectable${selected ? ' selected' : ''}>`
       + `${escapeHTML(displayValue(spec, option))}</jelly-chip>`;
   }).join('');
@@ -181,12 +198,14 @@ function applyToRoot (root, spec, value, cfg) {
   if (alias) {
     if (spec.kind === 'bool') {
       if (value) root.setAttribute(alias.attr, alias.on);
+
       else       root.removeAttribute(alias.attr);
     } else if (String(value) === String(alias.off)) {
       root.removeAttribute(alias.attr);
     } else {
       root.setAttribute(alias.attr, String(value));
     }
+
     return;
   }
 
@@ -220,12 +239,14 @@ function codeFor (item, cfg, state) {
 
   for (const spec of cfg.controls) {
     const value = state[spec.attr];
+
     const alias = cfg.aliases?.[spec.attr];
 
     if (spec.kind === 'bool') {
       if (value) {
         attrs.push(alias ? `${alias.attr}="${alias.on}"` : spec.attr);
       }
+
       continue;
     }
 
@@ -237,6 +258,7 @@ function codeFor (item, cfg, state) {
       if (String(value) !== String(alias.off)) {
         attrs.push(`${alias.attr}="${escapeHTML(String(value))}"`);
       }
+
       continue;
     }
 
@@ -246,7 +268,9 @@ function codeFor (item, cfg, state) {
   }
 
   const open  = `&lt;${item.tag}${attrs.length ? ' ' + attrs.join(' ') : ''}&gt;`;
+
   const close = `&lt;/${item.tag}&gt;`;
+
   const inner = cfg.inner ?? cfg.slot ?? '';
 
   return open + formatInner(inner) + close;
@@ -264,7 +288,9 @@ function refreshCode (panel) {
 // this also corrects the self-toggle a selectable chip does on click.
 function updateValue (panel, attr) {
   const spec  = panel.specByAttr[attr];
+
   const value = panel.state[attr];
+
   const el    = panel.querySelector(`[data-value="${attr}"]`);
 
   if (!el) {
@@ -275,6 +301,7 @@ function updateValue (panel, attr) {
     if (String(el.value ?? '') !== String(value ?? '')) {
       el.setAttribute('value', String(value ?? ''));
     }
+
     return;
   }
 
@@ -347,8 +374,11 @@ function attrsMarkup (item, cfg, state) {
 // Assemble the preview element (plus any external trigger) in the stage
 function buildPreview (panel, item, cfg, state) {
   const stage = panel.querySelector('.stage-inner');
+
   const extra = cfg.extra || '';
+
   const inner = cfg.inner ?? escapeHTML(cfg.slot ?? '');
+
   const attrs = Object.entries(cfg.attrs || {}).map(([name, value]) =>
     value === '' ? ` ${name}` : ` ${name}="${escapeHTML(value)}"`,
   ).join('');
@@ -384,6 +414,7 @@ function buildPreview (panel, item, cfg, state) {
 // Rebuild the preview after a self-removing demo (chip removed, alert dismissed)
 function rebuildPreview (panel) {
   buildPreview(panel, panel.item, panel.cfg, panel.state);
+
   wirePreview(panel);
 }
 
@@ -403,7 +434,9 @@ function wireBinds (panel) {
 
     panel.root.addEventListener(bind.event, () => {
       const raw   = bind.get(panel.root);
+
       const value = spec?.kind === 'number' ? Number(raw)
+
         : spec?.kind === 'bool' ? !!raw
           : raw;
 
@@ -412,7 +445,9 @@ function wireBinds (panel) {
       }
 
       panel.state[bind.attr] = value;
+
       updateValue(panel, bind.attr);
+
       refreshCode(panel);
     });
   }
@@ -421,6 +456,7 @@ function wireBinds (panel) {
 // Wire the preview element: triggers, event ticker, self-heal, link guard
 function wirePreview (panel) {
   const item = panel.item;
+
   const root = panel.root;
 
   // Trigger buttons for the modal / toast demos
@@ -451,6 +487,7 @@ function wirePreview (panel) {
 
   // A removed chip / dismissed alert regrows so the demo never empties
   root.addEventListener('remove', () => setTimeout(() => rebuildPreview(panel), 1500));
+
   root.addEventListener('dismiss', () => setTimeout(() => rebuildPreview(panel), 400));
 
   // Fired events tick along the stage edge - real jelly-badges (graphite, so
@@ -462,10 +499,15 @@ function wirePreview (panel) {
       const chip = document.createElement('jelly-badge');
 
       chip.className = 'event-chip';
+
       chip.setAttribute('variant', 'graphite');
+
       chip.setAttribute('size', 'small');
+
       chip.setAttribute('shape', 'square');
+
       chip.textContent = name;
+
       ticker.prepend(chip);
 
       while (ticker.children.length > 3) {
@@ -473,6 +515,7 @@ function wirePreview (panel) {
       }
 
       setTimeout(() => chip.classList.add('fading'), 900);
+
       setTimeout(() => chip.remove(), 1600);
     });
   }
@@ -495,6 +538,7 @@ function setValue (panel, attr, value) {
   }
 
   updateValue(panel, attr);
+
   return true;
 }
 
@@ -507,20 +551,26 @@ function mountPanel (panel) {
   panel.mounted = true;
 
   const item = panel.item;
+
   const cfg  = panel.cfg;
 
   // Starting state from the attribute defaults + playground overrides
   panel.state      = {};
+
   panel.specByAttr = {};
+
   for (const spec of cfg.controls) {
     panel.state[spec.attr]      = controlDefault(item, spec, cfg);
+
     panel.specByAttr[spec.attr] = spec;
   }
 
   panel.querySelector('.attrs').innerHTML = attrsMarkup(item, cfg, panel.state);
 
   buildPreview(panel, item, cfg, panel.state);
+
   wirePreview(panel);
+
   refreshCode(panel);
 
   // Typing into a field control writes straight onto the preview + snippet.
@@ -564,6 +614,7 @@ const panels = [...document.querySelectorAll('.panel')];
 // per-panel scroll budget to precompute.
 panels.forEach((panel) => {
   panel.item = ordered[+panel.dataset.index];
+
   panel.cfg  = PLAYGROUNDS[panel.dataset.tag];
 });
 
@@ -571,6 +622,7 @@ panels.forEach((panel) => {
 // unfragmented showcase URL, so returning to it removes only the hash while
 // preserving the current path and query string.
 const hero = document.querySelector('.hero');
+
 const hashSections = [hero, ...panels].filter(Boolean);
 
 function clearShowcaseHash () {
@@ -585,6 +637,7 @@ function heroIsActive () {
   }
 
   const center = window.innerHeight / 2;
+
   const rect   = hero.getBoundingClientRect();
 
   return rect.top <= center && rect.bottom > center;
@@ -617,6 +670,7 @@ function onScroll () {
     ticking = false;
 
     const max = document.documentElement.scrollHeight - window.innerHeight;
+
     progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
 
     // IntersectionObserver can skip intermediate states during a long smooth
@@ -629,11 +683,13 @@ function onScroll () {
 }
 
 window.addEventListener('scroll', onScroll, { passive: true });
+
 onScroll();
 
 // Copy buttons
 document.getElementById('panels').addEventListener('click', (event) => {
   const button = event.target.closest('[data-copy]');
+
   if (!button) {
     return;
   }
@@ -642,6 +698,7 @@ document.getElementById('panels').addEventListener('click', (event) => {
 
   navigator.clipboard?.writeText(code).then(() => {
     button.textContent = 'Copied';
+
     setTimeout(() => { button.textContent = 'Copy'; }, 1200);
   });
 });
@@ -652,12 +709,15 @@ document.getElementById('panels').addEventListener('click', (event) => {
 // it selected rather than clearing it.
 document.getElementById('panels').addEventListener('click', (event) => {
   const chip = event.target.closest('.attr-chip');
+
   if (!chip) {
     return;
   }
 
   const row   = chip.closest('.attr');
+
   const panel = chip.closest('.panel');
+
   const spec  = panel.specByAttr?.[row.dataset.row];
 
   if (!spec) {
@@ -665,7 +725,9 @@ document.getElementById('panels').addEventListener('click', (event) => {
   }
 
   setValue(panel, row.dataset.row, typedValue(spec, chip.dataset.opt));
+
   updateValue(panel, row.dataset.row);
+
   refreshCode(panel);
 });
 
@@ -673,6 +735,7 @@ document.getElementById('panels').addEventListener('click', (event) => {
 
 function syncSectionHash () {
   const center = window.innerHeight / 2;
+
   const active = hashSections.find((section) => {
     const rect = section.getBoundingClientRect();
 
@@ -685,6 +748,7 @@ function syncSectionHash () {
 
   if (active === hero) {
     clearShowcaseHash();
+
     return;
   }
 

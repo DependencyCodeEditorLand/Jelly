@@ -4,10 +4,11 @@
  * width/height (or the shape presets); shape="circle" for avatars
  */
 
-import { JellyElement } from '../../element/index.js';
-import type { Shape }   from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import skeletonStyles    from './skeleton.css?inline';
+import type { Shape } from "../../element/index.js";
+
+import skeletonStyles from "./skeleton.css?inline";
 
 /**
  * A soft loading placeholder that gently breathes.
@@ -19,116 +20,131 @@ import skeletonStyles    from './skeleton.css?inline';
  * @cssprop [--jelly-fill] - Placeholder fill color.
  */
 export class JellySkeleton extends JellyElement {
+	// Randomised per instance so a page full of skeletons never pulses in
+	// lock-step - each sweeps at its own phase, speed and breath interval
+	phase = Math.random() * 1.5;
 
-  // Randomised per instance so a page full of skeletons never pulses in
-  // lock-step - each sweeps at its own phase, speed and breath interval
-  phase = Math.random() * 1.5;
-  timeAccumulator = Math.random() * 0.08;
-  breath = Math.random() * 1.2;
-  sweepSpeed = 0.7 + Math.random() * 0.35;
-  breathEvery = 1.0 + Math.random() * 0.7;
+	timeAccumulator = Math.random() * 0.08;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['shape'];
-  }
+	breath = Math.random() * 1.2;
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return skeletonStyles;
-  }
+	sweepSpeed = 0.7 + Math.random() * 0.35;
 
-  // No interactive content - the placeholder is pure canvas
-  override content (): string {
-    return '';
-  }
+	breathEvery = 1.0 + Math.random() * 0.7;
 
-  // Lines and rects get gently rounded corners; circles go fully round
-  override shape (width: number, height: number): Shape {
-    const circle = this.getAttribute('shape') === 'circle';
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["shape"];
+	}
 
-    return {
-      width,
-      height,
-      radius: circle ? Math.min(width, height) / 2 : Math.min(height / 2, 7),
-    };
-  }
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return skeletonStyles;
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically.
-  // A shape swap usually resizes the host (the ResizeObserver rebuilds then);
-  // reshape the membrane directly for same-size swaps (inline width/height),
-  // where a radius-only change would otherwise be dropped.
-  attributeChangedCallback (): void {
-    if (this.built) {
-      this.reshapeMembrane();
-    }
-  }
+	// No interactive content - the placeholder is pure canvas
+	override content(): string {
+		return "";
+	}
 
-  // Called once after the shadow DOM and canvas exist. Wire ARIA here.
-  override onBuilt (): void {
-    this.setAttribute('role', 'status');
-    this.setAttribute('aria-busy', 'true');
+	// Lines and rects get gently rounded corners; circles go fully round
+	override shape(width: number, height: number): Shape {
+		const circle = this.getAttribute("shape") === "circle";
 
-    if (!this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', 'Loading');
-    }
-  }
+		return {
+			width,
 
-  // One animation step: a sweeping ripple plus an occasional soft breath
-  override frame (dt: number): boolean {
-    const body = this.body;
+			height,
 
-    if (!body) {
-      return false;
-    }
+			radius: circle
+				? Math.min(width, height) / 2
+				: Math.min(height / 2, 7),
+		};
+	}
 
-    if (this.reducedMotion) {
-      this.clearCanvas();
-      this.paintBody(body, { fill: this.fill() });
-      return false;
-    }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically.
+	// A shape swap usually resizes the host (the ResizeObserver rebuilds then);
+	// reshape the membrane directly for same-size swaps (inline width/height),
+	// where a radius-only change would otherwise be dropped.
+	attributeChangedCallback(): void {
+		if (this.built) {
+			this.reshapeMembrane();
+		}
+	}
 
-    const w = body.width;
-    const h = body.height;
+	// Called once after the shadow DOM and canvas exist. Wire ARIA here.
+	override onBuilt(): void {
+		this.setAttribute("role", "status");
 
-    // A soft ripple sweeps across - a jelly take on a loading shimmer -
-    // then rests briefly before the next sweep
-    this.phase           = (this.phase + dt * this.sweepSpeed) % 1.5;
-    this.timeAccumulator += dt;
+		this.setAttribute("aria-busy", "true");
 
-    if (this.timeAccumulator > 0.08 && this.phase <= 1) {
-      this.timeAccumulator = 0;
+		if (!this.hasAttribute("aria-label")) {
+			this.setAttribute("aria-label", "Loading");
+		}
+	}
 
-      const x = -w / 2 + this.phase * w;
+	// One animation step: a sweeping ripple plus an occasional soft breath
+	override frame(dt: number): boolean {
+		const body = this.body;
 
-      body.pulseAt(x, -h / 2, 0.16);
-      body.pulseAt(x, h / 2, 0.1);
-    }
+		if (!body) {
+			return false;
+		}
 
-    // A slow breath keeps the parts between sweeps soft, never frozen
-    this.breath += dt;
+		if (this.reducedMotion) {
+			this.clearCanvas();
 
-    if (this.breath > this.breathEvery) {
-      this.breath      = 0;
-      this.breathEvery = 1.0 + Math.random() * 0.7;
+			this.paintBody(body, { fill: this.fill() });
 
-      body.centerPop(0.16);
-    }
+			return false;
+		}
 
-    body.update(dt);
-    this.clearCanvas();
-    this.paintBody(body, { fill: this.fill(), alpha: 0.82 });
+		const w = body.width;
 
-    return true;
-  }
+		const h = body.height;
 
+		// A soft ripple sweeps across - a jelly take on a loading shimmer -
+		// then rests briefly before the next sweep
+		this.phase = (this.phase + dt * this.sweepSpeed) % 1.5;
+
+		this.timeAccumulator += dt;
+
+		if (this.timeAccumulator > 0.08 && this.phase <= 1) {
+			this.timeAccumulator = 0;
+
+			const x = -w / 2 + this.phase * w;
+
+			body.pulseAt(x, -h / 2, 0.16);
+
+			body.pulseAt(x, h / 2, 0.1);
+		}
+
+		// A slow breath keeps the parts between sweeps soft, never frozen
+		this.breath += dt;
+
+		if (this.breath > this.breathEvery) {
+			this.breath = 0;
+
+			this.breathEvery = 1.0 + Math.random() * 0.7;
+
+			body.centerPop(0.16);
+		}
+
+		body.update(dt);
+
+		this.clearCanvas();
+
+		this.paintBody(body, { fill: this.fill(), alpha: 0.82 });
+
+		return true;
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-skeleton', JellySkeleton);
+customElements.define("jelly-skeleton", JellySkeleton);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-skeleton': JellySkeleton;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-skeleton": JellySkeleton;
+	}
 }

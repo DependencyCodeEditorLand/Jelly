@@ -6,73 +6,105 @@
  */
 
 export const DEFAULT_CONFIG = {
-  clickDepthSpring:            115,
-  clickDepthDamping:           18,
+	clickDepthSpring: 115,
 
-  insidePressSpring:           92,
-  insidePressDamping:          15,
+	clickDepthDamping: 18,
 
-  insideLocalBulgeImpulse:     390,
-  insideLocalHoldBulgeForce:   48,
+	insidePressSpring: 92,
 
-  pressSpring:                 76,
-  pressDamping:                13,
-  holdPressAmount:             0,
+	insidePressDamping: 15,
 
-  heldCurveSpring:             135,
-  heldCurveDamping:            22,
-  insideHeldBulgeAmount:       10.8,
-  insideHeldHaloAmount:        2.65,
-  insideHeldDepthAmount:       0,
+	insideLocalBulgeImpulse: 390,
 
-  insidePointInfluenceWidth:   38,
-  insidePointHaloWidth:        70,
-  insidePointEdgeBoost:        0.44,
+	insideLocalHoldBulgeForce: 48,
 
-  outsideHeldDentAmount:       7.2,
-  outsideHeldSideBulgeAmount:  1.7,
-  outsideHeldDepthAmount:      9.4,
+	pressSpring: 76,
 
-  normalBlendPasses:           3,
-  curveTension:                0.68,
+	pressDamping: 13,
 
-  axisDepth:                   34,
-  axisSpring:                  48,
-  axisDamping:                 11,
+	holdPressAmount: 0,
 
-  depthImpulse:                420,
-  depthBulgeImpulse:           130,
-  depthSpring:                 76,
-  depthDamping:                14,
-  depthCoupling:               150,
+	heldCurveSpring: 135,
 
-  maxDepthIn:                  -26,
-  maxDepthOut:                 16,
+	heldCurveDamping: 22,
 
-  zRotateSpring:               42,
-  zRotateDamping:              12,
-  zRotateImpulse:              0.14,
+	insideHeldBulgeAmount: 10.8,
 
-  membraneSpring:              96,
-  membraneDamping:             17,
-  waveCoupling:                145,
-  pressure:                    620,
-  volumeCorrection:            0.1,
+	insideHeldHaloAmount: 2.65,
 
-  outsideDentImpulse:          255,
-  outsideSideBulgeImpulse:     54,
-  outsideOppositeBulgeImpulse: 74,
-  rippleWidth:                 8,
+	insideHeldDepthAmount: 0,
 
-  outsideHoldForce:            20,
-  outsideHoldDepthForce:       52,
+	insidePointInfluenceWidth: 38,
 
-  maxDent:                     8,
-  maxBulge:                    24,
+	insidePointHaloWidth: 70,
 
-  perspective:                 390,
+	insidePointEdgeBoost: 0.44,
 
-  samples:                     240,
+	outsideHeldDentAmount: 7.2,
+
+	outsideHeldSideBulgeAmount: 1.7,
+
+	outsideHeldDepthAmount: 9.4,
+
+	normalBlendPasses: 3,
+
+	curveTension: 0.68,
+
+	axisDepth: 34,
+
+	axisSpring: 48,
+
+	axisDamping: 11,
+
+	depthImpulse: 420,
+
+	depthBulgeImpulse: 130,
+
+	depthSpring: 76,
+
+	depthDamping: 14,
+
+	depthCoupling: 150,
+
+	maxDepthIn: -26,
+
+	maxDepthOut: 16,
+
+	zRotateSpring: 42,
+
+	zRotateDamping: 12,
+
+	zRotateImpulse: 0.14,
+
+	membraneSpring: 96,
+
+	membraneDamping: 17,
+
+	waveCoupling: 145,
+
+	pressure: 620,
+
+	volumeCorrection: 0.1,
+
+	outsideDentImpulse: 255,
+
+	outsideSideBulgeImpulse: 54,
+
+	outsideOppositeBulgeImpulse: 74,
+
+	rippleWidth: 8,
+
+	outsideHoldForce: 20,
+
+	outsideHoldDepthForce: 52,
+
+	maxDent: 8,
+
+	maxBulge: 24,
+
+	perspective: 390,
+
+	samples: 240,
 };
 
 // The full physics tuning record (components pass a Partial to override a few)

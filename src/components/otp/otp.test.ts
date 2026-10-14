@@ -1,45 +1,61 @@
-import { expect, test } from 'vitest';
+import { expect, test } from "vitest";
 
-import { mount } from '../../testing/index.js';
+import { mount } from "../../testing/index.js";
 
-import './index.js';
-import type { JellyOtp } from './index.js';
+import "./index.js";
 
-test('renders one input box per digit', () => {
-  const host = mount('<jelly-otp length="4"></jelly-otp>');
-  const el = host.querySelector('jelly-otp') as JellyOtp;
+import type { JellyOtp } from "./index.js";
 
-  expect(el.shadowRoot!.querySelectorAll('input').length).toBe(4);
+test("renders one input box per digit", () => {
+	const host = mount('<jelly-otp length="4"></jelly-otp>');
 
-  host.remove();
+	const el = host.querySelector("jelly-otp") as JellyOtp;
+
+	expect(el.shadowRoot!.querySelectorAll("input").length).toBe(4);
+
+	host.remove();
 });
 
-test('typing a digit fills the box, advances focus and reports value', () => {
-  const host = mount('<jelly-otp length="3"></jelly-otp>');
-  const el = host.querySelector('jelly-otp') as JellyOtp;
+test("typing a digit fills the box, advances focus and reports value", () => {
+	const host = mount('<jelly-otp length="3"></jelly-otp>');
 
-  const boxes = [...el.shadowRoot!.querySelectorAll('input')] as HTMLInputElement[];
-  boxes[0].value = '7';
-  boxes[0].dispatchEvent(new Event('input', { bubbles: true }));
+	const el = host.querySelector("jelly-otp") as JellyOtp;
 
-  expect(boxes[0].value).toBe('7');
-  expect(el.value).toBe('7');
+	const boxes = [
+		...el.shadowRoot!.querySelectorAll("input"),
+	] as HTMLInputElement[];
 
-  host.remove();
+	boxes[0].value = "7";
+
+	boxes[0].dispatchEvent(new Event("input", { bubbles: true }));
+
+	expect(boxes[0].value).toBe("7");
+
+	expect(el.value).toBe("7");
+
+	host.remove();
 });
 
-test('fires complete with the joined value when every box is filled', () => {
-  const host = mount('<jelly-otp length="3"></jelly-otp>');
-  const el = host.querySelector('jelly-otp') as JellyOtp;
+test("fires complete with the joined value when every box is filled", () => {
+	const host = mount('<jelly-otp length="3"></jelly-otp>');
 
-  let completed = '';
-  el.addEventListener('complete', (event) => { completed = (event as CustomEvent).detail.value; });
+	const el = host.querySelector("jelly-otp") as JellyOtp;
 
-  el.value = '123';
-  const boxes = [...el.shadowRoot!.querySelectorAll('input')] as HTMLInputElement[];
-  boxes[2].dispatchEvent(new Event('input', { bubbles: true }));
+	let completed = "";
 
-  expect(completed).toBe('123');
+	el.addEventListener("complete", (event) => {
+		completed = (event as CustomEvent).detail.value;
+	});
 
-  host.remove();
+	el.value = "123";
+
+	const boxes = [
+		...el.shadowRoot!.querySelectorAll("input"),
+	] as HTMLInputElement[];
+
+	boxes[2].dispatchEvent(new Event("input", { bubbles: true }));
+
+	expect(completed).toBe("123");
+
+	host.remove();
 });

@@ -3,24 +3,29 @@
  * dismiss button, plus an imperative shake() to grab attention on demand.
  */
 
-import { JellyElement } from '../../element/index.js';
-import type { Shape }   from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import { jellyIcon }     from '../../icons/index.js';
-import type { IconName } from '../../icons/index.js';
+import type { Shape } from "../../element/index.js";
 
-import { emit }          from '../../utilities/index.js';
+import { jellyIcon } from "../../icons/index.js";
 
-import { PALETTE }       from '../../theme/index.js';
+import type { IconName } from "../../icons/index.js";
 
-import alertStyles       from './alert.css?inline';
+import { emit } from "../../utilities/index.js";
+
+import { PALETTE } from "../../theme/index.js";
+
+import alertStyles from "./alert.css?inline";
 
 // The Fluent icon for each tone
 const TONE_ICONS: Record<string, IconName> = {
-  info:    'info',
-  success: 'checkmark-circle',
-  warning: 'warning',
-  danger:  'error-circle',
+	info: "info",
+
+	success: "checkmark-circle",
+
+	warning: "warning",
+
+	danger: "error-circle",
 };
 
 /**
@@ -42,159 +47,184 @@ const TONE_ICONS: Record<string, IconName> = {
  * @cssprop [--tone] - The tone color driving the fill wash and edge.
  */
 export class JellyAlert extends JellyElement {
+	shakeT = 0;
 
-  shakeT = 0;
-  shaking = 0;
-  shakeDir = -1;
+	shaking = 0;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['tone', 'size', 'dismissible'];
-  }
+	shakeDir = -1;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (!this.built) {
-      return;
-    }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["tone", "size", "dismissible"];
+	}
 
-    switch (name) {
-      case 'tone':
-        // Tone drives the icon glyph (markup) as well as its color (CSS var),
-        // so re-render the box, re-wire its dismiss button and repaint
-        this.shadowRoot!.querySelector('.jelly-content')!.innerHTML = this.content();
-        this.wireClose();
-        this.requestFrame();
-        break;
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (!this.built) {
+			return;
+		}
 
-      case 'size':
-        this.applyShape();
-        break;
+		switch (name) {
+			case "tone":
+				// Tone drives the icon glyph (markup) as well as its color (CSS var),
+				// so re-render the box, re-wire its dismiss button and repaint
+				this.shadowRoot!.querySelector(".jelly-content")!.innerHTML =
+					this.content();
 
-      case 'dismissible':
-        this.wireClose();
-        break;
-    }
-  }
+				this.wireClose();
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return alertStyles;
-  }
+				this.requestFrame();
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    const tone = this.getAttribute('tone') || 'info';
+				break;
 
-    return `
+			case "size":
+				this.applyShape();
+
+				break;
+
+			case "dismissible":
+				this.wireClose();
+
+				break;
+		}
+	}
+
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return alertStyles;
+	}
+
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		const tone = this.getAttribute("tone") || "info";
+
+		return `
       <div class="box" part="box" role="alert">
         <span class="icon" aria-hidden="true">${jellyIcon(TONE_ICONS[tone] || TONE_ICONS.info)}</span>
         <div class="body"><slot></slot></div>
-        <button class="close" part="close" aria-label="Dismiss">${jellyIcon('dismiss', { size: 14 })}</button>
+        <button class="close" part="close" aria-label="Dismiss">${jellyIcon("dismiss", { size: 14 })}</button>
       </div>`;
-  }
+	}
 
-  // The banner the physics body takes (radius follows the size token)
-  override shape (width: number, height: number): Shape {
-    const radius = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-alert-radius')) || 16;
+	// The banner the physics body takes (radius follows the size token)
+	override shape(width: number, height: number): Shape {
+		const radius =
+			parseFloat(
+				getComputedStyle(this).getPropertyValue("--jelly-alert-radius"),
+			) || 16;
 
-    return { width, height, radius: Math.min(radius, height / 2) };
-  }
+		return { width, height, radius: Math.min(radius, height / 2) };
+	}
 
-  // The surface fill resolves through the theme so dark mode recolors it
-  override fill (): string {
-    return this.resolveColor(`var(--jelly-fill, var(--jelly-color-background-surface, ${PALETTE['background-surface']}))`);
-  }
+	// The surface fill resolves through the theme so dark mode recolors it
+	override fill(): string {
+		return this.resolveColor(
+			`var(--jelly-fill, var(--jelly-color-background-surface, ${PALETTE["background-surface"]}))`,
+		);
+	}
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.wireClose();
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.wireClose();
 
-    if (!this.reducedMotion) {
-      requestAnimationFrame(() => this.centerPop(0.7));
-    }
-  }
+		if (!this.reducedMotion) {
+			requestAnimationFrame(() => this.centerPop(0.7));
+		}
+	}
 
-  // Hook up the dismiss button (re-run after tone re-renders the box)
-  wireClose (): void {
-    const close = this.shadowRoot!.querySelector('.close') as (HTMLElement & { wired?: boolean }) | null;
+	// Hook up the dismiss button (re-run after tone re-renders the box)
+	wireClose(): void {
+		const close = this.shadowRoot!.querySelector(".close") as
+			(HTMLElement & { wired?: boolean }) | null;
 
-    if (!close) {
-      return;
-    }
+		if (!close) {
+			return;
+		}
 
-    if (this.hasAttribute('dismissible')) {
-      this.useHostFocusTarget(close);
-    }
+		if (this.hasAttribute("dismissible")) {
+			this.useHostFocusTarget(close);
+		}
 
-    if (close.wired) {
-      return;
-    }
+		if (close.wired) {
+			return;
+		}
 
-    close.wired = true;
-    close.addEventListener('click', () => this.dismiss());
-  }
+		close.wired = true;
 
-  // A quick left-right jelly shake
-  shake (): void {
-    if (this.reducedMotion || !this.body) {
-      return;
-    }
+		close.addEventListener("click", () => this.dismiss());
+	}
 
-    this.shaking = 0.5; // seconds of shaking
-    this.shakeT  = 0;
+	// A quick left-right jelly shake
+	shake(): void {
+		if (this.reducedMotion || !this.body) {
+			return;
+		}
 
-    this.requestFrame();
-  }
+		this.shaking = 0.5; // seconds of shaking
 
-  // Announce the dismissal, then fade out and remove the element
-  dismiss (): void {
-    emit(this, 'dismiss');
+		this.shakeT = 0;
 
-    this.style.transition = 'opacity .18s ease, transform .18s ease';
-    this.style.opacity    = '0';
-    this.style.transform  = 'scale(0.96)';
+		this.requestFrame();
+	}
 
-    setTimeout(() => this.remove(), 180);
-  }
+	// Announce the dismissal, then fade out and remove the element
+	dismiss(): void {
+		emit(this, "dismiss");
 
-  // One animation step: alternate horizontal flings while shaking
-  override frame (dt: number): boolean {
-    const body = this.body;
+		this.style.transition = "opacity .18s ease, transform .18s ease";
 
-    if (!body) {
-      return false;
-    }
+		this.style.opacity = "0";
 
-    if (this.shaking > 0) {
-      this.shaking -= dt;
-      this.shakeT  += dt;
+		this.style.transform = "scale(0.96)";
 
-      if (this.shakeT >= 0.08) {
-        this.shakeT   = 0;
-        this.shakeDir = -this.shakeDir;
+		setTimeout(() => this.remove(), 180);
+	}
 
-        body.stretchAlong(this.shakeDir, 0, 0.8);
-      }
-    }
+	// One animation step: alternate horizontal flings while shaking
+	override frame(dt: number): boolean {
+		const body = this.body;
 
-    body.update(dt);
-    this.clearCanvas();
-    this.paintBody(body, {
-      fill:   this.fill(),
-      border: { color: this.resolveColor(`var(--jelly-alert-border, var(--jelly-color-border-default, ${PALETTE['border-default']}))`), width: 1 },
-    });
+		if (!body) {
+			return false;
+		}
 
-    return this.shaking > 0 || !body.isResting();
-  }
+		if (this.shaking > 0) {
+			this.shaking -= dt;
 
+			this.shakeT += dt;
+
+			if (this.shakeT >= 0.08) {
+				this.shakeT = 0;
+
+				this.shakeDir = -this.shakeDir;
+
+				body.stretchAlong(this.shakeDir, 0, 0.8);
+			}
+		}
+
+		body.update(dt);
+
+		this.clearCanvas();
+
+		this.paintBody(body, {
+			fill: this.fill(),
+			border: {
+				color: this.resolveColor(
+					`var(--jelly-alert-border, var(--jelly-color-border-default, ${PALETTE["border-default"]}))`,
+				),
+				width: 1,
+			},
+		});
+
+		return this.shaking > 0 || !body.isResting();
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-alert', JellyAlert);
+customElements.define("jelly-alert", JellyAlert);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-alert': JellyAlert;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-alert": JellyAlert;
+	}
 }

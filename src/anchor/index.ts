@@ -4,7 +4,10 @@
  * transitions. This barrel re-exports the whole surface.
  */
 
-export * from './placement.js';
-export * from './scroll.js';
-export * from './modal.js';
-export * from './transitions.js';
+export * from "./placement.js";
+
+export * from "./scroll.js";
+
+export * from "./modal.js";
+
+export * from "./transitions.js";

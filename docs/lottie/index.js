@@ -25,6 +25,7 @@ const PLAYER_URL = new URL('./lottie_light.min.js', import.meta.url).href;
 let playerPromise = null;
 
 function loadPlayer () {
+
   if (window.lottie) {
     return Promise.resolve(window.lottie);
   }
@@ -34,8 +35,11 @@ function loadPlayer () {
       const script = document.createElement('script');
 
       script.src    = PLAYER_URL;
+
       script.async  = true;
+
       script.onload = () => resolve(window.lottie);
+
       script.onerror = reject;
 
       document.head.appendChild(script);
@@ -56,6 +60,7 @@ const whenIdle = () => new Promise((resolve) => {
 });
 
 function render (container, animationURL) {
+
   whenIdle()
     .then(loadPlayer)
     .then((lottie) => {
@@ -89,7 +94,9 @@ function render (container, animationURL) {
       };
 
       animation.addEventListener('DOMLoaded', syncMotion);
+
       matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', syncMotion);
+
       window.addEventListener('jelly-motion-change', syncMotion);
     })
     .catch(() => {
@@ -98,6 +105,7 @@ function render (container, animationURL) {
 }
 
 export function initLottie (container, animationURL) {
+
   if (!container) {
     return;
   }
@@ -109,6 +117,7 @@ export function initLottie (container, animationURL) {
   const observer = new IntersectionObserver((entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       observer.disconnect();
+
       render(container, animationURL);
     }
   }, { rootMargin: '200px' });

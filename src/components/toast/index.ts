@@ -7,31 +7,49 @@
  *   jellyToast('Saved!', { tone: 'success' });
  */
 
-import { toastIn }           from '../../anchor/index.js';
-import { toastOut }          from '../../anchor/index.js';
+import { toastIn } from "../../anchor/index.js";
 
-import { jellyIcon }         from '../../icons/index.js';
+import { toastOut } from "../../anchor/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
-import { PALETTE }           from '../../theme/index.js';
+import { jellyIcon } from "../../icons/index.js";
 
-import toastStyles           from './toast.css?inline';
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import { PALETTE } from "../../theme/index.js";
+
+import toastStyles from "./toast.css?inline";
 
 // The notification tones a toast can carry
-export type ToastTone = 'info' | 'success' | 'warning' | 'danger';
+export type ToastTone = "info" | "success" | "warning" | "danger";
 
 // Options accepted by push() / jellyToast()
 export interface ToastOptions {
-  tone?: ToastTone;
-  duration?: number;
+	tone?: ToastTone;
+
+	duration?: number;
 }
 
 // Dot color and spoken prefix for each tone (color is never the only signal)
 const TONES: Record<ToastTone, { color: string; spoken: string }> = {
-  info:    { color: `var(--jelly-color-background-azure, ${PALETTE['background-azure']})`, spoken: 'Info' },
-  success: { color: `var(--jelly-color-background-mint,  ${PALETTE['background-mint']})`,  spoken: 'Success' },
-  warning: { color: `var(--jelly-color-background-amber, ${PALETTE['background-amber']})`, spoken: 'Warning' },
-  danger:  { color: `var(--jelly-color-background-rose,  ${PALETTE['background-rose']})`,  spoken: 'Error' },
+	info: {
+		color: `var(--jelly-color-background-azure, ${PALETTE["background-azure"]})`,
+		spoken: "Info",
+	},
+
+	success: {
+		color: `var(--jelly-color-background-mint,  ${PALETTE["background-mint"]})`,
+		spoken: "Success",
+	},
+
+	warning: {
+		color: `var(--jelly-color-background-amber, ${PALETTE["background-amber"]})`,
+		spoken: "Warning",
+	},
+
+	danger: {
+		color: `var(--jelly-color-background-rose,  ${PALETTE["background-rose"]})`,
+		spoken: "Error",
+	},
 };
 
 /**
@@ -46,110 +64,132 @@ const TONES: Record<ToastTone, { color: string; spoken: string }> = {
  * @csspart close - The dismiss button.
  */
 export class JellyToaster extends HTMLElement {
+	built = false;
 
-  built = false;
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
+		if (this.built) {
+			return;
+		}
 
-    if (this.built) {
-      return;
-    }
+		this.built = true;
 
-    this.built = true;
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open" });
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open' });
-
-    this.shadowRoot!.innerHTML = `
+		this.shadowRoot!.innerHTML = `
       <style>${toastStyles}</style>
 
       <div class="rail" aria-live="polite"></div>
     `;
-  }
+	}
 
-  // Add one toast; returns its element (click or timeout removes it)
-  push (message: string, { tone = 'info', duration = 3500 }: ToastOptions = {}): HTMLElement {
-    const toneInfo = TONES[tone] || TONES.info;
-    const el       = document.createElement('div');
+	// Add one toast; returns its element (click or timeout removes it)
+	push(
+		message: string,
+		{ tone = "info", duration = 3500 }: ToastOptions = {},
+	): HTMLElement {
+		const toneInfo = TONES[tone] || TONES.info;
 
-    el.className = 'toast';
-    el.setAttribute('part', 'toast');
-    el.setAttribute('role', 'status');
+		const el = document.createElement("div");
 
-    const dot = document.createElement('span');
+		el.className = "toast";
 
-    dot.className        = 'dot';
-    dot.setAttribute('part', 'dot');
-    dot.style.background = toneInfo.color;
-    dot.setAttribute('aria-hidden', 'true');
+		el.setAttribute("part", "toast");
 
-    const spoken = document.createElement('span');
+		el.setAttribute("role", "status");
 
-    spoken.className   = 'sr-tone';
-    spoken.textContent = `${toneInfo.spoken}:`;
+		const dot = document.createElement("span");
 
-    const text = document.createElement('span');
+		dot.className = "dot";
 
-    text.className   = 'toast-text';
-    text.textContent = String(message);
+		dot.setAttribute("part", "dot");
 
-    const close = document.createElement('button');
+		dot.style.background = toneInfo.color;
 
-    close.className = 'close';
-    close.setAttribute('part', 'close');
-    close.setAttribute('aria-label', 'Dismiss');
-    close.innerHTML = jellyIcon('dismiss', { size: 13 });
+		dot.setAttribute("aria-hidden", "true");
 
-    el.append(dot, spoken, text, close);
+		const spoken = document.createElement("span");
 
-    this.shadowRoot!.querySelector('.rail')!.appendChild(el);
+		spoken.className = "sr-tone";
 
-    toastIn(el);
+		spoken.textContent = `${toneInfo.spoken}:`;
 
-    const remove = (): void => toastOut(el, () => el.remove());
+		const text = document.createElement("span");
 
-    if (duration > 0) {
-      setTimeout(remove, duration);
-    }
+		text.className = "toast-text";
 
-    // Click anywhere dismisses; the close button does too (and stops the click
-    // from double-firing). Keyboard users tab to the button and press it.
-    el.addEventListener('click', remove);
-    close.addEventListener('click', (event) => { event.stopPropagation(); remove(); });
+		text.textContent = String(message);
 
-    return el;
-  }
+		const close = document.createElement("button");
 
+		close.className = "close";
+
+		close.setAttribute("part", "close");
+
+		close.setAttribute("aria-label", "Dismiss");
+
+		close.innerHTML = jellyIcon("dismiss", { size: 13 });
+
+		el.append(dot, spoken, text, close);
+
+		this.shadowRoot!.querySelector(".rail")!.appendChild(el);
+
+		toastIn(el);
+
+		const remove = (): void => toastOut(el, () => el.remove());
+
+		if (duration > 0) {
+			setTimeout(remove, duration);
+		}
+
+		// Click anywhere dismisses; the close button does too (and stops the click
+		// from double-firing). Keyboard users tab to the button and press it.
+		el.addEventListener("click", remove);
+
+		close.addEventListener("click", (event) => {
+			event.stopPropagation();
+			remove();
+		});
+
+		return el;
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-toaster', JellyToaster);
+customElements.define("jelly-toaster", JellyToaster);
 
 // Show a toast, creating the shared toaster host on first use
-export function jellyToast (message: string, options?: ToastOptions): HTMLElement {
-  let toaster = document.querySelector('jelly-toaster') as JellyToaster | null;
+export function jellyToast(
+	message: string,
+	options?: ToastOptions,
+): HTMLElement {
+	let toaster = document.querySelector(
+		"jelly-toaster",
+	) as JellyToaster | null;
 
-  if (!toaster) {
-    toaster = document.createElement('jelly-toaster') as JellyToaster;
-    document.body.appendChild(toaster);
-  }
+	if (!toaster) {
+		toaster = document.createElement("jelly-toaster") as JellyToaster;
 
-  return toaster.push(message, options);
+		document.body.appendChild(toaster);
+	}
+
+	return toaster.push(message, options);
 }
 
 // Convenience global so inline handlers can fire toasts
-if (typeof window !== 'undefined') {
-  window.jellyToast = jellyToast;
+if (typeof window !== "undefined") {
+	window.jellyToast = jellyToast;
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-toaster': JellyToaster;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-toaster": JellyToaster;
+	}
 
-  interface Window {
-    jellyToast: typeof jellyToast;
-  }
+	interface Window {
+		jellyToast: typeof jellyToast;
+	}
 }

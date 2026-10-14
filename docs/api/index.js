@@ -10,14 +10,19 @@
 import '../../package.js';
 
 import { escapeHTML }       from '../shared/common.js';
+
 import { formatInlineCode } from '../shared/common.js';
+
 import { wireMotionToggle } from '../shared/common.js';
+
 import { wireThemeToggle }  from '../shared/common.js';
 
 import { COMPONENTS }       from '../content/data.js';
+
 import { GROUP_ORDER }      from '../content/data.js';
 
 wireMotionToggle(document.getElementById('motionToggle'));
+
 wireThemeToggle(document.getElementById('themeToggle'));
 
 // The shared top bar's page links are jelly-buttons, not anchors - wire their
@@ -25,6 +30,7 @@ wireThemeToggle(document.getElementById('themeToggle'));
 document.querySelector('[data-subnav-showcase]')?.addEventListener('click', () => {
   window.location.href = '../';
 });
+
 document.querySelector('[data-subnav-api]')?.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -39,19 +45,25 @@ document.querySelector('[data-subnav-api]')?.addEventListener('click', () => {
  * table-layout: fixed, so these widths are exact, not hints.
  */
 const COLUMN_WIDTHS = {
+
   2: ['56%', '44%'],
+
   3: ['20%', '36%', '44%'],
+
   4: ['20%', '24%', '12%', '44%'],
 };
 
 // One aligned API table, omitted entirely when there are no rows
 function apiTable (title, rows, columns) {
+
   if (!rows || rows.length === 0) {
     return '';
   }
 
   const widths = COLUMN_WIDTHS[columns.length] || [];
+
   const cols   = widths.map((w) => `<col style="width: ${w}" />`).join('');
+
   const head   = columns.map((c) => `<th>${c.label}</th>`).join('');
 
   const body = rows.map((row) =>
@@ -75,6 +87,7 @@ function apiTable (title, rows, columns) {
 
 // Example code rendered as text (the showcase renders it live)
 function exampleBlock (example, index, tag) {
+
   const title = example.title ? `<h4>${escapeHTML(example.title)}</h4>` : '';
 
   return `
@@ -91,6 +104,7 @@ function exampleBlock (example, index, tag) {
 
 // The full reference section for one component
 function componentSection (item) {
+
   const events = (item.events || []).map((e) => ({ ...e, detail: e.detail || '-' }));
 
   return `
@@ -176,6 +190,7 @@ document.addEventListener('click', (event) => {
 
   navigator.clipboard?.writeText(code).then(() => {
     button.textContent = 'Copied';
+
     setTimeout(() => { button.textContent = 'Copy'; }, 1200);
   });
 });
@@ -188,6 +203,7 @@ const sectionObserver = new IntersectionObserver((entries) => {
     }
 
     document.querySelectorAll('[data-nav].active').forEach((a) => a.classList.remove('active'));
+
     document.querySelector(`[data-nav="${entry.target.dataset.tag}"]`)?.classList.add('active');
   }
 }, { rootMargin: '-15% 0px -75% 0px' });
@@ -202,6 +218,7 @@ document.querySelectorAll('.component').forEach((section) => sectionObserver.obs
  * across a few frames until its position stops moving, so one click lands it.
  */
 function scrollToSection (id) {
+
   const target = document.getElementById(id);
 
   if (!target) {
@@ -209,9 +226,11 @@ function scrollToSection (id) {
   }
 
   const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+
   const pad     = (Number.isFinite(headerH) ? headerH : 68) + 16;
 
   let prev  = -1;
+
   let tries = 0;
 
   const pin = () => {
@@ -220,12 +239,14 @@ function scrollToSection (id) {
     // behavior:instant overrides the page's smooth scroll-behavior, so the jump
     // lands immediately instead of animating slowly across a tall reference page.
     window.scrollTo({ top: Math.max(0, top), left: 0, behavior: 'instant' });
+
     tries += 1;
 
     // Re-pin until the target stops moving (late font / layout settling can
     // shift it a frame or two after the first jump), then stop.
     if (Math.abs(top - prev) > 1 && tries < 30) {
       prev = top;
+
       requestAnimationFrame(pin);
     }
   };
@@ -248,23 +269,29 @@ document.addEventListener('click', (event) => {
   }
 
   event.preventDefault();
+
   history.replaceState(null, '', `#${id}`);
+
   scrollToSection(id);
 });
 
 // Mobile sidebar
 const navToggle = document.getElementById('navToggle');
+
 const sidebar   = document.getElementById('sidebar');
 
 if (navToggle && sidebar) {
+
   navToggle.addEventListener('click', () => {
     const open = sidebar.classList.toggle('open');
+
     navToggle.setAttribute('aria-expanded', String(open));
   });
 
   sidebar.addEventListener('click', (event) => {
     if (event.target.closest('a')) {
       sidebar.classList.remove('open');
+
       navToggle.setAttribute('aria-expanded', 'false');
     }
   });
@@ -272,5 +299,6 @@ if (navToggle && sidebar) {
 
 // Deep links resolve after render
 if (location.hash) {
+
   scrollToSection(location.hash.slice(1));
 }

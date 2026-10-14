@@ -6,7 +6,7 @@
 
 // The minimal surface of a parent that re-reads its options
 interface OptionParent extends HTMLElement {
-  syncOptions?: () => void;
+	syncOptions?: () => void;
 }
 
 /**
@@ -21,47 +21,46 @@ interface OptionParent extends HTMLElement {
  * @attr {boolean} disabled - Whether this option cannot be selected.
  */
 export class JellyOption extends HTMLElement {
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["value", "selected", "disabled"];
+	}
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['value', 'selected', 'disabled'];
-  }
+	// The submitted value: the value attribute, else the trimmed text content
+	get value(): string {
+		return this.hasAttribute("value")
+			? (this.getAttribute("value") ?? "")
+			: (this.textContent ?? "").trim();
+	}
 
-  // The submitted value: the value attribute, else the trimmed text content
-  get value (): string {
-    return this.hasAttribute('value')
-      ? this.getAttribute('value') ?? ''
-      : (this.textContent ?? '').trim();
-  }
+	// The human-readable label shown in the trigger and its listbox row
+	get label(): string {
+		return (this.textContent ?? "").trim();
+	}
 
-  // The human-readable label shown in the trigger and its listbox row
-  get label (): string {
-    return (this.textContent ?? '').trim();
-  }
+	// True when the option cannot be selected
+	get disabled(): boolean {
+		return this.hasAttribute("disabled");
+	}
 
-  // True when the option cannot be selected
-  get disabled (): boolean {
-    return this.hasAttribute('disabled');
-  }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(): void {
+		(this.closest("jelly-select") as OptionParent | null)?.syncOptions?.();
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (): void {
-    (this.closest('jelly-select') as OptionParent | null)?.syncOptions?.();
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		this.style.display = "none";
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    this.style.display = 'none';
-    (this.closest('jelly-select') as OptionParent | null)?.syncOptions?.();
-  }
-
+		(this.closest("jelly-select") as OptionParent | null)?.syncOptions?.();
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-option', JellyOption);
+customElements.define("jelly-option", JellyOption);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-option': JellyOption;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-option": JellyOption;
+	}
 }

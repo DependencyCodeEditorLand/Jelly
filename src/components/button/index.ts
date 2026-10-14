@@ -8,11 +8,13 @@
  * jelly-icon-button's default square).
  */
 
-import { JellyElement }   from '../../element/index.js';
-import type { Shape }      from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import buttonStyles        from './button.css?inline';
-import variantStyles       from '../../styles/variants.css?inline';
+import type { Shape } from "../../element/index.js";
+
+import buttonStyles from "./button.css?inline";
+
+import variantStyles from "../../styles/variants.css?inline";
 
 /**
  * A capsule-shaped jelly button with soft-body physics.
@@ -40,221 +42,263 @@ import variantStyles       from '../../styles/variants.css?inline';
  * @cssprop [--jelly-label] - Label color.
  */
 export class JellyButton extends JellyElement {
+	// Populated in onBuilt()
+	button!: HTMLButtonElement;
 
-  // Populated in onBuilt()
-  button!: HTMLButtonElement;
-  activationPointerId: number | null = null;
-  cancelPointerClick = false;
+	activationPointerId: number | null = null;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return [
-      'disabled', 'label', 'type', 'shape',
-      // Global ARIA state forwarded to the inner focusable button, so the
-      // roled/focusable element - not the roleless host - carries the state
-      'aria-current', 'aria-expanded', 'aria-haspopup', 'aria-controls', 'aria-pressed',
-    ];
-  }
+	cancelPointerClick = false;
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return variantStyles + buttonStyles;
-  }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return [
+			"disabled",
+			"label",
+			"type",
+			"shape",
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    return `<button part="button"><slot></slot></button>`;
-  }
+			// Global ARIA state forwarded to the inner focusable button, so the
+			// roled/focusable element - not the roleless host - carries the state
+			"aria-current",
+			"aria-expanded",
+			"aria-haspopup",
+			"aria-controls",
+			"aria-pressed",
+		];
+	}
 
-  // The capsule (or, with shape="square", rounded-rectangle) the physics body
-  // takes, inset so the wobble stays inside the host
-  override shape (width: number, height: number): Shape {
-    const w      = width - 8;
-    const h      = height - 8;
-    const square = this.getAttribute('shape') === 'square';
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return variantStyles + buttonStyles;
+	}
 
-    // Honor a plain-px --jelly-button-radius override on the painted surface;
-    // the pill (999px) and square (calc) defaults fall through to the ratios
-    const declared = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-button-radius'));
-    const radius   = Number.isFinite(declared) ? Math.min(declared, h / 2) : (square ? h * 0.32 : h / 2);
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		return `<button part="button"><slot></slot></button>`;
+	}
 
-    return { width: w, height: h, radius };
-  }
+	// The capsule (or, with shape="square", rounded-rectangle) the physics body
+	// takes, inset so the wobble stays inside the host
+	override shape(width: number, height: number): Shape {
+		const w = width - 8;
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.button = this.shadowRoot!.querySelector('button')!;
+		const h = height - 8;
 
-    this.sync('type');
-    this.sync('disabled');
-    this.sync('label');
+		const square = this.getAttribute("shape") === "square";
 
-    // Forward any ARIA state already present at build time
-    for (const attr of this.getAttributeNames()) {
-      if (attr.startsWith('aria-')) {
-        this.sync(attr);
-      }
-    }
+		// Honor a plain-px --jelly-button-radius override on the painted surface;
+		// the pill (999px) and square (calc) defaults fall through to the ratios
+		const declared = parseFloat(
+			getComputedStyle(this).getPropertyValue("--jelly-button-radius"),
+		);
 
-    this.useHostFocusTarget(this.button);
-    this.trackFocus(this.button);
-    this.preventReleaseOutsideActivation();
-    this.wirePress(this.button);
+		const radius = Number.isFinite(declared)
+			? Math.min(declared, h / 2)
+			: square
+				? h * 0.32
+				: h / 2;
 
-    // Hover: continuous multi-channel simplex-noise wobble driven by a
-    // dedicated requestAnimationFrame loop (startHoverLoop / _hoverFrame)
-    // inside the JellyElement base class.  The loop applies membrane force
-    // through JellyState.hoverForce — completely independent of the press
-    // hold-state — so clicking adds its own energy on top without killing
-    // the hover, and the wobble persists at full amplitude as long as the
-    // pointer remains over the button.  Reduced motion skips entirely.
-    if (!this.reducedMotion) {
-      // Per-element noise seed so buttons don't pulse in lockstep
-      const elIndex = [...document.querySelectorAll('jelly-button')].indexOf(this);
+		return { width: w, height: h, radius };
+	}
 
-      this.addEventListener('pointerenter', (event: PointerEvent) => {
-        if (this.hasAttribute('disabled')) return;
-        this.updateHoverPointer(event.clientX, event.clientY);
-        this.startHoverLoop(elIndex);
-      });
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.button = this.shadowRoot!.querySelector("button")!;
 
-      this.addEventListener('pointermove', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-      });
+		this.sync("type");
 
-      this.addEventListener('pointerleave', () => {
-        this.stopHoverLoop();
-      });
-    }
+		this.sync("disabled");
 
-    // Drive the closest light-DOM form for submit / reset buttons
-    this.button.addEventListener('click', () => this.driveForm());
-  }
+		this.sync("label");
 
-  // Pointer capture keeps a drag routed to the button after the pointer leaves
-  // it. Only let the resulting native click through when it is released back
-  // inside the button; keyboard activation stays unchanged.
-  preventReleaseOutsideActivation (): void {
-    this.button.addEventListener('pointerdown', (event) => {
-      this.activationPointerId = event.pointerId;
-      this.cancelPointerClick = false;
-    });
+		// Forward any ARIA state already present at build time
+		for (const attr of this.getAttributeNames()) {
+			if (attr.startsWith("aria-")) {
+				this.sync(attr);
+			}
+		}
 
-    this.button.addEventListener('pointerup', (event) => {
-      if (event.pointerId !== this.activationPointerId) {
-        return;
-      }
+		this.useHostFocusTarget(this.button);
 
-      const rect = this.button.getBoundingClientRect();
+		this.trackFocus(this.button);
 
-      this.cancelPointerClick =
-        event.clientX < rect.left || event.clientX > rect.right
-        || event.clientY < rect.top || event.clientY > rect.bottom;
-      this.activationPointerId = null;
-    });
+		this.preventReleaseOutsideActivation();
 
-    this.button.addEventListener('pointercancel', () => {
-      this.activationPointerId = null;
-      this.cancelPointerClick = false;
-    });
+		this.wirePress(this.button);
 
-    const cancelOutsideRelease = (event: Event): void => {
-      if (!this.cancelPointerClick) {
-        return;
-      }
+		// Hover: continuous multi-channel simplex-noise wobble driven by a
+		// dedicated requestAnimationFrame loop (startHoverLoop / _hoverFrame)
+		// inside the JellyElement base class.  The loop applies membrane force
+		// through JellyState.hoverForce — completely independent of the press
+		// hold-state — so clicking adds its own energy on top without killing
+		// the hover, and the wobble persists at full amplitude as long as the
+		// pointer remains over the button.  Reduced motion skips entirely.
+		if (!this.reducedMotion) {
+			// Per-element noise seed so buttons don't pulse in lockstep
+			const elIndex = [
+				...document.querySelectorAll("jelly-button"),
+			].indexOf(this);
 
-      this.cancelPointerClick = false;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    };
+			this.addEventListener("pointerenter", (event: PointerEvent) => {
+				if (this.hasAttribute("disabled")) return;
 
-    this.button.addEventListener('click', cancelOutsideRelease);
-    this.addEventListener('click', cancelOutsideRelease, { capture: true });
-  }
+				this.updateHoverPointer(event.clientX, event.clientY);
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (this.button) {
-      this.sync(name);
-    }
-  }
+				this.startHoverLoop(elIndex);
+			});
 
-  // Push one observed attribute into the inner native button
-  sync (name: string): void {
-    // Global ARIA state mirrors onto the inner button verbatim
-    if (name.startsWith('aria-')) {
-      const value = this.getAttribute(name);
+			this.addEventListener("pointermove", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
+			});
 
-      if (value === null) {
-        this.button.removeAttribute(name);
-      } else {
-        this.button.setAttribute(name, value);
-      }
-      return;
-    }
+			this.addEventListener("pointerleave", () => {
+				this.stopHoverLoop();
+			});
+		}
 
-    switch (name) {
-      case 'disabled':
-        this.button.disabled = this.hasAttribute('disabled');
-        this.syncHostFocusTarget();
-        break;
+		// Drive the closest light-DOM form for submit / reset buttons
+		this.button.addEventListener("click", () => this.driveForm());
+	}
 
-      case 'type': {
-        const type = this.getAttribute('type');
-        this.button.type = type === 'submit' || type === 'reset' ? type : 'button';
-        break;
-      }
+	// Pointer capture keeps a drag routed to the button after the pointer leaves
+	// it. Only let the resulting native click through when it is released back
+	// inside the button; keyboard activation stays unchanged.
+	preventReleaseOutsideActivation(): void {
+		this.button.addEventListener("pointerdown", (event) => {
+			this.activationPointerId = event.pointerId;
 
-      case 'label': {
-        const label = this.getAttribute('label');
+			this.cancelPointerClick = false;
+		});
 
-        if (label) {
-          this.button.setAttribute('aria-label', label);
-        } else {
-          this.button.removeAttribute('aria-label');
-        }
-        break;
-      }
+		this.button.addEventListener("pointerup", (event) => {
+			if (event.pointerId !== this.activationPointerId) {
+				return;
+			}
 
-      case 'shape':
-        this.reshapeMembrane();
-        break;
-    }
-  }
+			const rect = this.button.getBoundingClientRect();
 
-  // Submit or reset the closest light-DOM form when this is a submit / reset button
-  driveForm (): void {
-    const type = this.button.type;
+			this.cancelPointerClick =
+				event.clientX < rect.left ||
+				event.clientX > rect.right ||
+				event.clientY < rect.top ||
+				event.clientY > rect.bottom;
 
-    if (type !== 'submit' && type !== 'reset') {
-      return;
-    }
+			this.activationPointerId = null;
+		});
 
-    const form = this.closest('form');
+		this.button.addEventListener("pointercancel", () => {
+			this.activationPointerId = null;
 
-    if (!form) {
-      return;
-    }
+			this.cancelPointerClick = false;
+		});
 
-    if (type === 'submit') {
-      form.requestSubmit();
-    } else {
-      form.reset();
-    }
-  }
+		const cancelOutsideRelease = (event: Event): void => {
+			if (!this.cancelPointerClick) {
+				return;
+			}
 
-  // Route programmatic host focus into the inner native button
-  override focus (options?: FocusOptions): void {
-    this.button?.focus(options);
-  }
+			this.cancelPointerClick = false;
 
+			event.preventDefault();
+
+			event.stopImmediatePropagation();
+		};
+
+		this.button.addEventListener("click", cancelOutsideRelease);
+
+		this.addEventListener("click", cancelOutsideRelease, { capture: true });
+	}
+
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (this.button) {
+			this.sync(name);
+		}
+	}
+
+	// Push one observed attribute into the inner native button
+	sync(name: string): void {
+		// Global ARIA state mirrors onto the inner button verbatim
+		if (name.startsWith("aria-")) {
+			const value = this.getAttribute(name);
+
+			if (value === null) {
+				this.button.removeAttribute(name);
+			} else {
+				this.button.setAttribute(name, value);
+			}
+
+			return;
+		}
+
+		switch (name) {
+			case "disabled":
+				this.button.disabled = this.hasAttribute("disabled");
+
+				this.syncHostFocusTarget();
+
+				break;
+
+			case "type": {
+				const type = this.getAttribute("type");
+
+				this.button.type =
+					type === "submit" || type === "reset" ? type : "button";
+
+				break;
+			}
+
+			case "label": {
+				const label = this.getAttribute("label");
+
+				if (label) {
+					this.button.setAttribute("aria-label", label);
+				} else {
+					this.button.removeAttribute("aria-label");
+				}
+
+				break;
+			}
+
+			case "shape":
+				this.reshapeMembrane();
+
+				break;
+		}
+	}
+
+	// Submit or reset the closest light-DOM form when this is a submit / reset button
+	driveForm(): void {
+		const type = this.button.type;
+
+		if (type !== "submit" && type !== "reset") {
+			return;
+		}
+
+		const form = this.closest("form");
+
+		if (!form) {
+			return;
+		}
+
+		if (type === "submit") {
+			form.requestSubmit();
+		} else {
+			form.reset();
+		}
+	}
+
+	// Route programmatic host focus into the inner native button
+	override focus(options?: FocusOptions): void {
+		this.button?.focus(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-button', JellyButton);
+customElements.define("jelly-button", JellyButton);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-button': JellyButton;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-button": JellyButton;
+	}
 }

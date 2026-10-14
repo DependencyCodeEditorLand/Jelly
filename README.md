@@ -15,9 +15,13 @@ library in one `<script>` tag — the build is ours, not theirs.
 <script type="module" src="https://jelly-ui.com/package.js"></script>
 
 <jelly-theme mode="auto">
-  <jelly-button variant="mint">Publish</jelly-button>
-  <jelly-input name="email" type="email" placeholder="you@example.com"></jelly-input>
-  <jelly-switch checked>Notifications</jelly-switch>
+	<jelly-button variant="mint">Publish</jelly-button>
+	<jelly-input
+		name="email"
+		type="email"
+		placeholder="you@example.com"
+	></jelly-input>
+	<jelly-switch checked>Notifications</jelly-switch>
 </jelly-theme>
 ```
 
@@ -48,15 +52,15 @@ npm run serve      # in a second terminal
 
 ### Scripts
 
-| Script | What it does |
-| --- | --- |
-| `npm run build` | Bundle `src/jelly.ts` → `dist/jelly.js` (+ `.d.ts`) with Vite |
-| `npm run build:site` | Build + docs, then assemble the Pages site into `_site/` |
-| `npm run dev` | Rebuild the bundle on every change (`vite build --watch`) |
-| `npm run serve` | Serve the static site with the dependency-free dev server |
-| `npm run typecheck` | `tsc --noEmit` in strict mode |
-| `npm test` | Run the real-browser test suite (Vitest + Playwright Chromium) |
-| `npm run docs` | Regenerate the API docs data from the component sources |
+| Script               | What it does                                                   |
+| -------------------- | -------------------------------------------------------------- |
+| `npm run build`      | Bundle `src/jelly.ts` → `dist/jelly.js` (+ `.d.ts`) with Vite  |
+| `npm run build:site` | Build + docs, then assemble the Pages site into `_site/`       |
+| `npm run dev`        | Rebuild the bundle on every change (`vite build --watch`)      |
+| `npm run serve`      | Serve the static site with the dependency-free dev server      |
+| `npm run typecheck`  | `tsc --noEmit` in strict mode                                  |
+| `npm test`           | Run the real-browser test suite (Vitest + Playwright Chromium) |
+| `npm run docs`       | Regenerate the API docs data from the component sources        |
 
 ## Project structure
 
@@ -96,15 +100,15 @@ src/components/               One directory per component: <name>/index.ts + <na
 
 ## Components
 
-| Area | Components |
-|---|---|
-| Theming | `jelly-theme` |
-| Actions | `jelly-button`, `jelly-icon-button` |
-| Forms | `jelly-input`, `jelly-textarea`, `jelly-select` + `jelly-option`, `jelly-checkbox`, `jelly-radio` + `jelly-radio-group`, `jelly-switch`, `jelly-slider`, `jelly-range`, `jelly-segmented` + `jelly-segment`, `jelly-otp`, `jelly-label` |
-| Feedback | `jelly-alert`, `jelly-badge`, `jelly-progress`, `jelly-spinner`, `jelly-skeleton`, `jellyToast()` + `jelly-toaster` |
-| Surfaces | `jelly-card`, `jelly-chip`, `jelly-kbd`, `jelly-divider`, `jelly-collapsible`, `jelly-accordion` |
-| Navigation | `jelly-tabs` + `jelly-tab-panel`, `jelly-breadcrumbs`, `jelly-pagination`, `jelly-resizable` |
-| Overlays | `jelly-tooltip`, `jelly-popover`, `jelly-menu` + `jelly-menu-item`, `jelly-dialog`, `jelly-drawer` |
+| Area       | Components                                                                                                                                                                                                                              |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Theming    | `jelly-theme`                                                                                                                                                                                                                           |
+| Actions    | `jelly-button`, `jelly-icon-button`                                                                                                                                                                                                     |
+| Forms      | `jelly-input`, `jelly-textarea`, `jelly-select` + `jelly-option`, `jelly-checkbox`, `jelly-radio` + `jelly-radio-group`, `jelly-switch`, `jelly-slider`, `jelly-range`, `jelly-segmented` + `jelly-segment`, `jelly-otp`, `jelly-label` |
+| Feedback   | `jelly-alert`, `jelly-badge`, `jelly-progress`, `jelly-spinner`, `jelly-skeleton`, `jellyToast()` + `jelly-toaster`                                                                                                                     |
+| Surfaces   | `jelly-card`, `jelly-chip`, `jelly-kbd`, `jelly-divider`, `jelly-collapsible`, `jelly-accordion`                                                                                                                                        |
+| Navigation | `jelly-tabs` + `jelly-tab-panel`, `jelly-breadcrumbs`, `jelly-pagination`, `jelly-resizable`                                                                                                                                            |
+| Overlays   | `jelly-tooltip`, `jelly-popover`, `jelly-menu` + `jelly-menu-item`, `jelly-dialog`, `jelly-drawer`                                                                                                                                      |
 
 The full API reference — every attribute, property, event, slot, shadow part,
 CSS custom property and keyboard map — lives on the API reference
@@ -121,11 +125,11 @@ theme:
 
 ```html
 <jelly-theme mode="dark">
-  <jelly-card>Dark-token subtree</jelly-card>
+	<jelly-card>Dark-token subtree</jelly-card>
 </jelly-theme>
 
 <jelly-theme mode="auto" accent="#7C3AED">
-  <jelly-slider></jelly-slider>
+	<jelly-slider></jelly-slider>
 </jelly-theme>
 ```
 
@@ -134,24 +138,26 @@ theme:
 **2. Document-wide mode** — from JavaScript:
 
 ```js
-import { setThemeMode } from './package.js';
+import { setThemeMode } from "./package.js";
 
-setThemeMode('dark');   // 'light' | 'dark' | 'auto'
+setThemeMode("dark"); // 'light' | 'dark' | 'auto'
 ```
 
 **3. Token overrides** — any token, any scope, plain CSS:
 
 ```css
 :root {
-  --jelly-color-background-accent: #7C3AED;
-  --jelly-color-background-azure:  #4F46E5;
+	--jelly-color-background-accent: #7c3aed;
+	--jelly-color-background-azure: #4f46e5;
 }
 ```
 
 Per-instance overrides still work too:
 
 ```html
-<jelly-button style="--jelly-fill: #5A5A5A; --jelly-label: #FFFFFF">Custom</jelly-button>
+<jelly-button style="--jelly-fill: #5A5A5A; --jelly-label: #FFFFFF"
+	>Custom</jelly-button
+>
 ```
 
 ### Variants
@@ -163,17 +169,17 @@ fill (`--jelly-color-background-accent` / `--jelly-color-foreground-on-accent`).
 
 ### Key shared custom properties
 
-| Property | Use |
-|---|---|
-| `--jelly-color-*` | The global token set (surfaces, text, hues, ring, accent) |
-| `--jelly-font-display` / `-text` / `-mono` | The three shared font stacks |
-| `--jelly-fill` | Jelly surface fill of one instance |
-| `--jelly-label` | Text/label color of one instance |
-| `--jelly-accent` | Active tint for slider, select, progress, … |
-| `--jelly-on` | Active tint for checkbox, radio, switch, chip |
-| `--jelly-ring` | Focus ring color for canvas-backed controls |
-| `--jelly-ring-width` / `-gap` | Focus ring thickness and offset |
-| `--jelly-shadow-raised` / `-overlay` | Elevation shadows on cards and overlays |
+| Property                                   | Use                                                       |
+| ------------------------------------------ | --------------------------------------------------------- |
+| `--jelly-color-*`                          | The global token set (surfaces, text, hues, ring, accent) |
+| `--jelly-font-display` / `-text` / `-mono` | The three shared font stacks                              |
+| `--jelly-fill`                             | Jelly surface fill of one instance                        |
+| `--jelly-label`                            | Text/label color of one instance                          |
+| `--jelly-accent`                           | Active tint for slider, select, progress, …               |
+| `--jelly-on`                               | Active tint for checkbox, radio, switch, chip             |
+| `--jelly-ring`                             | Focus ring color for canvas-backed controls               |
+| `--jelly-ring-width` / `-gap`              | Focus ring thickness and offset                           |
+| `--jelly-shadow-raised` / `-overlay`       | Elevation shadows on cards and overlays                   |
 
 Each component also exposes its own `--jelly-<component>-*` knobs (padding,
 radius, fonts…) — see its docs section.
@@ -213,9 +219,9 @@ inputs stay left-to-right by design, like the codes themselves.
 Form controls behave like native ones and emit composed events:
 
 ```js
-const plan = document.querySelector('jelly-select');
+const plan = document.querySelector("jelly-select");
 
-plan.addEventListener('change', () => console.log(plan.value));
+plan.addEventListener("change", () => console.log(plan.value));
 
 const data = new FormData(myForm); // jelly controls are included
 ```

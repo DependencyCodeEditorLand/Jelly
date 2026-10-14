@@ -1,74 +1,104 @@
-import { expect, test } from 'vitest';
+import { expect, test } from "vitest";
 
-import { mount, settle } from '../../testing/index.js';
+import { mount, settle } from "../../testing/index.js";
 
-import './index.js';
-import type { JellyCheckbox } from './index.js';
+import "./index.js";
 
-test('upgrades with a hidden native checkbox', async () => {
-  const host = mount('<jelly-checkbox>Remember me</jelly-checkbox>');
-  const el = host.querySelector('jelly-checkbox') as JellyCheckbox;
+import type { JellyCheckbox } from "./index.js";
 
-  await settle(3);
-  expect(el.shadowRoot!.querySelector('input[type=checkbox]')).toBeInstanceOf(HTMLInputElement);
+test("upgrades with a hidden native checkbox", async () => {
+	const host = mount("<jelly-checkbox>Remember me</jelly-checkbox>");
 
-  host.remove();
+	const el = host.querySelector("jelly-checkbox") as JellyCheckbox;
+
+	await settle(3);
+
+	expect(el.shadowRoot!.querySelector("input[type=checkbox]")).toBeInstanceOf(
+		HTMLInputElement,
+	);
+
+	host.remove();
 });
 
-test('reflects the checked attribute onto the inner input', async () => {
-  const host = mount('<jelly-checkbox checked>x</jelly-checkbox>');
-  const el = host.querySelector('jelly-checkbox') as JellyCheckbox;
+test("reflects the checked attribute onto the inner input", async () => {
+	const host = mount("<jelly-checkbox checked>x</jelly-checkbox>");
 
-  await settle(3);
-  const input = el.shadowRoot!.querySelector('input') as HTMLInputElement;
-  expect(input.checked).toBe(true);
+	const el = host.querySelector("jelly-checkbox") as JellyCheckbox;
 
-  el.checked = false;
-  await settle(2);
-  expect(input.checked).toBe(false);
+	await settle(3);
 
-  host.remove();
+	const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+
+	expect(input.checked).toBe(true);
+
+	el.checked = false;
+
+	await settle(2);
+
+	expect(input.checked).toBe(false);
+
+	host.remove();
 });
 
-test('a user toggle fires change and updates the attribute', async () => {
-  const host = mount('<jelly-checkbox>x</jelly-checkbox>');
-  const el = host.querySelector('jelly-checkbox') as JellyCheckbox;
+test("a user toggle fires change and updates the attribute", async () => {
+	const host = mount("<jelly-checkbox>x</jelly-checkbox>");
 
-  await settle(3);
-  let fired = 0;
-  el.addEventListener('change', () => { fired += 1; });
+	const el = host.querySelector("jelly-checkbox") as JellyCheckbox;
 
-  const input = el.shadowRoot!.querySelector('input') as HTMLInputElement;
-  input.click();
+	await settle(3);
 
-  expect(fired).toBe(1);
-  expect(el.hasAttribute('checked')).toBe(true);
+	let fired = 0;
 
-  host.remove();
+	el.addEventListener("change", () => {
+		fired += 1;
+	});
+
+	const input = el.shadowRoot!.querySelector("input") as HTMLInputElement;
+
+	input.click();
+
+	expect(fired).toBe(1);
+
+	expect(el.hasAttribute("checked")).toBe(true);
+
+	host.remove();
 });
 
-test('checked mint variant paints the accent fill', async () => {
-  const host = mount('<jelly-checkbox checked variant="mint">x</jelly-checkbox>');
-  const el = host.querySelector('jelly-checkbox') as JellyCheckbox;
+test("checked mint variant paints the accent fill", async () => {
+	const host = mount(
+		'<jelly-checkbox checked variant="mint">x</jelly-checkbox>',
+	);
 
-  await settle(12);
-  const canvas = el.shadowRoot!.querySelector('canvas') as HTMLCanvasElement;
-  const pixel = canvas.getContext('2d')!.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+	const el = host.querySelector("jelly-checkbox") as JellyCheckbox;
 
-  // mint = #178746 = rgb(23, 135, 70)
-  expect(Math.abs(pixel[0] - 23)).toBeLessThan(10);
-  expect(Math.abs(pixel[1] - 135)).toBeLessThan(10);
-  expect(Math.abs(pixel[2] - 70)).toBeLessThan(10);
+	await settle(12);
 
-  host.remove();
+	const canvas = el.shadowRoot!.querySelector("canvas") as HTMLCanvasElement;
+
+	const pixel = canvas
+		.getContext("2d")!
+		.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+
+	// mint = #178746 = rgb(23, 135, 70)
+	expect(Math.abs(pixel[0] - 23)).toBeLessThan(10);
+
+	expect(Math.abs(pixel[1] - 135)).toBeLessThan(10);
+
+	expect(Math.abs(pixel[2] - 70)).toBeLessThan(10);
+
+	host.remove();
 });
 
-test('participates in a form when checked', async () => {
-  const host = mount('<form><jelly-checkbox name="agree" checked value="yes">x</jelly-checkbox></form>');
-  await settle(3);
+test("participates in a form when checked", async () => {
+	const host = mount(
+		'<form><jelly-checkbox name="agree" checked value="yes">x</jelly-checkbox></form>',
+	);
 
-  const data = new FormData(host.querySelector('form') as HTMLFormElement);
-  expect(data.get('agree')).toBe('yes');
+	await settle(3);
 
-  host.remove();
+	const data = new FormData(host.querySelector("form") as HTMLFormElement);
+
+	expect(data.get("agree")).toBe("yes");
+
+	host.remove();
 });

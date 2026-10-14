@@ -1,63 +1,72 @@
 :host {
-  display:  block;
-  position: relative;
+	display: block;
+	position: relative;
 
-  --jelly-fill:                var(--jelly-color-background-surface);
-  --jelly-radius:              0;
-  --jelly-card-padding-block:  22px;
-  --jelly-card-padding-inline: 24px;
-  --jelly-card-font-size:      15px;
+	--jelly-fill: var(--jelly-color-background-surface);
+	--jelly-radius: 0;
+	--jelly-card-padding-block: 22px;
+	--jelly-card-padding-inline: 24px;
+	--jelly-card-font-size: 15px;
 
-  color:        var(--jelly-card-color, var(--jelly-color-foreground-default));
-  font-family:  var(--jelly-card-font-family, var(--jelly-font-text));
-  font-size:    var(--jelly-card-font-size, 15px);
-  font-weight:  var(--jelly-card-font-weight, 400);
-  line-height:  var(--jelly-card-line-height, 1.55);
+	color: var(--jelly-card-color, var(--jelly-color-foreground-default));
+	font-family: var(--jelly-card-font-family, var(--jelly-font-text));
+	font-size: var(--jelly-card-font-size, 15px);
+	font-weight: var(--jelly-card-font-weight, 400);
+	line-height: var(--jelly-card-line-height, 1.55);
 }
 
 :host([size="small"]) {
-  --jelly-radius:              0;
-  --jelly-card-padding-block:  16px;
-  --jelly-card-padding-inline: 18px;
-  --jelly-card-font-size:      13.5px;
+	--jelly-radius: 0;
+	--jelly-card-padding-block: 16px;
+	--jelly-card-padding-inline: 18px;
+	--jelly-card-font-size: 13.5px;
 }
 
 :host([size="large"]) {
-  --jelly-radius:              0;
-  --jelly-card-padding-block:  28px;
-  --jelly-card-padding-inline: 30px;
-  --jelly-card-font-size:      16.5px;
+	--jelly-radius: 0;
+	--jelly-card-padding-block: 28px;
+	--jelly-card-padding-inline: 30px;
+	--jelly-card-font-size: 16.5px;
 }
 
 :host([squish]) {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .card {
-  position:       relative;
-  box-sizing:     border-box;
-  padding-block:  var(--jelly-card-padding-block);
-  padding-inline: var(--jelly-card-padding-inline);
-  outline:        none;
-  touch-action:   manipulation;
-  border-radius:  0;
+	position: relative;
+	box-sizing: border-box;
+	padding-block: var(--jelly-card-padding-block);
+	padding-inline: var(--jelly-card-padding-inline);
+	outline: none;
+	touch-action: manipulation;
+	border-radius: 0;
 }
 
 /* The focus ring is painted on the canvas; this ::after is only for
    forced-colors mode, where canvas paint is disregarded */
 .card::after {
-  content:        "";
-  position:       absolute;
-  inset:          -2px;
-  border:         var(--jelly-ring-width) solid transparent;
-  border-radius:  0;
-  pointer-events: none;
+	content: "";
+	position: absolute;
+	inset: -2px;
+	border: var(--jelly-ring-width) solid transparent;
+	border-radius: 0;
+	pointer-events: none;
 }
 
 @media (forced-colors: active) {
-  .card { border: 1px solid CanvasText; border-radius: var(--jelly-radius); }
-  .card:focus-visible::after { border-color: Highlight; }
+	.card {
+		border: 1px solid CanvasText;
+		border-radius: var(--jelly-radius);
+	}
+	.card:focus-visible::after {
+		border-color: Highlight;
+	}
 }
 
-::slotted(:first-child) { margin-top: 0; }
-::slotted(:last-child)  { margin-bottom: 0; }
+::slotted(:first-child) {
+	margin-top: 0;
+}
+::slotted(:last-child) {
+	margin-bottom: 0;
+}

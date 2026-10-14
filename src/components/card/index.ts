@@ -3,16 +3,19 @@
  * soft cushion (and act as a button); it springs when it first appears
  */
 
-import { JellyElement } from '../../element/index.js';
-import type { Shape }   from '../../element/index.js';
-import type { Border }  from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import { emit }          from '../../utilities/index.js';
-import { triggerHaptic } from '../../utilities/index.js';
+import type { Shape } from "../../element/index.js";
 
-import { PALETTE }       from '../../theme/index.js';
+import type { Border } from "../../element/index.js";
 
-import cardStyles        from './card.css?inline';
+import { emit } from "../../utilities/index.js";
+
+import { triggerHaptic } from "../../utilities/index.js";
+
+import { PALETTE } from "../../theme/index.js";
+
+import cardStyles from "./card.css?inline";
 
 /**
  * A soft jelly surface container. With `squish` it presses in like a
@@ -33,190 +36,222 @@ import cardStyles        from './card.css?inline';
  * @cssprop [--jelly-radius=22px] - Corner radius of the painted surface.
  */
 export class JellyCard extends JellyElement {
+	// Populated in onBuilt()
+	card!: HTMLElement;
 
-  // Populated in onBuilt()
-  card!: HTMLElement;
-  pressing = false;
-  squishWired = false;
-  kb = false;
+	pressing = false;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['squish'];
-  }
+	squishWired = false;
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return cardStyles;
-  }
+	kb = false;
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    const squish = this.hasAttribute('squish');
-    const attrs  = squish ? `tabindex="0" role="button"` : '';
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["squish"];
+	}
 
-    return `<div class="card" part="card" ${attrs}><slot></slot></div>`;
-  }
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return cardStyles;
+	}
 
-  // The rounded surface the physics body takes (radius follows the token)
-  override shape (width: number, height: number): Shape {
-    const radius = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-radius')) || 0;
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		const squish = this.hasAttribute("squish");
 
-    return { width, height, radius: Math.min(radius, Math.min(width, height) / 2) };
-  }
+		const attrs = squish ? `tabindex="0" role="button"` : "";
 
-  // A hairline on the jelly surface, resolved through the theme.
-  // Set --jelly-card-border: none on the host to suppress the canvas
-  // border entirely (useful when the card has its own CSS border via
-  // Tailwind or an accent colour on a single side).
-  override surfaceBorder (): Border {
-    const declared = getComputedStyle(this).getPropertyValue('--jelly-card-border').trim();
-    if (declared === 'none' || declared === '0') return null as unknown as Border;
+		return `<div class="card" part="card" ${attrs}><slot></slot></div>`;
+	}
 
-    return {
-      color: this.resolveColor(`var(--jelly-color-border-default, ${PALETTE['border-default']})`),
-      width: 1,
-    };
-  }
+	// The rounded surface the physics body takes (radius follows the token)
+	override shape(width: number, height: number): Shape {
+		const radius =
+			parseFloat(
+				getComputedStyle(this).getPropertyValue("--jelly-radius"),
+			) || 0;
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.card = this.shadowRoot!.querySelector('.card')!;
+		return {
+			width,
+			height,
+			radius: Math.min(radius, Math.min(width, height) / 2),
+		};
+	}
 
-    // Spring in on first appearance
-    if (!this.reducedMotion) {
-      requestAnimationFrame(() => this.centerPop(0.7));
-    }
+	// A hairline on the jelly surface, resolved through the theme.
+	// Set --jelly-card-border: none on the host to suppress the canvas
+	// border entirely (useful when the card has its own CSS border via
+	// Tailwind or an accent colour on a single side).
+	override surfaceBorder(): Border {
+		const declared = getComputedStyle(this)
+			.getPropertyValue("--jelly-card-border")
+			.trim();
 
-    this.syncSquish();
+		if (declared === "none" || declared === "0")
+			return null as unknown as Border;
 
-    // Hover: continuous multi-channel simplex-noise wobble driven by a
-    // dedicated requestAnimationFrame loop - same as jelly-button.
-    // Runs independently of the press hold-state so clicking adds its
-    // own force on top without killing the hover wobble.
-    if (!this.reducedMotion) {
-      const elIndex = [...document.querySelectorAll('jelly-card')].indexOf(this);
+		return {
+			color: this.resolveColor(
+				`var(--jelly-color-border-default, ${PALETTE["border-default"]})`,
+			),
 
-      this.addEventListener('pointerenter', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-        this.startHoverLoop(elIndex);
-      });
+			width: 1,
+		};
+	}
 
-      this.addEventListener('pointermove', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-      });
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.card = this.shadowRoot!.querySelector(".card")!;
 
-      this.addEventListener('pointerleave', () => {
-        this.stopHoverLoop();
-      });
-    }
-  }
+		// Spring in on first appearance
+		if (!this.reducedMotion) {
+			requestAnimationFrame(() => this.centerPop(0.7));
+		}
 
-  /*
-   * Wire (or unwire) button behavior for squish mode. The card is a div
-   * with role="button", so Space/Enter need preventDefault by hand - the
-   * shared wirePress helper is for real buttons and would let Space scroll.
-   */
-  syncSquish (): void {
-    if (!this.card) {
-      return;
-    }
+		this.syncSquish();
 
-    const squish = this.hasAttribute('squish');
+		// Hover: continuous multi-channel simplex-noise wobble driven by a
+		// dedicated requestAnimationFrame loop - same as jelly-button.
+		// Runs independently of the press hold-state so clicking adds its
+		// own force on top without killing the hover wobble.
+		if (!this.reducedMotion) {
+			const elIndex = [
+				...document.querySelectorAll("jelly-card"),
+			].indexOf(this);
 
-    if (squish) {
-      this.card.setAttribute('tabindex', '0');
-      this.card.setAttribute('role', 'button');
-    } else {
-      this.card.removeAttribute('tabindex');
-      this.card.removeAttribute('role');
-      this.pressing = false;
-      this.releaseBody();
-    }
+			this.addEventListener("pointerenter", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
 
-    if (!squish || this.squishWired) {
-      return;
-    }
+				this.startHoverLoop(elIndex);
+			});
 
-    this.squishWired = true;
+			this.addEventListener("pointermove", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
+			});
 
-    this.useHostFocusTarget(this.card);
-    this.trackFocus(this.card);
+			this.addEventListener("pointerleave", () => {
+				this.stopHoverLoop();
+			});
+		}
+	}
 
-    this.card.addEventListener('pointerdown', (event) => {
-      if (!this.hasAttribute('squish')) {
-        return;
-      }
+	/*
+	 * Wire (or unwire) button behavior for squish mode. The card is a div
+	 * with role="button", so Space/Enter need preventDefault by hand - the
+	 * shared wirePress helper is for real buttons and would let Space scroll.
+	 */
+	syncSquish(): void {
+		if (!this.card) {
+			return;
+		}
 
-      try {
-        this.card.setPointerCapture(event.pointerId);
-      } catch {
-        // Capture can fail if the pointer is already gone; the press still works
-      }
+		const squish = this.hasAttribute("squish");
 
-      this.pressing = true;
-      this.pressAt(event.clientX, event.clientY, 1);
-      triggerHaptic();
-    });
+		if (squish) {
+			this.card.setAttribute("tabindex", "0");
 
-    this.card.addEventListener('pointermove', (event) => {
-      if (this.pressing) {
-        this.moveAt(event.clientX, event.clientY);
-      }
-    });
+			this.card.setAttribute("role", "button");
+		} else {
+			this.card.removeAttribute("tabindex");
 
-    const endPress = (): void => {
-      if (this.pressing) {
-        this.pressing = false;
-        this.releaseBody();
-      }
-    };
+			this.card.removeAttribute("role");
 
-    this.card.addEventListener('pointerup', endPress);
-    this.card.addEventListener('pointercancel', endPress);
+			this.pressing = false;
 
-    this.card.addEventListener('keydown', (event) => {
-      if (!this.hasAttribute('squish')) {
-        return;
-      }
+			this.releaseBody();
+		}
 
-      if ((event.key === 'Enter' || event.key === ' ') && !this.kb) {
-        event.preventDefault();
-        this.kb = true;
-        this.centerPulse();
-      }
-    });
+		if (!squish || this.squishWired) {
+			return;
+		}
 
-    // Keyboard activation completes on keyup with a synthetic composed click,
-    // matching how a native button behaves
-    this.card.addEventListener('keyup', () => {
-      if (this.kb) {
-        this.kb = false;
-        this.releaseBody();
-        emit(this, 'click');
-      }
-    });
-  }
+		this.squishWired = true;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (name === 'squish') {
-      this.syncSquish();
-    }
-  }
+		this.useHostFocusTarget(this.card);
 
-  // Route programmatic host focus onto the card surface
-  override focus (options?: FocusOptions): void {
-    this.card?.focus(options);
-  }
+		this.trackFocus(this.card);
 
+		this.card.addEventListener("pointerdown", (event) => {
+			if (!this.hasAttribute("squish")) {
+				return;
+			}
+
+			try {
+				this.card.setPointerCapture(event.pointerId);
+			} catch {
+				// Capture can fail if the pointer is already gone; the press still works
+			}
+
+			this.pressing = true;
+
+			this.pressAt(event.clientX, event.clientY, 1);
+
+			triggerHaptic();
+		});
+
+		this.card.addEventListener("pointermove", (event) => {
+			if (this.pressing) {
+				this.moveAt(event.clientX, event.clientY);
+			}
+		});
+
+		const endPress = (): void => {
+			if (this.pressing) {
+				this.pressing = false;
+
+				this.releaseBody();
+			}
+		};
+
+		this.card.addEventListener("pointerup", endPress);
+
+		this.card.addEventListener("pointercancel", endPress);
+
+		this.card.addEventListener("keydown", (event) => {
+			if (!this.hasAttribute("squish")) {
+				return;
+			}
+
+			if ((event.key === "Enter" || event.key === " ") && !this.kb) {
+				event.preventDefault();
+
+				this.kb = true;
+
+				this.centerPulse();
+			}
+		});
+
+		// Keyboard activation completes on keyup with a synthetic composed click,
+		// matching how a native button behaves
+		this.card.addEventListener("keyup", () => {
+			if (this.kb) {
+				this.kb = false;
+
+				this.releaseBody();
+
+				emit(this, "click");
+			}
+		});
+	}
+
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (name === "squish") {
+			this.syncSquish();
+		}
+	}
+
+	// Route programmatic host focus onto the card surface
+	override focus(options?: FocusOptions): void {
+		this.card?.focus(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-card', JellyCard);
+customElements.define("jelly-card", JellyCard);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-card': JellyCard;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-card": JellyCard;
+	}
 }

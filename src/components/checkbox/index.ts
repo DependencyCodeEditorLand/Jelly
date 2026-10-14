@@ -5,18 +5,23 @@
  * and pops each time it toggles; a dash mark shows the mixed state
  */
 
-import { JellyElement }     from '../../element/index.js';
-import type { Shape }       from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import { canonicalizeSize } from '../../utilities/index.js';
-import { emit }             from '../../utilities/index.js';
-import { triggerHaptic }    from '../../utilities/index.js';
-import { integrateSpring }  from '../../utilities/index.js';
+import type { Shape } from "../../element/index.js";
 
-import { PALETTE }          from '../../theme/index.js';
-import { variantColors }    from '../../theme/index.js';
+import { canonicalizeSize } from "../../utilities/index.js";
 
-import checkboxStyles       from './checkbox.css?inline';
+import { emit } from "../../utilities/index.js";
+
+import { triggerHaptic } from "../../utilities/index.js";
+
+import { integrateSpring } from "../../utilities/index.js";
+
+import { PALETTE } from "../../theme/index.js";
+
+import { variantColors } from "../../theme/index.js";
+
+import checkboxStyles from "./checkbox.css?inline";
 
 /**
  * A squishy checkbox backed by a real form-associated native checkbox.
@@ -44,38 +49,48 @@ import checkboxStyles       from './checkbox.css?inline';
  * @cssprop [--jelly-checkbox-mark] - Check-mark color.
  */
 export class JellyCheckbox extends JellyElement {
+	// Participate in native <form> submission through ElementInternals
+	static formAssociated = true;
 
-  // Participate in native <form> submission through ElementInternals
-  static formAssociated = true;
+	internals: ElementInternals;
 
-  internals: ElementInternals;
+	// Populated in onBuilt()
+	input!: HTMLInputElement;
 
-  // Populated in onBuilt()
-  input!: HTMLInputElement;
+	// Uniform scale spring driven by frame(): the box pops, never wiggles
+	scale = 1;
 
-  // Uniform scale spring driven by frame(): the box pops, never wiggles
-  scale = 1;
-  scaleVelocity = 0;
+	scaleVelocity = 0;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['checked', 'disabled', 'indeterminate', 'label', 'size', 'value'];
-  }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return [
+			"checked",
+			"disabled",
+			"indeterminate",
+			"label",
+			"size",
+			"value",
+		];
+	}
 
-  constructor () {
-    super();
+	constructor() {
+		super();
 
-    this.internals = this.attachInternals();
-  }
+		this.internals = this.attachInternals();
+	}
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return checkboxStyles + variantColors({ color: '--jelly-on', on: '--jelly-checkbox-mark' });
-  }
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return (
+			checkboxStyles +
+			variantColors({ color: "--jelly-on", on: "--jelly-checkbox-mark" })
+		);
+	}
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    return `
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		return `
       <label class="wrap" part="wrap">
         <input type="checkbox" part="input" />
         <span class="box" data-jelly-box aria-hidden="true">
@@ -84,187 +99,227 @@ export class JellyCheckbox extends JellyElement {
         </span>
         <span class="label"><slot></slot></span>
       </label>`;
-  }
+	}
 
-  // The square the physics body takes - the box region, not the label
-  override shape (width: number, height: number): Shape {
-    const size = Math.min(width, height);
+	// The square the physics body takes - the box region, not the label
+	override shape(width: number, height: number): Shape {
+		const size = Math.min(width, height);
 
-    return { width: size, height: size, radius: size * 0.32 };
-  }
+		return { width: size, height: size, radius: size * 0.32 };
+	}
 
-  // Resolve the box fill for the current state through the live theme tokens
-  override fill (): string {
-    return this.checked || this.indeterminate
-      ? this.resolveColor(`var(--jelly-on, ${PALETTE['background-accent']})`)
-      : this.resolveColor(`var(--jelly-fill, ${PALETTE['background-neutral']})`);
-  }
+	// Resolve the box fill for the current state through the live theme tokens
+	override fill(): string {
+		return this.checked || this.indeterminate
+			? this.resolveColor(
+					`var(--jelly-on, ${PALETTE["background-accent"]})`,
+				)
+			: this.resolveColor(
+					`var(--jelly-fill, ${PALETTE["background-neutral"]})`,
+				);
+	}
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.input = this.shadowRoot!.querySelector('input')!;
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.input = this.shadowRoot!.querySelector("input")!;
 
-    this.sync('checked');
-    this.sync('indeterminate');
-    this.sync('disabled');
-    this.sync('label');
+		this.sync("checked");
 
-    this.useHostFocusTarget(this.input);
-    this.trackFocus(this.input);
+		this.sync("indeterminate");
 
-    this.input.addEventListener('change', () => {
-      // A user toggle resolves a mixed state - indeterminate always clears
-      this.indeterminate = false;
+		this.sync("disabled");
 
-      this.toggleAttribute('checked', this.input.checked);
-      this.syncFormValue();
+		this.sync("label");
 
-      // Clean expand on check, collapse on uncheck - no membrane wiggle
-      this.pop(this.input.checked ? 4 : -3);
-      triggerHaptic();
+		this.useHostFocusTarget(this.input);
 
-      emit(this, 'change');
-    });
+		this.trackFocus(this.input);
 
-    // Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
-    if (!this.reducedMotion) {
-      const elIndex = [...document.querySelectorAll('jelly-checkbox')].indexOf(this);
+		this.input.addEventListener("change", () => {
+			// A user toggle resolves a mixed state - indeterminate always clears
+			this.indeterminate = false;
 
-      this.addEventListener('pointerenter', (event: PointerEvent) => {
-        if (this.hasAttribute('disabled')) return;
-        this.updateHoverPointer(event.clientX, event.clientY);
-        this.startHoverLoop(elIndex);
-      });
+			this.toggleAttribute("checked", this.input.checked);
 
-      this.addEventListener('pointermove', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-      });
+			this.syncFormValue();
 
-      this.addEventListener('pointerleave', () => {
-        this.stopHoverLoop();
-      });
-    }
-  }
+			// Clean expand on check, collapse on uncheck - no membrane wiggle
+			this.pop(this.input.checked ? 4 : -3);
 
-  // Kick the scale spring: +v expands (check), -v collapses (uncheck)
-  pop (v: number): void {
-    if (this.reducedMotion) {
-      return;
-    }
+			triggerHaptic();
 
-    this.scaleVelocity += v;
-    this.requestFrame();
-  }
+			emit(this, "change");
+		});
 
-  // One animation step: advance the scale spring and repaint. True keeps animating.
-  override frame (dt: number): boolean {
-    const body = this.body;
+		// Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
+		if (!this.reducedMotion) {
+			const elIndex = [
+				...document.querySelectorAll("jelly-checkbox"),
+			].indexOf(this);
 
-    if (!body) {
-      return false;
-    }
+			this.addEventListener("pointerenter", (event: PointerEvent) => {
+				if (this.hasAttribute("disabled")) return;
 
-    // One uniform scale spring - the box expands / collapses, never wiggles
-    [this.scale, this.scaleVelocity] = integrateSpring(this.scale, this.scaleVelocity, 1, 260, 17, dt);
+				this.updateHoverPointer(event.clientX, event.clientY);
 
-    this.clearCanvas();
-    this.paintBody(body, { fill: this.fill(), scaleX: this.scale, scaleY: this.scale, ring: this.focusRing() });
+				this.startHoverLoop(elIndex);
+			});
 
-    return Math.abs(1 - this.scale) > 0.0015 || Math.abs(this.scaleVelocity) > 0.0015;
-  }
+			this.addEventListener("pointermove", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
+			});
 
-  // Report the submitted value: `value` when checked, nothing otherwise
-  syncFormValue (): void {
-    this.internals.setFormValue(this.input.checked ? this.value : null);
-  }
+			this.addEventListener("pointerleave", () => {
+				this.stopHoverLoop();
+			});
+		}
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (this.input) {
-      this.sync(name);
-    }
-  }
+	// Kick the scale spring: +v expands (check), -v collapses (uncheck)
+	pop(v: number): void {
+		if (this.reducedMotion) {
+			return;
+		}
 
-  // Push one observed attribute into the hidden native input
-  sync (name: string): void {
-    switch (name) {
-      case 'checked':
-        this.input.checked = this.checked;
-        this.syncFormValue();
-        this.requestFrame();
-        break;
+		this.scaleVelocity += v;
 
-      case 'indeterminate':
-        // The native input reports aria-checked="mixed" while indeterminate
-        this.input.indeterminate = this.indeterminate;
-        this.requestFrame();
-        break;
+		this.requestFrame();
+	}
 
-      case 'value':
-        this.syncFormValue();
-        break;
+	// One animation step: advance the scale spring and repaint. True keeps animating.
+	override frame(dt: number): boolean {
+		const body = this.body;
 
-      case 'disabled':
-        this.input.disabled = this.hasAttribute('disabled');
-        this.syncHostFocusTarget();
-        break;
+		if (!body) {
+			return false;
+		}
 
-      case 'size':
-        canonicalizeSize(this);
-        break;
+		// One uniform scale spring - the box expands / collapses, never wiggles
+		[this.scale, this.scaleVelocity] = integrateSpring(
+			this.scale,
+			this.scaleVelocity,
+			1,
+			260,
+			17,
+			dt,
+		);
 
-      case 'label': {
-        const label = this.getAttribute('label');
+		this.clearCanvas();
 
-        if (label) {
-          this.input.setAttribute('aria-label', label);
-        } else {
-          this.input.removeAttribute('aria-label');
-        }
-        break;
-      }
-    }
-  }
+		this.paintBody(body, {
+			fill: this.fill(),
+			scaleX: this.scale,
+			scaleY: this.scale,
+			ring: this.focusRing(),
+		});
 
-  // Whether the checkbox is currently checked (reflects the attribute)
-  get checked (): boolean {
-    return this.hasAttribute('checked');
-  }
+		return (
+			Math.abs(1 - this.scale) > 0.0015 ||
+			Math.abs(this.scaleVelocity) > 0.0015
+		);
+	}
 
-  set checked (value: boolean) {
-    this.toggleAttribute('checked', Boolean(value));
-  }
+	// Report the submitted value: `value` when checked, nothing otherwise
+	syncFormValue(): void {
+		this.internals.setFormValue(this.input.checked ? this.value : null);
+	}
 
-  // Mixed state: shows a dash and reports aria-checked="mixed"; cleared by a user toggle
-  get indeterminate (): boolean {
-    return this.hasAttribute('indeterminate');
-  }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (this.input) {
+			this.sync(name);
+		}
+	}
 
-  set indeterminate (value: boolean) {
-    this.toggleAttribute('indeterminate', Boolean(value));
-  }
+	// Push one observed attribute into the hidden native input
+	sync(name: string): void {
+		switch (name) {
+			case "checked":
+				this.input.checked = this.checked;
 
-  // The form value submitted while checked (defaults to "on", like native)
-  get value (): string {
-    return this.getAttribute('value') || 'on';
-  }
+				this.syncFormValue();
 
-  set value (value: string) {
-    this.setAttribute('value', String(value));
-  }
+				this.requestFrame();
 
-  // Route programmatic host focus into the hidden native input
-  override focus (options?: FocusOptions): void {
-    this.input?.focus(options);
-  }
+				break;
 
+			case "indeterminate":
+				// The native input reports aria-checked="mixed" while indeterminate
+				this.input.indeterminate = this.indeterminate;
+
+				this.requestFrame();
+
+				break;
+
+			case "value":
+				this.syncFormValue();
+
+				break;
+
+			case "disabled":
+				this.input.disabled = this.hasAttribute("disabled");
+
+				this.syncHostFocusTarget();
+
+				break;
+
+			case "size":
+				canonicalizeSize(this);
+
+				break;
+
+			case "label": {
+				const label = this.getAttribute("label");
+
+				if (label) {
+					this.input.setAttribute("aria-label", label);
+				} else {
+					this.input.removeAttribute("aria-label");
+				}
+
+				break;
+			}
+		}
+	}
+
+	// Whether the checkbox is currently checked (reflects the attribute)
+	get checked(): boolean {
+		return this.hasAttribute("checked");
+	}
+
+	set checked(value: boolean) {
+		this.toggleAttribute("checked", Boolean(value));
+	}
+
+	// Mixed state: shows a dash and reports aria-checked="mixed"; cleared by a user toggle
+	get indeterminate(): boolean {
+		return this.hasAttribute("indeterminate");
+	}
+
+	set indeterminate(value: boolean) {
+		this.toggleAttribute("indeterminate", Boolean(value));
+	}
+
+	// The form value submitted while checked (defaults to "on", like native)
+	get value(): string {
+		return this.getAttribute("value") || "on";
+	}
+
+	set value(value: string) {
+		this.setAttribute("value", String(value));
+	}
+
+	// Route programmatic host focus into the hidden native input
+	override focus(options?: FocusOptions): void {
+		this.input?.focus(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-checkbox', JellyCheckbox);
+customElements.define("jelly-checkbox", JellyCheckbox);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-checkbox': JellyCheckbox;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-checkbox": JellyCheckbox;
+	}
 }

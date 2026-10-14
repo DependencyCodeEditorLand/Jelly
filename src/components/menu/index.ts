@@ -11,18 +11,23 @@
  *   </jelly-menu>
  */
 
-import { placeAnchored }     from '../../anchor/index.js';
-import { trackAnchor }       from '../../anchor/index.js';
-import { springIn }          from '../../anchor/index.js';
-import { springOut }         from '../../anchor/index.js';
-import type { Placement }    from '../../anchor/index.js';
+import { placeAnchored } from "../../anchor/index.js";
 
-import { emit }              from '../../utilities/index.js';
-import { canonicalizeSize }  from '../../utilities/index.js';
+import { trackAnchor } from "../../anchor/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { springIn } from "../../anchor/index.js";
 
-import menuStyles            from './menu.css?inline';
+import { springOut } from "../../anchor/index.js";
+
+import type { Placement } from "../../anchor/index.js";
+
+import { emit } from "../../utilities/index.js";
+
+import { canonicalizeSize } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import menuStyles from "./menu.css?inline";
 
 /**
  * One declarative menu entry (value, disabled, danger). Rendered by the parent.
@@ -36,17 +41,15 @@ import menuStyles            from './menu.css?inline';
  * @attr {boolean} danger - Style the item as a destructive action.
  */
 export class JellyMenuItem extends HTMLElement {
+	// The value reported in the select event (falls back to the text)
+	get value(): string {
+		return this.getAttribute("value") ?? (this.textContent ?? "").trim();
+	}
 
-  // The value reported in the select event (falls back to the text)
-  get value (): string {
-    return this.getAttribute('value') ?? (this.textContent ?? '').trim();
-  }
-
-  // True when this item cannot be picked
-  get disabled (): boolean {
-    return this.hasAttribute('disabled');
-  }
-
+	// True when this item cannot be picked
+	get disabled(): boolean {
+		return this.hasAttribute("disabled");
+	}
 }
 
 /**
@@ -67,44 +70,47 @@ export class JellyMenuItem extends HTMLElement {
  * @csspart menu - The floating menu surface.
  */
 export class JellyMenu extends HTMLElement {
+	built = false;
 
-  built = false;
-  isOpen = false;
-  active = 0;
+	isOpen = false;
 
-  // Populated in connectedCallback() / open()
-  menu!: HTMLElement;
-  items: JellyMenuItem[] = [];
+	active = 0;
 
-  untrack: (() => void) | null = null;
+	// Populated in connectedCallback() / open()
+	menu!: HTMLElement;
 
-  // Document-level dismissal, attached only while open
-  onDocumentPointer = (event: PointerEvent): void => {
-    if (this.isOpen && !event.composedPath().includes(this)) {
-      this.close();
-    }
-  };
+	items: JellyMenuItem[] = [];
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['placement', 'size'];
-  }
+	untrack: (() => void) | null = null;
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+	// Document-level dismissal, attached only while open
+	onDocumentPointer = (event: PointerEvent): void => {
+		if (this.isOpen && !event.composedPath().includes(this)) {
+			this.close();
+		}
+	};
 
-    if (this.built) {
-      return;
-    }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["placement", "size"];
+	}
 
-    this.built = true;
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open', delegatesFocus: true });
+		canonicalizeSize(this);
 
-    this.shadowRoot!.innerHTML = `
+		if (this.built) {
+			return;
+		}
+
+		this.built = true;
+
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open", delegatesFocus: true });
+
+		this.shadowRoot!.innerHTML = `
       <style>${menuStyles}</style>
 
       <slot name="trigger"></slot>
@@ -114,260 +120,317 @@ export class JellyMenu extends HTMLElement {
       <div class="menu" part="menu" role="menu"></div>
     `;
 
-    this.menu = this.shadowRoot!.querySelector('.menu')!;
+		this.menu = this.shadowRoot!.querySelector(".menu")!;
 
-    const triggerSlot = this.shadowRoot!.querySelector('slot[name="trigger"]')!;
+		const triggerSlot = this.shadowRoot!.querySelector(
+			'slot[name="trigger"]',
+		)!;
 
-    triggerSlot.addEventListener('click', () => this.toggle());
-    // Keep the trigger's menu-button ARIA correct as it (re)assigns
-    triggerSlot.addEventListener('slotchange', () => this.reflectTrigger());
-    this.reflectTrigger();
+		triggerSlot.addEventListener("click", () => this.toggle());
 
-    this.menu.addEventListener('click', (event) => this.pick(this.rowFrom(event)));
-    this.menu.addEventListener('pointermove', (event) => this.highlight(this.rowFrom(event)));
-    this.menu.addEventListener('keydown', (event) => this.onKey(event as KeyboardEvent));
-  }
+		// Keep the trigger's menu-button ARIA correct as it (re)assigns
+		triggerSlot.addEventListener("slotchange", () => this.reflectTrigger());
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  disconnectedCallback (): void {
-    if (this.isOpen) {
-      this.isOpen = false;
-      this.untrack?.();
-      this.untrack = null;
+		this.reflectTrigger();
 
-      document.removeEventListener('pointerdown', this.onDocumentPointer, true);
+		this.menu.addEventListener("click", (event) =>
+			this.pick(this.rowFrom(event)),
+		);
 
-      this.menu?.removeAttribute('data-open');
-    }
-  }
+		this.menu.addEventListener("pointermove", (event) =>
+			this.highlight(this.rowFrom(event)),
+		);
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (name === 'size') {
-      canonicalizeSize(this);
-    }
+		this.menu.addEventListener("keydown", (event) =>
+			this.onKey(event as KeyboardEvent),
+		);
+	}
 
-    if (this.isOpen) {
-      this.place();
-    }
-  }
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	disconnectedCallback(): void {
+		if (this.isOpen) {
+			this.isOpen = false;
 
-  // The nearest rendered row for an event target, or null
-  rowFrom (event: Event): HTMLElement | null {
-    return (event.target as HTMLElement).closest('.item');
-  }
+			this.untrack?.();
 
-  // The current trigger, resolved live from the slot
-  get trigger (): HTMLElement {
-    const slot = this.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
+			this.untrack = null;
 
-    return (slot?.assignedElements()[0] as HTMLElement | undefined) || this;
-  }
+			document.removeEventListener(
+				"pointerdown",
+				this.onDocumentPointer,
+				true,
+			);
 
-  // Mark the trigger as a menu button and mirror the open state onto it, so
-  // screen readers announce that it opens a menu and whether it is expanded
-  reflectTrigger (): void {
-    const trigger = this.trigger;
+			this.menu?.removeAttribute("data-open");
+		}
+	}
 
-    if (!trigger || trigger === this) {
-      return;
-    }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (name === "size") {
+			canonicalizeSize(this);
+		}
 
-    trigger.setAttribute('aria-haspopup', 'menu');
-    trigger.setAttribute('aria-expanded', this.isOpen ? 'true' : 'false');
-  }
+		if (this.isOpen) {
+			this.place();
+		}
+	}
 
-  // The rendered rows currently in the menu
-  rows (): HTMLElement[] {
-    return [...this.menu.querySelectorAll<HTMLElement>('.item')];
-  }
+	// The nearest rendered row for an event target, or null
+	rowFrom(event: Event): HTMLElement | null {
+		return (event.target as HTMLElement).closest(".item");
+	}
 
-  // Flip between open and closed
-  toggle (): void {
-    if (this.isOpen) {
-      this.close();
-    } else {
-      this.open();
-    }
-  }
+	// The current trigger, resolved live from the slot
+	get trigger(): HTMLElement {
+		const slot = this.shadowRoot?.querySelector(
+			'slot[name="trigger"]',
+		) as HTMLSlotElement | null;
 
-  /*
-   * Open the menu: re-read the live light-DOM items (so dynamically added
-   * entries always appear), render them as focusable rows, anchor to the
-   * trigger and move focus to the first enabled row.
-   */
-  open (): void {
-    if (this.isOpen) {
-      return;
-    }
+		return (slot?.assignedElements()[0] as HTMLElement | undefined) || this;
+	}
 
-    this.isOpen = true;
-    this.reflectTrigger();
-    this.items = [...this.querySelectorAll('jelly-menu-item')];
+	// Mark the trigger as a menu button and mirror the open state onto it, so
+	// screen readers announce that it opens a menu and whether it is expanded
+	reflectTrigger(): void {
+		const trigger = this.trigger;
 
-    this.menu.innerHTML = this.items
-      .map((item, i) => `<div class="item" role="menuitem" tabindex="-1" data-i="${i}"
-        ${item.disabled ? 'aria-disabled="true"' : ''} ${item.hasAttribute('danger') ? 'data-danger' : ''}>${item.innerHTML}</div>`)
-      .join('');
+		if (!trigger || trigger === this) {
+			return;
+		}
 
-    this.menu.setAttribute('data-open', '');
+		trigger.setAttribute("aria-haspopup", "menu");
 
-    this.place();
-    springIn(this.menu, 'top center');
+		trigger.setAttribute("aria-expanded", this.isOpen ? "true" : "false");
+	}
 
-    document.addEventListener('pointerdown', this.onDocumentPointer, true);
+	// The rendered rows currently in the menu
+	rows(): HTMLElement[] {
+		return [...this.menu.querySelectorAll<HTMLElement>(".item")];
+	}
 
-    const rows  = this.rows();
-    const first = rows.findIndex((row) => row.getAttribute('aria-disabled') !== 'true');
+	// Flip between open and closed
+	toggle(): void {
+		if (this.isOpen) {
+			this.close();
+		} else {
+			this.open();
+		}
+	}
 
-    this.active = Math.max(0, first);
+	/*
+	 * Open the menu: re-read the live light-DOM items (so dynamically added
+	 * entries always appear), render them as focusable rows, anchor to the
+	 * trigger and move focus to the first enabled row.
+	 */
+	open(): void {
+		if (this.isOpen) {
+			return;
+		}
 
-    rows[this.active]?.focus({ preventScroll: true });
+		this.isOpen = true;
 
-    emit(this, 'open');
-  }
+		this.reflectTrigger();
 
-  // Anchor the menu to the trigger and keep it pinned on scroll
-  place (): void {
-    if (!this.menu) {
-      return;
-    }
+		this.items = [...this.querySelectorAll("jelly-menu-item")];
 
-    const anchor    = this.trigger;
-    const placement = (this.getAttribute('placement') as Placement | null) || 'bottom';
+		this.menu.innerHTML = this.items
+			.map(
+				(
+					item,
+					i,
+				) => `<div class="item" role="menuitem" tabindex="-1" data-i="${i}"
+        ${item.disabled ? 'aria-disabled="true"' : ""} ${item.hasAttribute("danger") ? "data-danger" : ""}>${item.innerHTML}</div>`,
+			)
+			.join("");
 
-    placeAnchored(anchor, this.menu, placement, 8);
+		this.menu.setAttribute("data-open", "");
 
-    this.untrack?.();
-    // Close on scroll-out WITHOUT returning focus - focusing the trigger would
-    // scroll it back into view and undo the very dismissal we just triggered.
-    this.untrack = trackAnchor(anchor, this.menu, placement, 8, () => this.close({ returnFocus: false }));
-  }
+		this.place();
 
-  // Close the menu. Hands focus back to the trigger for a user-driven close
-  // (Escape, click-outside, selection); scroll-out closes pass returnFocus:
-  // false so the page doesn't jump back to the now-off-screen trigger.
-  close ({ returnFocus = true }: { returnFocus?: boolean } = {}): void {
-    if (!this.isOpen) {
-      return;
-    }
+		springIn(this.menu, "top center");
 
-    this.isOpen = false;
-    this.reflectTrigger();
+		document.addEventListener("pointerdown", this.onDocumentPointer, true);
 
-    this.untrack?.();
-    this.untrack = null;
+		const rows = this.rows();
 
-    document.removeEventListener('pointerdown', this.onDocumentPointer, true);
+		const first = rows.findIndex(
+			(row) => row.getAttribute("aria-disabled") !== "true",
+		);
 
-    springOut(this.menu, () => this.menu.removeAttribute('data-open'));
+		this.active = Math.max(0, first);
 
-    if (returnFocus) {
-      this.trigger?.focus?.();
-    }
+		rows[this.active]?.focus({ preventScroll: true });
 
-    emit(this, 'close');
-  }
+		emit(this, "open");
+	}
 
-  // Pointer hover mirrors the roving focus onto the hovered row
-  highlight (row: HTMLElement | null): void {
-    if (!row || row.getAttribute('aria-disabled') === 'true') {
-      return;
-    }
+	// Anchor the menu to the trigger and keep it pinned on scroll
+	place(): void {
+		if (!this.menu) {
+			return;
+		}
 
-    this.active = Number(row.dataset.i);
+		const anchor = this.trigger;
 
-    row.focus({ preventScroll: true });
-  }
+		const placement =
+			(this.getAttribute("placement") as Placement | null) || "bottom";
 
-  // Pick a row: announce the selection and close
-  pick (row: HTMLElement | null): void {
-    if (!row || row.getAttribute('aria-disabled') === 'true') {
-      return;
-    }
+		placeAnchored(anchor, this.menu, placement, 8);
 
-    const item = this.items[Number(row.dataset.i)];
+		this.untrack?.();
 
-    emit(this, 'select', { value: item.value, item });
+		// Close on scroll-out WITHOUT returning focus - focusing the trigger would
+		// scroll it back into view and undo the very dismissal we just triggered.
+		this.untrack = trackAnchor(anchor, this.menu, placement, 8, () =>
+			this.close({ returnFocus: false }),
+		);
+	}
 
-    this.close();
-  }
+	// Close the menu. Hands focus back to the trigger for a user-driven close
+	// (Escape, click-outside, selection); scroll-out closes pass returnFocus:
+	// false so the page doesn't jump back to the now-off-screen trigger.
+	close({ returnFocus = true }: { returnFocus?: boolean } = {}): void {
+		if (!this.isOpen) {
+			return;
+		}
 
-  // Menu keyboard: arrows rove, Home/End jump, Enter/Space picks, Escape/Tab close
-  onKey (event: KeyboardEvent): void {
-    const rows = this.rows();
+		this.isOpen = false;
 
-    switch (event.key) {
-      case 'Escape':
-        event.preventDefault();
-        this.close();
-        break;
+		this.reflectTrigger();
 
-      case 'Tab':
-        this.close();
-        break;
+		this.untrack?.();
 
-      case 'ArrowDown':
-        event.preventDefault();
-        this.step(1);
-        break;
+		this.untrack = null;
 
-      case 'ArrowUp':
-        event.preventDefault();
-        this.step(-1);
-        break;
+		document.removeEventListener(
+			"pointerdown",
+			this.onDocumentPointer,
+			true,
+		);
 
-      case 'Home':
-        event.preventDefault();
-        this.step(1, -1);
-        break;
+		springOut(this.menu, () => this.menu.removeAttribute("data-open"));
 
-      case 'End':
-        event.preventDefault();
-        this.step(-1, rows.length);
-        break;
+		if (returnFocus) {
+			this.trigger?.focus?.();
+		}
 
-      case 'Enter':
-      case ' ':
-        event.preventDefault();
-        this.pick(rows[this.active]);
-        break;
-    }
-  }
+		emit(this, "close");
+	}
 
-  // Move the roving focus by delta (skipping disabled rows), wrapping around
-  step (delta: number, from = this.active): void {
-    const rows = this.rows();
+	// Pointer hover mirrors the roving focus onto the hovered row
+	highlight(row: HTMLElement | null): void {
+		if (!row || row.getAttribute("aria-disabled") === "true") {
+			return;
+		}
 
-    let i = from;
+		this.active = Number(row.dataset.i);
 
-    for (let s = 0; s < rows.length; s++) {
-      i = (i + delta + rows.length) % rows.length;
+		row.focus({ preventScroll: true });
+	}
 
-      if (rows[i].getAttribute('aria-disabled') !== 'true') {
-        break;
-      }
-    }
+	// Pick a row: announce the selection and close
+	pick(row: HTMLElement | null): void {
+		if (!row || row.getAttribute("aria-disabled") === "true") {
+			return;
+		}
 
-    this.active = i;
+		const item = this.items[Number(row.dataset.i)];
 
-    rows[i]?.focus({ preventScroll: true });
-  }
+		emit(this, "select", { value: item.value, item });
 
-  // Route programmatic host focus onto the trigger
-  override focus (options?: FocusOptions): void {
-    this.trigger?.focus?.(options);
-  }
+		this.close();
+	}
 
+	// Menu keyboard: arrows rove, Home/End jump, Enter/Space picks, Escape/Tab close
+	onKey(event: KeyboardEvent): void {
+		const rows = this.rows();
+
+		switch (event.key) {
+			case "Escape":
+				event.preventDefault();
+
+				this.close();
+
+				break;
+
+			case "Tab":
+				this.close();
+
+				break;
+
+			case "ArrowDown":
+				event.preventDefault();
+
+				this.step(1);
+
+				break;
+
+			case "ArrowUp":
+				event.preventDefault();
+
+				this.step(-1);
+
+				break;
+
+			case "Home":
+				event.preventDefault();
+
+				this.step(1, -1);
+
+				break;
+
+			case "End":
+				event.preventDefault();
+
+				this.step(-1, rows.length);
+
+				break;
+
+			case "Enter":
+			case " ":
+				event.preventDefault();
+
+				this.pick(rows[this.active]);
+
+				break;
+		}
+	}
+
+	// Move the roving focus by delta (skipping disabled rows), wrapping around
+	step(delta: number, from = this.active): void {
+		const rows = this.rows();
+
+		let i = from;
+
+		for (let s = 0; s < rows.length; s++) {
+			i = (i + delta + rows.length) % rows.length;
+
+			if (rows[i].getAttribute("aria-disabled") !== "true") {
+				break;
+			}
+		}
+
+		this.active = i;
+
+		rows[i]?.focus({ preventScroll: true });
+	}
+
+	// Route programmatic host focus onto the trigger
+	override focus(options?: FocusOptions): void {
+		this.trigger?.focus?.(options);
+	}
 }
 
 // Register the custom elements
-customElements.define('jelly-menu-item', JellyMenuItem);
-customElements.define('jelly-menu', JellyMenu);
+customElements.define("jelly-menu-item", JellyMenuItem);
+
+customElements.define("jelly-menu", JellyMenu);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-menu-item': JellyMenuItem;
-    'jelly-menu': JellyMenu;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-menu-item": JellyMenuItem;
+
+		"jelly-menu": JellyMenu;
+	}
 }

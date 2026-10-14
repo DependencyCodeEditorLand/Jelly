@@ -21,65 +21,80 @@
  *   node scripts/build-site.mjs      (or: npm run build:site)
  */
 
-import { execSync }  from 'node:child_process';
-import { rmSync }    from 'node:fs';
-import { mkdirSync } from 'node:fs';
-import { cpSync }    from 'node:fs';
-import { copyFileSync } from 'node:fs';
-import { existsSync } from 'node:fs';
+import { execSync } from "node:child_process";
+import { rmSync } from "node:fs";
+import { mkdirSync } from "node:fs";
+import { cpSync } from "node:fs";
+import { copyFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
-import { fileURLToPath } from 'node:url';
-import { dirname }       from 'node:path';
-import { resolve }       from 'node:path';
-import { join }          from 'node:path';
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import { resolve } from "node:path";
+import { join } from "node:path";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const site = join(root, '_site');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const site = join(root, "_site");
 
-const run = (command) => execSync(command, { cwd: root, stdio: 'inherit' });
+const run = (command) => execSync(command, { cwd: root, stdio: "inherit" });
 
 // 1. Build the library bundle (dist/jelly.js) and regenerate the docs data
 //    (custom-elements.json + docs/content/data.js) from the component sources.
-run('npm run build');
-run('npm run docs');
+run("npm run build");
+run("npm run docs");
 
 // 2. Start from a clean output directory
 rmSync(site, { recursive: true, force: true });
 mkdirSync(site, { recursive: true });
 
 // 3. The library bundle + the hosted public entry point
-cpSync(join(root, 'dist'), join(site, 'dist'), { recursive: true });
-copyFileSync(join(root, 'package.js'), join(site, 'package.js'));
+cpSync(join(root, "dist"), join(site, "dist"), { recursive: true });
+copyFileSync(join(root, "package.js"), join(site, "package.js"));
 
 // 4. The runtime docs assets. Skip the build-time-only content source and the
 //    two page sources (they are placed at their public URLs in step 5).
 const skip = new Set([
-  join(root, 'docs', 'README.md'),
-  join(root, 'docs', 'content', 'content.js'),
-  join(root, 'docs', 'showcase', 'index.html'),
-  join(root, 'docs', 'api', 'index.html'),
+	join(root, "docs", "README.md"),
+	join(root, "docs", "content", "content.js"),
+	join(root, "docs", "showcase", "index.html"),
+	join(root, "docs", "api", "index.html"),
 ]);
 
-cpSync(join(root, 'docs'), join(site, 'docs'), {
-  recursive: true,
-  filter: (src) => !skip.has(src),
+cpSync(join(root, "docs"), join(site, "docs"), {
+	recursive: true,
+	filter: (src) => !skip.has(src),
 });
 
 // 5. The two pages at their public URLs: showcase -> /, api -> /api/
-copyFileSync(join(root, 'docs', 'showcase', 'index.html'), join(site, 'index.html'));
-mkdirSync(join(site, 'api'), { recursive: true });
-copyFileSync(join(root, 'docs', 'api', 'index.html'), join(site, 'api', 'index.html'));
+copyFileSync(
+	join(root, "docs", "showcase", "index.html"),
+	join(site, "index.html"),
+);
+mkdirSync(join(site, "api"), { recursive: true });
+copyFileSync(
+	join(root, "docs", "api", "index.html"),
+	join(site, "api", "index.html"),
+);
 
 // 6. The Lottie player, sourced from the lottie-web dependency (never vendored)
 copyFileSync(
-  join(root, 'node_modules', 'lottie-web', 'build', 'player', 'lottie_light.min.js'),
-  join(site, 'docs', 'lottie', 'lottie_light.min.js'),
+	join(
+		root,
+		"node_modules",
+		"lottie-web",
+		"build",
+		"player",
+		"lottie_light.min.js",
+	),
+	join(site, "docs", "lottie", "lottie_light.min.js"),
 );
 
 // 7. The custom-domain marker (jelly-ui.com), if present, so GitHub Pages keeps
 //    serving the site on the custom domain across deploys.
-if (existsSync(join(root, 'CNAME'))) {
-  copyFileSync(join(root, 'CNAME'), join(site, 'CNAME'));
+if (existsSync(join(root, "CNAME"))) {
+	copyFileSync(join(root, "CNAME"), join(site, "CNAME"));
 }
 
-console.log('✓ Built _site/ — index.html, api/, dist/, package.js, docs/, lottie player');
+console.log(
+	"✓ Built _site/ — index.html, api/, dist/, package.js, docs/, lottie player",
+);

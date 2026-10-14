@@ -4,6 +4,8 @@
  * This barrel re-exports the public surface.
  */
 
-export * from './config.js';
-export * from './body.js';
-export * from './engine.js';
+export * from "./config.js";
+
+export * from "./body.js";
+
+export * from "./engine.js";

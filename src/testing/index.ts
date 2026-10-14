@@ -10,19 +10,23 @@
  */
 
 // Mount an HTML fragment into the document; callers remove the host when done
-export function mount (html: string): HTMLDivElement {
-  const host = document.createElement('div');
-  host.innerHTML = html;
-  document.body.appendChild(host);
-  return host;
+export function mount(html: string): HTMLDivElement {
+	const host = document.createElement("div");
+
+	host.innerHTML = html;
+
+	document.body.appendChild(host);
+
+	return host;
 }
 
 // One animation frame
-export const raf = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => resolve()));
+export const raf = (): Promise<void> =>
+	new Promise((resolve) => requestAnimationFrame(() => resolve()));
 
 // Wait a handful of frames so springs / paints / focus moves settle
-export async function settle (frames = 4): Promise<void> {
-  for (let i = 0; i < frames; i++) {
-    await raf();
-  }
+export async function settle(frames = 4): Promise<void> {
+	for (let i = 0; i < frames; i++) {
+		await raf();
+	}
 }

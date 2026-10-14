@@ -9,28 +9,31 @@
  * tab order and the accessibility tree - so a modal truly traps focus and
  * screen readers can't wander behind it. Returns a restore function.
  */
-export function inertOutside (el: HTMLElement): () => void {
-  const changed: HTMLElement[] = [];
+export function inertOutside(el: HTMLElement): () => void {
+	const changed: HTMLElement[] = [];
 
-  let node: HTMLElement | null = el;
+	let node: HTMLElement | null = el;
 
-  while (node && node.parentElement && node !== document.body) {
-    for (const sibling of node.parentElement.children) {
-      if (sibling === node || (sibling as HTMLElement).inert) continue;
-      if (sibling.tagName === 'SCRIPT' || sibling.tagName === 'STYLE') continue;
+	while (node && node.parentElement && node !== document.body) {
+		for (const sibling of node.parentElement.children) {
+			if (sibling === node || (sibling as HTMLElement).inert) continue;
 
-      (sibling as HTMLElement).inert = true;
-      changed.push(sibling as HTMLElement);
-    }
+			if (sibling.tagName === "SCRIPT" || sibling.tagName === "STYLE")
+				continue;
 
-    node = node.parentElement;
-  }
+			(sibling as HTMLElement).inert = true;
 
-  return () => {
-    for (const sibling of changed) {
-      sibling.inert = false;
-    }
-  };
+			changed.push(sibling as HTMLElement);
+		}
+
+		node = node.parentElement;
+	}
+
+	return () => {
+		for (const sibling of changed) {
+			sibling.inert = false;
+		}
+	};
 }
 
 /*
@@ -38,27 +41,28 @@ export function inertOutside (el: HTMLElement): () => void {
  * overflow / transform / z-index can clip or trap it. Returns a restore
  * function that puts it back exactly where it came from.
  */
-export function portalToBody (el: HTMLElement): () => void {
-  if (el.parentNode === document.body) {
-    return () => {};
-  }
+export function portalToBody(el: HTMLElement): () => void {
+	if (el.parentNode === document.body) {
+		return () => {};
+	}
 
-  const parent = el.parentNode;
+	const parent = el.parentNode;
 
-  if (!parent) {
-    return () => {};
-  }
+	if (!parent) {
+		return () => {};
+	}
 
-  const marker = document.createComment('jelly-portal');
+	const marker = document.createComment("jelly-portal");
 
-  parent.insertBefore(marker, el);
-  document.body.appendChild(el);
+	parent.insertBefore(marker, el);
 
-  return () => {
-    if (marker.parentNode) {
-      marker.parentNode.insertBefore(el, marker);
-    }
+	document.body.appendChild(el);
 
-    marker.remove();
-  };
+	return () => {
+		if (marker.parentNode) {
+			marker.parentNode.insertBefore(el, marker);
+		}
+
+		marker.remove();
+	};
 }

@@ -4,9 +4,13 @@
  */
 
 import { jellyIcon }    from '../../package.js';
+
 import { jellyToast }   from '../../package.js';
+
 import { setThemeMode } from '../../package.js';
+
 import { getThemeMode } from '../../package.js';
+
 import { escapeHTML }   from '../../package.js';
 
 export { escapeHTML };
@@ -15,6 +19,7 @@ export { escapeHTML };
 // complete string, so documentation copy can be expressive without allowing
 // arbitrary HTML from the data file.
 export function formatInlineCode (text) {
+
   return escapeHTML(text).replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 

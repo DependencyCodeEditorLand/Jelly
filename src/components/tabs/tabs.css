@@ -1,11 +1,11 @@
 :host {
-  display: block;
+	display: block;
 }
 
 .bar {
-  display: flex;
+	display: flex;
 }
 
 .panels {
-  padding-block-start: 16px;
+	padding-block-start: 16px;
 }

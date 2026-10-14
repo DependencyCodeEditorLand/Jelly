@@ -8,17 +8,21 @@
  *   </jelly-tooltip>
  */
 
-import { placeAnchored }     from '../../anchor/index.js';
-import { trackAnchor }       from '../../anchor/index.js';
-import { springIn }          from '../../anchor/index.js';
-import type { Placement }    from '../../anchor/index.js';
+import { placeAnchored } from "../../anchor/index.js";
 
-import { uniqueId }          from '../../utilities/index.js';
-import { canonicalizeSize }  from '../../utilities/index.js';
+import { trackAnchor } from "../../anchor/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { springIn } from "../../anchor/index.js";
 
-import tooltipStyles         from './tooltip.css?inline';
+import type { Placement } from "../../anchor/index.js";
+
+import { uniqueId } from "../../utilities/index.js";
+
+import { canonicalizeSize } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import tooltipStyles from "./tooltip.css?inline";
 
 /**
  * An accessible tooltip that anchors a bubble over its trigger.
@@ -33,44 +37,45 @@ import tooltipStyles         from './tooltip.css?inline';
  * @attr {"small"|"medium"|"large"} size - Bubble size.
  */
 export class JellyTooltip extends HTMLElement {
+	built = false;
 
-  built = false;
+	// Populated in connectedCallback()
+	bubble!: HTMLElement;
 
-  // Populated in connectedCallback()
-  bubble!: HTMLElement;
-  contentSlot!: HTMLSlotElement;
+	contentSlot!: HTMLSlotElement;
 
-  untrack: (() => void) | null = null;
+	untrack: (() => void) | null = null;
 
-  // Escape dismisses the tooltip without moving the pointer (WCAG 1.4.13)
-  onDocumentKey = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape') {
-      this.hide();
-    }
-  };
+	// Escape dismisses the tooltip without moving the pointer (WCAG 1.4.13)
+	onDocumentKey = (event: KeyboardEvent): void => {
+		if (event.key === "Escape") {
+			this.hide();
+		}
+	};
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['text', 'size'];
-  }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["text", "size"];
+	}
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-    if (this.built) {
-      return;
-    }
+		canonicalizeSize(this);
 
-    this.built = true;
+		if (this.built) {
+			return;
+		}
 
-    const id = uniqueId('jelly-tooltip');
+		this.built = true;
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open' });
+		const id = uniqueId("jelly-tooltip");
 
-    this.shadowRoot!.innerHTML = `
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open" });
+
+		this.shadowRoot!.innerHTML = `
       <style>${tooltipStyles}</style>
 
       <slot></slot>
@@ -78,122 +83,153 @@ export class JellyTooltip extends HTMLElement {
       <div class="bubble" role="tooltip" id="${id}"><slot name="content"></slot></div>
     `;
 
-    this.bubble      = this.shadowRoot!.querySelector('.bubble')!;
-    this.contentSlot = this.shadowRoot!.querySelector('slot[name="content"]')!;
+		this.bubble = this.shadowRoot!.querySelector(".bubble")!;
 
-    this.syncText();
+		this.contentSlot = this.shadowRoot!.querySelector(
+			'slot[name="content"]',
+		)!;
 
-    this.addEventListener('pointerenter', this);
-    this.addEventListener('pointerleave', this);
-    this.addEventListener('focusin', this);
-    this.addEventListener('focusout', this);
+		this.syncText();
 
-    // The description lands on the slotted trigger when it (re)arrives
-    this.shadowRoot!.querySelector('slot:not([name])')!
-      .addEventListener('slotchange', () => this.syncDescription());
+		this.addEventListener("pointerenter", this);
 
-    this.syncDescription();
-  }
+		this.addEventListener("pointerleave", this);
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  disconnectedCallback (): void {
-    this.hide();
-  }
+		this.addEventListener("focusin", this);
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    switch (name) {
-      case 'size':
-        canonicalizeSize(this);
-        this.reposition();
-        break;
+		this.addEventListener("focusout", this);
 
-      case 'text':
-        this.syncText();
-        this.syncDescription();
-        this.reposition();
-        break;
-    }
-  }
+		// The description lands on the slotted trigger when it (re)arrives
+		this.shadowRoot!.querySelector("slot:not([name])")!.addEventListener(
+			"slotchange",
+			() => this.syncDescription(),
+		);
 
-  // Copy the text attribute into the bubble's content slot
-  syncText (): void {
-    if (this.contentSlot) {
-      this.contentSlot.textContent = this.getAttribute('text') || '';
-    }
-  }
+		this.syncDescription();
+	}
 
-  // Content and size changes alter the bubble's dimensions. Re-anchor an
-  // already-visible tooltip immediately instead of waiting for the next
-  // pointer movement, scroll, or resize event.
-  reposition (): void {
-    if (!this.bubble?.hasAttribute('data-show')) {
-      return;
-    }
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	disconnectedCallback(): void {
+		this.hide();
+	}
 
-    const placement = (this.getAttribute('placement') as Placement | null) || 'top';
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		switch (name) {
+			case "size":
+				canonicalizeSize(this);
 
-    placeAnchored(this, this.bubble, placement, 8);
-  }
+				this.reposition();
 
-  /*
-   * Expose the tooltip text as the trigger's accessible description.
-   * An aria-describedby idref cannot point into this shadow root from the
-   * light-DOM trigger, so the description is set via ARIA reflection
-   * directly on the slotted element (skipped gracefully where unsupported).
-   */
-  syncDescription (): void {
-    const trigger = this.querySelector(':scope > :not([slot])') || this.firstElementChild;
+				break;
 
-    if (trigger && 'ariaDescription' in trigger) {
-      (trigger as HTMLElement).ariaDescription = this.getAttribute('text') || '';
-    }
-  }
+			case "text":
+				this.syncText();
 
-  // Position the bubble over the trigger and fade it in
-  show (): void {
-    const placement = (this.getAttribute('placement') as Placement | null) || 'top';
-    const bubble    = this.bubble;
+				this.syncDescription();
 
-    bubble.setAttribute('data-show', '');
+				this.reposition();
 
-    placeAnchored(this, bubble, placement, 8);
+				break;
+		}
+	}
 
-    this.untrack?.();
-    this.untrack = trackAnchor(this, bubble, placement, 8); // follow the trigger on scroll
+	// Copy the text attribute into the bubble's content slot
+	syncText(): void {
+		if (this.contentSlot) {
+			this.contentSlot.textContent = this.getAttribute("text") || "";
+		}
+	}
 
-    document.addEventListener('keydown', this.onDocumentKey);
+	// Content and size changes alter the bubble's dimensions. Re-anchor an
+	// already-visible tooltip immediately instead of waiting for the next
+	// pointer movement, scroll, or resize event.
+	reposition(): void {
+		if (!this.bubble?.hasAttribute("data-show")) {
+			return;
+		}
 
-    springIn(bubble, 'center');
-  }
+		const placement =
+			(this.getAttribute("placement") as Placement | null) || "top";
 
-  // Hide the bubble and stop tracking the trigger
-  hide (): void {
-    this.untrack?.();
-    this.untrack = null;
+		placeAnchored(this, this.bubble, placement, 8);
+	}
 
-    document.removeEventListener('keydown', this.onDocumentKey);
+	/*
+	 * Expose the tooltip text as the trigger's accessible description.
+	 * An aria-describedby idref cannot point into this shadow root from the
+	 * light-DOM trigger, so the description is set via ARIA reflection
+	 * directly on the slotted element (skipped gracefully where unsupported).
+	 */
+	syncDescription(): void {
+		const trigger =
+			this.querySelector(":scope > :not([slot])") ||
+			this.firstElementChild;
 
-    this.bubble?.removeAttribute('data-show');
-  }
+		if (trigger && "ariaDescription" in trigger) {
+			(trigger as HTMLElement).ariaDescription =
+				this.getAttribute("text") || "";
+		}
+	}
 
-  // Handle callback events
-  handleEvent (event: Event): void {
-    switch (event.type) {
-      case 'pointerenter': this.show(); break;
-      case 'focusin':      this.show(); break;
-      case 'pointerleave': this.hide(); break;
-      case 'focusout':     this.hide(); break;
-    }
-  }
+	// Position the bubble over the trigger and fade it in
+	show(): void {
+		const placement =
+			(this.getAttribute("placement") as Placement | null) || "top";
 
+		const bubble = this.bubble;
+
+		bubble.setAttribute("data-show", "");
+
+		placeAnchored(this, bubble, placement, 8);
+
+		this.untrack?.();
+
+		this.untrack = trackAnchor(this, bubble, placement, 8); // follow the trigger on scroll
+
+		document.addEventListener("keydown", this.onDocumentKey);
+
+		springIn(bubble, "center");
+	}
+
+	// Hide the bubble and stop tracking the trigger
+	hide(): void {
+		this.untrack?.();
+
+		this.untrack = null;
+
+		document.removeEventListener("keydown", this.onDocumentKey);
+
+		this.bubble?.removeAttribute("data-show");
+	}
+
+	// Handle callback events
+	handleEvent(event: Event): void {
+		switch (event.type) {
+			case "pointerenter":
+				this.show();
+				break;
+
+			case "focusin":
+				this.show();
+				break;
+
+			case "pointerleave":
+				this.hide();
+				break;
+
+			case "focusout":
+				this.hide();
+				break;
+		}
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-tooltip', JellyTooltip);
+customElements.define("jelly-tooltip", JellyTooltip);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-tooltip': JellyTooltip;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-tooltip": JellyTooltip;
+	}
 }

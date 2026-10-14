@@ -5,11 +5,11 @@
  * controls gain a real accessible name
  */
 
-import { canonicalizeSize }  from '../../utilities/index.js';
+import { canonicalizeSize } from "../../utilities/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { ensureThemeTokens } from "../../theme/index.js";
 
-import labelStyles           from './label.css?inline';
+import labelStyles from "./label.css?inline";
 
 /**
  * A form label that focuses its `for` target and gives it an accessible
@@ -26,32 +26,32 @@ import labelStyles           from './label.css?inline';
  * @csspart label - The label element.
  */
 export class JellyLabel extends HTMLElement {
+	built = false;
 
-  built = false;
+	// Populated in connectedCallback()
+	label!: HTMLLabelElement;
 
-  // Populated in connectedCallback()
-  label!: HTMLLabelElement;
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["for", "required", "size"];
+	}
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['for', 'required', 'size'];
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+		canonicalizeSize(this);
 
-    if (this.built) {
-      return;
-    }
+		if (this.built) {
+			return;
+		}
 
-    this.built = true;
+		this.built = true;
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open' });
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open" });
 
-    this.shadowRoot!.innerHTML = `
+		this.shadowRoot!.innerHTML = `
       <style>${labelStyles}</style>
 
       <label part="label">
@@ -61,75 +61,81 @@ export class JellyLabel extends HTMLElement {
       </label>
     `;
 
-    this.label = this.shadowRoot!.querySelector('label')!;
+		this.label = this.shadowRoot!.querySelector("label")!;
 
-    this.label.addEventListener('click', () => this.focusTarget());
+		this.label.addEventListener("click", () => this.focusTarget());
 
-    // Late-slotted text should still reach the target's accessible name
-    this.shadowRoot!.querySelector('slot')!.addEventListener('slotchange', () => this.sync());
+		// Late-slotted text should still reach the target's accessible name
+		this.shadowRoot!.querySelector("slot")!.addEventListener(
+			"slotchange",
+			() => this.sync(),
+		);
 
-    this.sync();
-  }
+		this.sync();
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (name === 'size') {
-      canonicalizeSize(this);
-    }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (name === "size") {
+			canonicalizeSize(this);
+		}
 
-    if (this.built) {
-      this.sync();
-    }
-  }
+		if (this.built) {
+			this.sync();
+		}
+	}
 
-  // Resolve the `for` target in this label's own document / shadow root
-  get target (): HTMLElement | null {
-    const id = this.getAttribute('for');
+	// Resolve the `for` target in this label's own document / shadow root
+	get target(): HTMLElement | null {
+		const id = this.getAttribute("for");
 
-    if (!id) {
-      return null;
-    }
+		if (!id) {
+			return null;
+		}
 
-    const root = this.getRootNode() as Document | ShadowRoot;
+		const root = this.getRootNode() as Document | ShadowRoot;
 
-    return root.getElementById?.(id) ?? document.getElementById(id);
-  }
+		return root.getElementById?.(id) ?? document.getElementById(id);
+	}
 
-  // Clicking the label focuses the referenced control (cross-root safe)
-  focusTarget (): void {
-    this.target?.focus?.();
-  }
+	// Clicking the label focuses the referenced control (cross-root safe)
+	focusTarget(): void {
+		this.target?.focus?.();
+	}
 
-  /*
-   * Give the target an accessible name and required state. Jelly form
-   * controls map their `label` attribute to an inner aria-label, which
-   * works across shadow roots where aria-labelledby idrefs cannot.
-   */
-  sync (): void {
-    const target = this.target;
+	/*
+	 * Give the target an accessible name and required state. Jelly form
+	 * controls map their `label` attribute to an inner aria-label, which
+	 * works across shadow roots where aria-labelledby idrefs cannot.
+	 */
+	sync(): void {
+		const target = this.target;
 
-    if (!target) {
-      return;
-    }
+		if (!target) {
+			return;
+		}
 
-    const text = (this.textContent ?? '').trim();
+		const text = (this.textContent ?? "").trim();
 
-    if (text && target.localName.startsWith('jelly-') && !target.hasAttribute('label')) {
-      target.setAttribute('label', text);
-    }
+		if (
+			text &&
+			target.localName.startsWith("jelly-") &&
+			!target.hasAttribute("label")
+		) {
+			target.setAttribute("label", text);
+		}
 
-    if (this.hasAttribute('required')) {
-      target.ariaRequired = 'true';
-    }
-  }
-
+		if (this.hasAttribute("required")) {
+			target.ariaRequired = "true";
+		}
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-label', JellyLabel);
+customElements.define("jelly-label", JellyLabel);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-label': JellyLabel;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-label": JellyLabel;
+	}
 }

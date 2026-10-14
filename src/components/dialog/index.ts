@@ -7,18 +7,23 @@
  *   document.getElementById('d').open = true;   // or .showModal()
  */
 
-import { lockScroll }           from '../../anchor/index.js';
-import { unlockScroll }         from '../../anchor/index.js';
-import { inertOutside }         from '../../anchor/index.js';
-import { portalToBody }         from '../../anchor/index.js';
-import { springOut }            from '../../anchor/index.js';
+import { lockScroll } from "../../anchor/index.js";
 
-import { emit }                 from '../../utilities/index.js';
-import { prefersReducedMotion } from '../../utilities/index.js';
+import { unlockScroll } from "../../anchor/index.js";
 
-import { ensureThemeTokens }    from '../../theme/index.js';
+import { inertOutside } from "../../anchor/index.js";
 
-import dialogStyles             from './dialog.css?inline';
+import { portalToBody } from "../../anchor/index.js";
+
+import { springOut } from "../../anchor/index.js";
+
+import { emit } from "../../utilities/index.js";
+
+import { prefersReducedMotion } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import dialogStyles from "./dialog.css?inline";
 
 /**
  * A modal dialog with scroll lock, focus trapping and a spring-in entrance.
@@ -41,46 +46,50 @@ import dialogStyles             from './dialog.css?inline';
  * @cssprop [--jelly-dialog-padding=26px] - Inner padding.
  */
 export class JellyDialog extends HTMLElement {
+	built = false;
 
-  built = false;
-  closing = false;
-  modalActive = false;
+	closing = false;
 
-  // Populated in connectedCallback()
-  dialog!: HTMLElement;
-  wrap!: HTMLElement;
+	modalActive = false;
 
-  prevFocus: Element | null = null;
-  restorePortal: (() => void) | null = null;
-  restoreInert: (() => void) | null = null;
+	// Populated in connectedCallback()
+	dialog!: HTMLElement;
 
-  onDocumentKey = (event: KeyboardEvent): void => {
-    // An inner overlay (select / menu / popover) that handled Escape first
-    // marks it defaultPrevented; don't tear the dialog down in the same press
-    if (event.key === 'Escape' && !event.defaultPrevented) {
-      this.open = false;
-    }
-  };
+	wrap!: HTMLElement;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['open', 'label'];
-  }
+	prevFocus: Element | null = null;
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
+	restorePortal: (() => void) | null = null;
 
-    if (this.built) {
-      return;
-    }
+	restoreInert: (() => void) | null = null;
 
-    this.built = true;
+	onDocumentKey = (event: KeyboardEvent): void => {
+		// An inner overlay (select / menu / popover) that handled Escape first
+		// marks it defaultPrevented; don't tear the dialog down in the same press
+		if (event.key === "Escape" && !event.defaultPrevented) {
+			this.open = false;
+		}
+	};
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open', delegatesFocus: true });
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["open", "label"];
+	}
 
-    this.shadowRoot!.innerHTML = `
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
+
+		if (this.built) {
+			return;
+		}
+
+		this.built = true;
+
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open", delegatesFocus: true });
+
+		this.shadowRoot!.innerHTML = `
       <style>${dialogStyles}</style>
 
       <div class="backdrop" part="backdrop"></div>
@@ -93,186 +102,214 @@ export class JellyDialog extends HTMLElement {
       </div>
     `;
 
-    this.dialog = this.shadowRoot!.querySelector('.dialog')!;
-    this.wrap   = this.shadowRoot!.querySelector('.wrap')!;
+		this.dialog = this.shadowRoot!.querySelector(".dialog")!;
 
-    // A click on the backdrop area (outside the dialog itself) dismisses
-    this.wrap.addEventListener('click', (event) => {
-      if (event.target === this.wrap) {
-        this.open = false;
-      }
-    });
+		this.wrap = this.shadowRoot!.querySelector(".wrap")!;
 
-    this.shadowRoot!.querySelector('.close')!.addEventListener('click', () => {
-      this.open = false;
-    });
-  }
+		// A click on the backdrop area (outside the dialog itself) dismisses
+		this.wrap.addEventListener("click", (event) => {
+			if (event.target === this.wrap) {
+				this.open = false;
+			}
+		});
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  disconnectedCallback (): void {
-    // Portaling to <body> disconnects and reconnects synchronously, so only
-    // clean up when the dialog is truly gone from the document while open
-    queueMicrotask(() => {
-      if (!this.isConnected && this.modalActive) {
-        this.teardownModal();
-      }
-    });
-  }
+		this.shadowRoot!.querySelector(".close")!.addEventListener(
+			"click",
+			() => {
+				this.open = false;
+			},
+		);
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string, was: string | null, now: string | null): void {
-    if (was === now || !this.dialog) {
-      return;
-    }
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	disconnectedCallback(): void {
+		// Portaling to <body> disconnects and reconnects synchronously, so only
+		// clean up when the dialog is truly gone from the document while open
+		queueMicrotask(() => {
+			if (!this.isConnected && this.modalActive) {
+				this.teardownModal();
+			}
+		});
+	}
 
-    if (name === 'label') {
-      this.syncLabel();
-      return;
-    }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(
+		name: string,
+		was: string | null,
+		now: string | null,
+	): void {
+		if (was === now || !this.dialog) {
+			return;
+		}
 
-    if (this.hasAttribute('open')) {
-      this.afterOpen();
-    } else {
-      this.afterClose();
-    }
-  }
+		if (name === "label") {
+			this.syncLabel();
 
-  /*
-   * The dialog's accessible name: an explicit label attribute wins,
-   * else the first heading's text is mirrored onto aria-label (idrefs
-   * can't cross the shadow boundary to slotted content).
-   */
-  syncLabel (): void {
-    const label   = this.getAttribute('label');
-    const heading = this.querySelector('h1, h2, h3, [data-dialog-title]');
+			return;
+		}
 
-    if (label) {
-      this.dialog.setAttribute('aria-label', label);
-    } else if (heading) {
-      this.dialog.setAttribute('aria-label', (heading.textContent ?? '').trim());
-    }
-  }
+		if (this.hasAttribute("open")) {
+			this.afterOpen();
+		} else {
+			this.afterClose();
+		}
+	}
 
-  // Everything that happens when the open attribute arrives
-  afterOpen (): void {
-    this.closing = false;
+	/*
+	 * The dialog's accessible name: an explicit label attribute wins,
+	 * else the first heading's text is mirrored onto aria-label (idrefs
+	 * can't cross the shadow boundary to slotted content).
+	 */
+	syncLabel(): void {
+		const label = this.getAttribute("label");
 
-    this.dialog.getAnimations?.().forEach((animation) => animation.cancel());
-    this.dialog.style.opacity   = '';
-    this.dialog.style.transform = '';
+		const heading = this.querySelector("h1, h2, h3, [data-dialog-title]");
 
-    // Capture the trigger before portaling; moving the host disconnects it
-    // briefly and can otherwise collapse document.activeElement to <body>.
-    this.prevFocus     = document.activeElement;
-    this.restorePortal = portalToBody(this);
-    this.modalActive   = true;
+		if (label) {
+			this.dialog.setAttribute("aria-label", label);
+		} else if (heading) {
+			this.dialog.setAttribute(
+				"aria-label",
+				(heading.textContent ?? "").trim(),
+			);
+		}
+	}
 
-    document.addEventListener('keydown', this.onDocumentKey);
+	// Everything that happens when the open attribute arrives
+	afterOpen(): void {
+		this.closing = false;
 
-    // Trap focus: freeze the page scroll and make everything behind inert so
-    // the tab order and screen readers stay inside the dialog
-    lockScroll();
-    this.restoreInert = inertOutside(this);
+		this.dialog
+			.getAnimations?.()
+			.forEach((animation) => animation.cancel());
 
-    this.syncLabel();
+		this.dialog.style.opacity = "";
 
-    if (!prefersReducedMotion() && this.dialog.animate) {
-      // Rise up gently while fading in, with a barely-there settle - smooth
-      // and organic, not a hard pop from tiny
-      this.dialog.animate(
-        [
-          { opacity: 0, transform: 'translateY(12px) scale(0.97)' },
-          { opacity: 1, offset: 0.55 },
-          { transform: 'translateY(0) scale(1.004)', offset: 0.78 },
-          { transform: 'translateY(0) scale(1)' },
-        ],
-        { duration: 500, easing: 'cubic-bezier(.16,.82,.28,1)' },
-      );
-    }
+		this.dialog.style.transform = "";
 
-    this.dialog.focus();
+		// Capture the trigger before portaling; moving the host disconnects it
+		// briefly and can otherwise collapse document.activeElement to <body>.
+		this.prevFocus = document.activeElement;
 
-    emit(this, 'open');
-  }
+		this.restorePortal = portalToBody(this);
 
-  // Everything that happens when the open attribute drops
-  afterClose (): void {
-    if (this.closing) {
-      return;
-    }
+		this.modalActive = true;
 
-    this.teardownModal();
-    (this.prevFocus as HTMLElement | null)?.focus?.();
+		document.addEventListener("keydown", this.onDocumentKey);
 
-    emit(this, 'close');
-  }
+		// Trap focus: freeze the page scroll and make everything behind inert so
+		// the tab order and screen readers stay inside the dialog
+		lockScroll();
 
-  // Release every page-level effect the open dialog holds (idempotent)
-  teardownModal (): void {
-    if (!this.modalActive) {
-      return;
-    }
+		this.restoreInert = inertOutside(this);
 
-    this.modalActive = false;
+		this.syncLabel();
 
-    document.removeEventListener('keydown', this.onDocumentKey);
+		if (!prefersReducedMotion() && this.dialog.animate) {
+			// Rise up gently while fading in, with a barely-there settle - smooth
+			// and organic, not a hard pop from tiny
+			this.dialog.animate(
+				[
+					{ opacity: 0, transform: "translateY(12px) scale(0.97)" },
 
-    this.restoreInert?.();
-    this.restoreInert = null;
+					{ opacity: 1, offset: 0.55 },
 
-    unlockScroll();
+					{ transform: "translateY(0) scale(1.004)", offset: 0.78 },
 
-    this.restorePortal?.();
-    this.restorePortal = null;
-  }
+					{ transform: "translateY(0) scale(1)" },
+				],
 
-  // Open the dialog (mirrors the native dialog API)
-  showModal (): void {
-    this.open = true;
-  }
+				{ duration: 500, easing: "cubic-bezier(.16,.82,.28,1)" },
+			);
+		}
 
-  // Route programmatic host focus onto the dialog surface
-  override focus (options?: FocusOptions): void {
-    this.dialog?.focus(options);
-  }
+		this.dialog.focus();
 
-  // The open state as a property
-  get open (): boolean {
-    return this.hasAttribute('open');
-  }
+		emit(this, "open");
+	}
 
-  set open (value: boolean) {
-    if (value) {
-      if (!this.hasAttribute('open')) {
-        this.setAttribute('open', '');
-      }
-      return;
-    }
+	// Everything that happens when the open attribute drops
+	afterClose(): void {
+		if (this.closing) {
+			return;
+		}
 
-    if (!this.hasAttribute('open')) {
-      return;
-    }
+		this.teardownModal();
 
-    // Animate the dialog out, then hide (the backdrop fades via CSS meanwhile)
-    this.closing = true;
+		(this.prevFocus as HTMLElement | null)?.focus?.();
 
-    springOut(this.dialog, () => {
-      if (!this.closing) {
-        return;
-      }
+		emit(this, "close");
+	}
 
-      this.closing = false;
-      this.removeAttribute('open');
-    });
-  }
+	// Release every page-level effect the open dialog holds (idempotent)
+	teardownModal(): void {
+		if (!this.modalActive) {
+			return;
+		}
 
+		this.modalActive = false;
+
+		document.removeEventListener("keydown", this.onDocumentKey);
+
+		this.restoreInert?.();
+
+		this.restoreInert = null;
+
+		unlockScroll();
+
+		this.restorePortal?.();
+
+		this.restorePortal = null;
+	}
+
+	// Open the dialog (mirrors the native dialog API)
+	showModal(): void {
+		this.open = true;
+	}
+
+	// Route programmatic host focus onto the dialog surface
+	override focus(options?: FocusOptions): void {
+		this.dialog?.focus(options);
+	}
+
+	// The open state as a property
+	get open(): boolean {
+		return this.hasAttribute("open");
+	}
+
+	set open(value: boolean) {
+		if (value) {
+			if (!this.hasAttribute("open")) {
+				this.setAttribute("open", "");
+			}
+
+			return;
+		}
+
+		if (!this.hasAttribute("open")) {
+			return;
+		}
+
+		// Animate the dialog out, then hide (the backdrop fades via CSS meanwhile)
+		this.closing = true;
+
+		springOut(this.dialog, () => {
+			if (!this.closing) {
+				return;
+			}
+
+			this.closing = false;
+
+			this.removeAttribute("open");
+		});
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-dialog', JellyDialog);
+customElements.define("jelly-dialog", JellyDialog);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-dialog': JellyDialog;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-dialog": JellyDialog;
+	}
 }

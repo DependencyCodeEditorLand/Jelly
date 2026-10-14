@@ -5,13 +5,13 @@
  * page scrolls or resizes.
  */
 
-import { isRTL } from '../utilities/index.js';
+import { isRTL } from "../utilities/index.js";
 
 // A logical or physical placement for an anchored float
-export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'start' | 'end';
+export type Placement = "top" | "bottom" | "left" | "right" | "start" | "end";
 
 // A resolved, physical placement (logical start / end mapped to left / right)
-export type PhysicalPlacement = 'top' | 'bottom' | 'left' | 'right';
+export type PhysicalPlacement = "top" | "bottom" | "left" | "right";
 
 // Minimum distance an overlay keeps from the viewport edge
 const VIEWPORT_MARGIN = 8;
@@ -21,18 +21,21 @@ const VIEWPORT_MARGIN = 8;
  * direction: 'start' and 'end' become 'left' or 'right' as appropriate,
  * physical placements pass through untouched.
  */
-export function resolvePlacement (placement: Placement, anchorEl: HTMLElement): PhysicalPlacement {
-  if (placement !== 'start' && placement !== 'end') {
-    return placement;
-  }
+export function resolvePlacement(
+	placement: Placement,
+	anchorEl: HTMLElement,
+): PhysicalPlacement {
+	if (placement !== "start" && placement !== "end") {
+		return placement;
+	}
 
-  const rtl = isRTL(anchorEl);
+	const rtl = isRTL(anchorEl);
 
-  if (placement === 'start') {
-    return rtl ? 'right' : 'left';
-  }
+	if (placement === "start") {
+		return rtl ? "right" : "left";
+	}
 
-  return rtl ? 'left' : 'right';
+	return rtl ? "left" : "right";
 }
 
 /*
@@ -41,63 +44,97 @@ export function resolvePlacement (placement: Placement, anchorEl: HTMLElement): 
  * to the opposite side when the preferred side would clip and finally
  * clamps inside the viewport.
  */
-export function placeAnchored (
-  anchorEl: HTMLElement,
-  floatEl: HTMLElement,
-  placement: Placement = 'bottom',
-  gap = 8,
+export function placeAnchored(
+	anchorEl: HTMLElement,
+
+	floatEl: HTMLElement,
+
+	placement: Placement = "bottom",
+
+	gap = 8,
 ): PhysicalPlacement {
-  const side = resolvePlacement(placement, anchorEl);
+	const side = resolvePlacement(placement, anchorEl);
 
-  const a  = anchorEl.getBoundingClientRect();
-  const f  = floatEl.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+	const a = anchorEl.getBoundingClientRect();
 
-  // Flip to the roomier side when the preferred side can't fit the float
-  let resolved: PhysicalPlacement = side;
+	const f = floatEl.getBoundingClientRect();
 
-  if (side === 'top' && a.top - f.height - gap < VIEWPORT_MARGIN && a.bottom + f.height + gap < vh) {
-    resolved = 'bottom';
-  } else if (side === 'bottom' && a.bottom + f.height + gap > vh - VIEWPORT_MARGIN && a.top - f.height - gap > 0) {
-    resolved = 'top';
-  } else if (side === 'left' && a.left - f.width - gap < VIEWPORT_MARGIN && a.right + f.width + gap < vw) {
-    resolved = 'right';
-  } else if (side === 'right' && a.right + f.width + gap > vw - VIEWPORT_MARGIN && a.left - f.width - gap > 0) {
-    resolved = 'left';
-  }
+	const vw = window.innerWidth;
 
-  let top: number;
-  let left: number;
+	const vh = window.innerHeight;
 
-  if (resolved === 'top')         top = a.top - f.height - gap;
-  else if (resolved === 'bottom') top = a.bottom + gap;
-  else                            top = a.top + (a.height - f.height) / 2;
+	// Flip to the roomier side when the preferred side can't fit the float
+	let resolved: PhysicalPlacement = side;
 
-  if (resolved === 'left')        left = a.left - f.width - gap;
-  else if (resolved === 'right')  left = a.right + gap;
-  else                            left = a.left + (a.width - f.width) / 2;
+	if (
+		side === "top" &&
+		a.top - f.height - gap < VIEWPORT_MARGIN &&
+		a.bottom + f.height + gap < vh
+	) {
+		resolved = "bottom";
+	} else if (
+		side === "bottom" &&
+		a.bottom + f.height + gap > vh - VIEWPORT_MARGIN &&
+		a.top - f.height - gap > 0
+	) {
+		resolved = "top";
+	} else if (
+		side === "left" &&
+		a.left - f.width - gap < VIEWPORT_MARGIN &&
+		a.right + f.width + gap < vw
+	) {
+		resolved = "right";
+	} else if (
+		side === "right" &&
+		a.right + f.width + gap > vw - VIEWPORT_MARGIN &&
+		a.left - f.width - gap > 0
+	) {
+		resolved = "left";
+	}
 
-  left = Math.max(VIEWPORT_MARGIN, Math.min(vw - f.width - VIEWPORT_MARGIN, left));
-  top  = Math.max(VIEWPORT_MARGIN, Math.min(vh - f.height - VIEWPORT_MARGIN, top));
+	let top: number;
 
-  floatEl.style.left = `${Math.round(left)}px`;
-  floatEl.style.top  = `${Math.round(top)}px`;
+	let left: number;
 
-  // A position:fixed element is offset by its containing block whenever an
-  // ancestor has a transform / filter / will-change (e.g. a card lifting on
-  // hover). Measure where it actually landed and add the difference back, so
-  // it stays pinned to the trigger regardless of transformed ancestors.
-  const landed = floatEl.getBoundingClientRect();
-  const dx     = left - landed.left;
-  const dy     = top - landed.top;
+	if (resolved === "top") top = a.top - f.height - gap;
+	else if (resolved === "bottom") top = a.bottom + gap;
+	else top = a.top + (a.height - f.height) / 2;
 
-  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-    floatEl.style.left = `${Math.round(left + dx)}px`;
-    floatEl.style.top  = `${Math.round(top + dy)}px`;
-  }
+	if (resolved === "left") left = a.left - f.width - gap;
+	else if (resolved === "right") left = a.right + gap;
+	else left = a.left + (a.width - f.width) / 2;
 
-  return resolved;
+	left = Math.max(
+		VIEWPORT_MARGIN,
+		Math.min(vw - f.width - VIEWPORT_MARGIN, left),
+	);
+
+	top = Math.max(
+		VIEWPORT_MARGIN,
+		Math.min(vh - f.height - VIEWPORT_MARGIN, top),
+	);
+
+	floatEl.style.left = `${Math.round(left)}px`;
+
+	floatEl.style.top = `${Math.round(top)}px`;
+
+	// A position:fixed element is offset by its containing block whenever an
+	// ancestor has a transform / filter / will-change (e.g. a card lifting on
+	// hover). Measure where it actually landed and add the difference back, so
+	// it stays pinned to the trigger regardless of transformed ancestors.
+	const landed = floatEl.getBoundingClientRect();
+
+	const dx = left - landed.left;
+
+	const dy = top - landed.top;
+
+	if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+		floatEl.style.left = `${Math.round(left + dx)}px`;
+
+		floatEl.style.top = `${Math.round(top + dy)}px`;
+	}
+
+	return resolved;
 }
 
 /*
@@ -107,31 +144,41 @@ export function placeAnchored (
  * viewport, so an overlay can dismiss itself instead of floating over an
  * anchor the reader can no longer see. Returns a cleanup function.
  */
-export function trackAnchor (
-  anchorEl: HTMLElement,
-  floatEl: HTMLElement,
-  placement: Placement = 'bottom',
-  gap = 8,
-  onHidden: (() => void) | null = null,
+export function trackAnchor(
+	anchorEl: HTMLElement,
+
+	floatEl: HTMLElement,
+
+	placement: Placement = "bottom",
+
+	gap = 8,
+
+	onHidden: (() => void) | null = null,
 ): () => void {
-  const reposition = (): void => {
-    placeAnchored(anchorEl, floatEl, placement, gap);
+	const reposition = (): void => {
+		placeAnchored(anchorEl, floatEl, placement, gap);
 
-    if (onHidden) {
-      const r = anchorEl.getBoundingClientRect();
+		if (onHidden) {
+			const r = anchorEl.getBoundingClientRect();
 
-      if (r.bottom <= 0 || r.top >= window.innerHeight
-        || r.right <= 0 || r.left >= window.innerWidth) {
-        onHidden();
-      }
-    }
-  };
+			if (
+				r.bottom <= 0 ||
+				r.top >= window.innerHeight ||
+				r.right <= 0 ||
+				r.left >= window.innerWidth
+			) {
+				onHidden();
+			}
+		}
+	};
 
-  window.addEventListener('scroll', reposition, true); // capture → catches nested scrollers
-  window.addEventListener('resize', reposition);
+	window.addEventListener("scroll", reposition, true); // capture → catches nested scrollers
 
-  return () => {
-    window.removeEventListener('scroll', reposition, true);
-    window.removeEventListener('resize', reposition);
-  };
+	window.addEventListener("resize", reposition);
+
+	return () => {
+		window.removeEventListener("scroll", reposition, true);
+
+		window.removeEventListener("resize", reposition);
+	};
 }

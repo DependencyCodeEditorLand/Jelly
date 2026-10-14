@@ -4,13 +4,15 @@
  * technology and exactly one toggle event per state change
  */
 
-import { canonicalizeSize }  from '../../utilities/index.js';
-import { emit }              from '../../utilities/index.js';
-import { uniqueId }          from '../../utilities/index.js';
+import { canonicalizeSize } from "../../utilities/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { emit } from "../../utilities/index.js";
 
-import collapsibleStyles     from './collapsible.css?inline';
+import { uniqueId } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import collapsibleStyles from "./collapsible.css?inline";
 
 /**
  * A bouncy disclosure section with a springy expand / collapse.
@@ -28,37 +30,37 @@ import collapsibleStyles     from './collapsible.css?inline';
  * @csspart header - The header button.
  */
 export class JellyCollapsible extends HTMLElement {
+	built = false;
 
-  built = false;
+	// Populated in connectedCallback()
+	head!: HTMLButtonElement;
 
-  // Populated in connectedCallback()
-  head!: HTMLButtonElement;
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["open", "size"];
+	}
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['open', 'size'];
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+		canonicalizeSize(this);
 
-    if (this.built) {
-      return;
-    }
+		if (this.built) {
+			return;
+		}
 
-    this.built = true;
+		this.built = true;
 
-    const id = uniqueId('jelly-collapsible');
+		const id = uniqueId("jelly-collapsible");
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open', delegatesFocus: true });
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open", delegatesFocus: true });
 
-    this.shadowRoot!.innerHTML = `
+		this.shadowRoot!.innerHTML = `
       <style>${collapsibleStyles}</style>
 
-      <button class="head" part="header" id="${id}-header" aria-expanded="${this.hasAttribute('open')}" aria-controls="${id}-panel">
+      <button class="head" part="header" id="${id}-header" aria-expanded="${this.hasAttribute("open")}" aria-controls="${id}-panel">
         <span class="label"><slot name="header">Details</slot></span>
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </button>
@@ -70,55 +72,60 @@ export class JellyCollapsible extends HTMLElement {
       </div>
     `;
 
-    this.head = this.shadowRoot!.querySelector('.head')!;
-    this.head.addEventListener('click', () => this.toggle());
-  }
+		this.head = this.shadowRoot!.querySelector(".head")!;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (name === 'size') {
-      canonicalizeSize(this);
-      return;
-    }
+		this.head.addEventListener("click", () => this.toggle());
+	}
 
-    this.head?.setAttribute('aria-expanded', String(this.hasAttribute('open')));
-  }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (name === "size") {
+			canonicalizeSize(this);
 
-  // Flip (or force) the open state; fires exactly one toggle per real change
-  toggle (force?: boolean): void {
-    const was  = this.hasAttribute('open');
-    const next = force ?? !was;
+			return;
+		}
 
-    if (next === was) {
-      return;
-    }
+		this.head?.setAttribute(
+			"aria-expanded",
+			String(this.hasAttribute("open")),
+		);
+	}
 
-    this.toggleAttribute('open', next);
+	// Flip (or force) the open state; fires exactly one toggle per real change
+	toggle(force?: boolean): void {
+		const was = this.hasAttribute("open");
 
-    emit(this, 'toggle');
-  }
+		const next = force ?? !was;
 
-  // The open state as a property
-  get open (): boolean {
-    return this.hasAttribute('open');
-  }
+		if (next === was) {
+			return;
+		}
 
-  set open (value: boolean) {
-    this.toggle(!!value);
-  }
+		this.toggleAttribute("open", next);
 
-  // Route programmatic host focus onto the header button
-  override focus (options?: FocusOptions): void {
-    this.head?.focus(options);
-  }
+		emit(this, "toggle");
+	}
 
+	// The open state as a property
+	get open(): boolean {
+		return this.hasAttribute("open");
+	}
+
+	set open(value: boolean) {
+		this.toggle(!!value);
+	}
+
+	// Route programmatic host focus onto the header button
+	override focus(options?: FocusOptions): void {
+		this.head?.focus(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-collapsible', JellyCollapsible);
+customElements.define("jelly-collapsible", JellyCollapsible);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-collapsible': JellyCollapsible;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-collapsible": JellyCollapsible;
+	}
 }

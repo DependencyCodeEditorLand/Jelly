@@ -6,14 +6,35 @@
  */
 
 :host {
-  --jelly-fill:  var(--jelly-color-background-accent);
-  --jelly-label: var(--jelly-color-foreground-on-accent);
+	--jelly-fill: var(--jelly-color-background-accent);
+	--jelly-label: var(--jelly-color-foreground-on-accent);
 }
 
-:host([variant="white"])    { --jelly-fill: var(--jelly-color-background-white);            --jelly-label: var(--jelly-color-foreground-on-white); }
-:host([variant="rose"])     { --jelly-fill: var(--jelly-color-background-rose);             --jelly-label: var(--jelly-color-foreground-on-emphasis); }
-:host([variant="amber"])    { --jelly-fill: var(--jelly-color-background-amber);            --jelly-label: var(--jelly-color-foreground-on-emphasis); }
-:host([variant="azure"])    { --jelly-fill: var(--jelly-color-background-azure);            --jelly-label: var(--jelly-color-foreground-on-emphasis); }
-:host([variant="mint"])     { --jelly-fill: var(--jelly-color-background-mint);             --jelly-label: var(--jelly-color-foreground-on-emphasis); }
-:host([variant="platinum"]) { --jelly-fill: var(--jelly-color-background-neutral);          --jelly-label: var(--jelly-color-foreground-on-neutral); }
-:host([variant="graphite"]) { --jelly-fill: var(--jelly-color-background-neutral-emphasis); --jelly-label: var(--jelly-color-foreground-on-emphasis); }
+:host([variant="white"]) {
+	--jelly-fill: var(--jelly-color-background-white);
+	--jelly-label: var(--jelly-color-foreground-on-white);
+}
+:host([variant="rose"]) {
+	--jelly-fill: var(--jelly-color-background-rose);
+	--jelly-label: var(--jelly-color-foreground-on-emphasis);
+}
+:host([variant="amber"]) {
+	--jelly-fill: var(--jelly-color-background-amber);
+	--jelly-label: var(--jelly-color-foreground-on-emphasis);
+}
+:host([variant="azure"]) {
+	--jelly-fill: var(--jelly-color-background-azure);
+	--jelly-label: var(--jelly-color-foreground-on-emphasis);
+}
+:host([variant="mint"]) {
+	--jelly-fill: var(--jelly-color-background-mint);
+	--jelly-label: var(--jelly-color-foreground-on-emphasis);
+}
+:host([variant="platinum"]) {
+	--jelly-fill: var(--jelly-color-background-neutral);
+	--jelly-label: var(--jelly-color-foreground-on-neutral);
+}
+:host([variant="graphite"]) {
+	--jelly-fill: var(--jelly-color-background-neutral-emphasis);
+	--jelly-label: var(--jelly-color-foreground-on-emphasis);
+}

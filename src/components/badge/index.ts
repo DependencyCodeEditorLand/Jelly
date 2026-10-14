@@ -9,12 +9,15 @@
  *                          full pill (same 0.32-of-height ratio as icon-button)
  */
 
-import { JellyElement } from '../../element/index.js';
-import type { Shape }   from '../../element/index.js';
-import type { Border }  from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import badgeStyles      from './badge.css?inline';
-import variantStyles    from '../../styles/variants.css?inline';
+import type { Shape } from "../../element/index.js";
+
+import type { Border } from "../../element/index.js";
+
+import badgeStyles from "./badge.css?inline";
+
+import variantStyles from "../../styles/variants.css?inline";
 
 /**
  * A small status pill / tag / count badge.
@@ -35,160 +38,186 @@ import variantStyles    from '../../styles/variants.css?inline';
  * @cssprop [--jelly-badge-radius=999px] - Corner radius of the painted pill.
  */
 export class JellyBadge extends JellyElement {
+	mutationObserver: MutationObserver | null = null;
 
-  mutationObserver: MutationObserver | null = null;
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["live", "shape"];
+	}
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['live', 'shape'];
-  }
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return variantStyles + badgeStyles;
+	}
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return variantStyles + badgeStyles;
-  }
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		return `<span class="badge" part="badge"><slot></slot></span>`;
+	}
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    return `<span class="badge" part="badge"><slot></slot></span>`;
-  }
+	// The pill (or, with shape="square", rounded-rectangle) the physics body takes
+	override shape(width: number, height: number): Shape {
+		const h = height - 2;
 
-  // The pill (or, with shape="square", rounded-rectangle) the physics body takes
-  override shape (width: number, height: number): Shape {
-    const h      = height - 2;
-    const square = this.getAttribute('shape') === 'square';
+		const square = this.getAttribute("shape") === "square";
 
-    // A plain-px --jelly-badge-radius override reaches the painted pill; the
-    // pill (999px) and square (8px-ish) defaults fall through to the ratios
-    const declared = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-badge-radius'));
-    const radius   = Number.isFinite(declared) && declared < 900 ? Math.min(declared, h / 2) : (square ? h * 0.32 : h / 2);
+		// A plain-px --jelly-badge-radius override reaches the painted pill; the
+		// pill (999px) and square (8px-ish) defaults fall through to the ratios
+		const declared = parseFloat(
+			getComputedStyle(this).getPropertyValue("--jelly-badge-radius"),
+		);
 
-    return { width: width - 2, height: h, radius };
-  }
+		const radius =
+			Number.isFinite(declared) && declared < 900
+				? Math.min(declared, h / 2)
+				: square
+					? h * 0.32
+					: h / 2;
 
-  /*
-   * One animation step. A filled badge uses the base solid paint (crossfading
-   * toward a new fill unless `instant` skips the ease - handy for badges that
-   * swap variant on every scroll tick, where a lagging crossfade reads as
-   * messy); an `outline` badge paints a hollow pill instead - a transparent
-   * fill with the variant colour drawn as the rim (see surfaceBorder). The
-   * transparent fill always skips easing too, which would otherwise round it
-   * to opaque black.
-   */
-  override frame (dt: number): boolean {
-    const body = this.body;
+		return { width: width - 2, height: h, radius };
+	}
 
-    if (!body) {
-      return false;
-    }
+	/*
+	 * One animation step. A filled badge uses the base solid paint (crossfading
+	 * toward a new fill unless `instant` skips the ease - handy for badges that
+	 * swap variant on every scroll tick, where a lagging crossfade reads as
+	 * messy); an `outline` badge paints a hollow pill instead - a transparent
+	 * fill with the variant colour drawn as the rim (see surfaceBorder). The
+	 * transparent fill always skips easing too, which would otherwise round it
+	 * to opaque black.
+	 */
+	override frame(dt: number): boolean {
+		const body = this.body;
 
-    body.update(dt);
-    this.clearCanvas();
+		if (!body) {
+			return false;
+		}
 
-    if (this.hasAttribute('outline')) {
-      this.paintBody(body, {
-        fill:   'transparent',
-        ease:   false,
-        ring:   this.focusRing(),
-        border: this.surfaceBorder(),
-      });
-    } else {
-      this.paintBody(body, {
-        ease:   !this.hasAttribute('instant'),
-        ring:   this.focusRing(),
-        border: this.surfaceBorder(),
-      });
-    }
+		body.update(dt);
 
-    return !body.isResting();
-  }
+		this.clearCanvas();
 
-  // The rim for an outline badge: the full variant fill colour, resolved to a
-  // concrete colour (canvas strokeStyle can't read var()).
-  override surfaceBorder (): Border | null {
-    if (!this.hasAttribute('outline')) {
-      return null;
-    }
+		if (this.hasAttribute("outline")) {
+			this.paintBody(body, {
+				fill: "transparent",
+				ease: false,
+				ring: this.focusRing(),
+				border: this.surfaceBorder(),
+			});
+		} else {
+			this.paintBody(body, {
+				ease: !this.hasAttribute("instant"),
+				ring: this.focusRing(),
+				border: this.surfaceBorder(),
+			});
+		}
 
-    return {
-      width: 2,
-      color: this.resolveColor('var(--jelly-fill)'),
-    };
-  }
+		return !body.isResting();
+	}
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.sync();
+	// The rim for an outline badge: the full variant fill colour, resolved to a
+	// concrete colour (canvas strokeStyle can't read var()).
+	override surfaceBorder(): Border | null {
+		if (!this.hasAttribute("outline")) {
+			return null;
+		}
 
-    // Pop when the label content changes
-    this.mutationObserver = new MutationObserver(() => this.centerPop(0.7));
-    this.mutationObserver.observe(this, { childList: true, characterData: true, subtree: true });
+		return {
+			width: 2,
 
-    // Hover: continuous simplex-noise wobble — same as jelly-button/jelly-card.
-    if (!this.reducedMotion) {
-      const elIndex = [...document.querySelectorAll('jelly-badge')].indexOf(this);
+			color: this.resolveColor("var(--jelly-fill)"),
+		};
+	}
 
-      this.addEventListener('pointerenter', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-        this.startHoverLoop(elIndex);
-      });
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.sync();
 
-      this.addEventListener('pointermove', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-      });
+		// Pop when the label content changes
+		this.mutationObserver = new MutationObserver(() => this.centerPop(0.7));
 
-      this.addEventListener('pointerleave', () => {
-        this.stopHoverLoop();
-      });
-    }
-  }
+		this.mutationObserver.observe(this, {
+			childList: true,
+			characterData: true,
+			subtree: true,
+		});
 
-  // Lifecycle method: Called automatically when the element is appended to the
-  // DOM. Re-arm the content observer - disconnectedCallback dropped it and a
-  // badge that is detached and re-appended should keep popping on new counts.
-  override connectedCallback (): void {
-    super.connectedCallback();
-    this.mutationObserver?.observe(this, { childList: true, characterData: true, subtree: true });
-  }
+		// Hover: continuous simplex-noise wobble — same as jelly-button/jelly-card.
+		if (!this.reducedMotion) {
+			const elIndex = [
+				...document.querySelectorAll("jelly-badge"),
+			].indexOf(this);
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (!this.built) {
-      return;
-    }
+			this.addEventListener("pointerenter", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
 
-    if (name === 'shape') {
-      this.reshapeMembrane();
-      return;
-    }
+				this.startHoverLoop(elIndex);
+			});
 
-    this.sync();
-  }
+			this.addEventListener("pointermove", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
+			});
 
-  // With `live`, content changes are announced politely by screen readers
-  sync (): void {
-    if (this.hasAttribute('live')) {
-      this.setAttribute('role', 'status');
-      this.setAttribute('aria-live', 'polite');
-    } else {
-      this.removeAttribute('role');
-      this.removeAttribute('aria-live');
-    }
-  }
+			this.addEventListener("pointerleave", () => {
+				this.stopHoverLoop();
+			});
+		}
+	}
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  override disconnectedCallback (): void {
-    super.disconnectedCallback();
-    this.mutationObserver?.disconnect();
-  }
+	// Lifecycle method: Called automatically when the element is appended to the
+	// DOM. Re-arm the content observer - disconnectedCallback dropped it and a
+	// badge that is detached and re-appended should keep popping on new counts.
+	override connectedCallback(): void {
+		super.connectedCallback();
 
+		this.mutationObserver?.observe(this, {
+			childList: true,
+			characterData: true,
+			subtree: true,
+		});
+	}
+
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (!this.built) {
+			return;
+		}
+
+		if (name === "shape") {
+			this.reshapeMembrane();
+
+			return;
+		}
+
+		this.sync();
+	}
+
+	// With `live`, content changes are announced politely by screen readers
+	sync(): void {
+		if (this.hasAttribute("live")) {
+			this.setAttribute("role", "status");
+
+			this.setAttribute("aria-live", "polite");
+		} else {
+			this.removeAttribute("role");
+
+			this.removeAttribute("aria-live");
+		}
+	}
+
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
+
+		this.mutationObserver?.disconnect();
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-badge', JellyBadge);
+customElements.define("jelly-badge", JellyBadge);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-badge': JellyBadge;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-badge": JellyBadge;
+	}
 }

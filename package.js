@@ -7,4 +7,4 @@
  * keeps the same named exports available to JavaScript consumers.
  */
 
-export * from './dist/jelly.js';
+export * from "./dist/jelly.js";

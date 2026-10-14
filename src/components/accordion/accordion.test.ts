@@ -1,36 +1,44 @@
-import { expect, test } from 'vitest';
+import { expect, test } from "vitest";
 
-import { mount, raf } from '../../testing/index.js';
+import { mount, raf } from "../../testing/index.js";
 
-import './index.js';
-import type { JellyCollapsible } from '../collapsible/index.js';
+import "./index.js";
 
-test('single mode closes siblings when one item opens', async () => {
-  const host = mount(`
+import type { JellyCollapsible } from "../collapsible/index.js";
+
+test("single mode closes siblings when one item opens", async () => {
+	const host = mount(`
     <jelly-accordion single>
       <jelly-collapsible open><span slot="header">One</span>1</jelly-collapsible>
       <jelly-collapsible><span slot="header">Two</span>2</jelly-collapsible>
     </jelly-accordion>`);
-  await raf();
 
-  const [one, two] = host.querySelectorAll('jelly-collapsible') as NodeListOf<JellyCollapsible>;
+	await raf();
 
-  (two.shadowRoot!.querySelector('.head') as HTMLButtonElement).click();
+	const [one, two] = host.querySelectorAll(
+		"jelly-collapsible",
+	) as NodeListOf<JellyCollapsible>;
 
-  expect(two.open).toBe(true);
-  expect(one.open).toBe(false);
+	(two.shadowRoot!.querySelector(".head") as HTMLButtonElement).click();
 
-  host.remove();
+	expect(two.open).toBe(true);
+
+	expect(one.open).toBe(false);
+
+	host.remove();
 });
 
-test('propagates its size to child collapsibles', async () => {
-  const host = mount(`
+test("propagates its size to child collapsibles", async () => {
+	const host = mount(`
     <jelly-accordion size="large">
       <jelly-collapsible><span slot="header">One</span>1</jelly-collapsible>
     </jelly-accordion>`);
-  await raf();
 
-  expect(host.querySelector('jelly-collapsible')!.getAttribute('size')).toBe('large');
+	await raf();
 
-  host.remove();
+	expect(host.querySelector("jelly-collapsible")!.getAttribute("size")).toBe(
+		"large",
+	);
+
+	host.remove();
 });

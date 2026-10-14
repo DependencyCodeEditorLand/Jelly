@@ -8,13 +8,15 @@
  * prefers-reduced-motion by settling into something calm and static.
  */
 
-import { JellyElement } from '../../element/index.js';
-import type { Shape }   from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import { uniqueId }     from '../../utilities/index.js';
+import type { Shape } from "../../element/index.js";
 
-import spinnerStyles    from './spinner.css?inline';
-import variantStyles    from '../../styles/variants.css?inline';
+import { uniqueId } from "../../utilities/index.js";
+
+import spinnerStyles from "./spinner.css?inline";
+
+import variantStyles from "../../styles/variants.css?inline";
 
 /**
  * A loading spinner: gooey travelling dots (default) or a morphing blob.
@@ -29,58 +31,68 @@ import variantStyles    from '../../styles/variants.css?inline';
  * @cssprop [--jelly-fill] - Dot / blob color.
  */
 export class JellySpinner extends JellyElement {
+	timeAccumulator = 0;
 
-  timeAccumulator = 0;
-  idx = 0;
-  angle = 0;
-  instanceId = uniqueId('jelly-spinner-goo');
+	idx = 0;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['type', 'variant', 'size', 'label'];
-  }
+	angle = 0;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (!this.built) {
-      return;
-    }
+	instanceId = uniqueId("jelly-spinner-goo");
 
-    switch (name) {
-      case 'type':
-        // blob and dots are different markup + geometry; re-render the content
-        // and clear the old surface. The host's CSS size flip drives the body
-        // reshape through the ResizeObserver.
-        this.shadowRoot!.querySelector('.jelly-content')!.innerHTML = this.content();
-        this.clearCanvas();
-        break;
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["type", "variant", "size", "label"];
+	}
 
-      case 'size':
-        this.applyShape();
-        break;
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (!this.built) {
+			return;
+		}
 
-      case 'label':
-        this.setAttribute('aria-label', this.getAttribute('label') || 'Loading');
-        break;
-    }
+		switch (name) {
+			case "type":
+				// blob and dots are different markup + geometry; re-render the content
+				// and clear the old surface. The host's CSS size flip drives the body
+				// reshape through the ResizeObserver.
+				this.shadowRoot!.querySelector(".jelly-content")!.innerHTML =
+					this.content();
 
-    this.requestFrame();
-  }
+				this.clearCanvas();
 
-  // The spinner flavor: gooey dots (default) or a morphing blob
-  get type (): string {
-    return this.getAttribute('type') || 'dots';
-  }
+				break;
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return variantStyles + spinnerStyles;
-  }
+			case "size":
+				this.applyShape();
 
-  // Dots render as gooey SVG; the blob is pure canvas
-  override content (): string {
-    if (this.type === 'dots') {
-      return `
+				break;
+
+			case "label":
+				this.setAttribute(
+					"aria-label",
+					this.getAttribute("label") || "Loading",
+				);
+
+				break;
+		}
+
+		this.requestFrame();
+	}
+
+	// The spinner flavor: gooey dots (default) or a morphing blob
+	get type(): string {
+		return this.getAttribute("type") || "dots";
+	}
+
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return variantStyles + spinnerStyles;
+	}
+
+	// Dots render as gooey SVG; the blob is pure canvas
+	override content(): string {
+		if (this.type === "dots") {
+			return `
         <svg class="dots" viewBox="0 0 42 18" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
             <filter id="${this.instanceId}">
@@ -96,100 +108,115 @@ export class JellySpinner extends JellyElement {
             <circle class="rover" cx="9" cy="9" r="5.4" />
           </g>
         </svg>`;
-    }
+		}
 
-    return '';
-  }
+		return "";
+	}
 
-  // The blob is a circle; the dots body is unused (SVG draws instead)
-  override shape (width: number, height: number): Shape {
-    if (this.type === 'dots') {
-      return { width, height, radius: height / 2 };
-    }
+	// The blob is a circle; the dots body is unused (SVG draws instead)
+	override shape(width: number, height: number): Shape {
+		if (this.type === "dots") {
+			return { width, height, radius: height / 2 };
+		}
 
-    const size = Math.min(width, height);
+		const size = Math.min(width, height);
 
-    return { width: size, height: size, radius: size / 2 };
-  }
+		return { width: size, height: size, radius: size / 2 };
+	}
 
-  // Called once after the shadow DOM and canvas exist. Wire ARIA here.
-  override onBuilt (): void {
-    this.setAttribute('role', 'status');
+	// Called once after the shadow DOM and canvas exist. Wire ARIA here.
+	override onBuilt(): void {
+		this.setAttribute("role", "status");
 
-    if (!this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', this.getAttribute('label') || 'Loading');
-    }
-  }
+		if (!this.hasAttribute("aria-label")) {
+			this.setAttribute(
+				"aria-label",
+				this.getAttribute("label") || "Loading",
+			);
+		}
+	}
 
-  // One animation step: keep the blob alive, spinning and breathing
-  override frame (dt: number): boolean {
-    // The dots loader is CSS/SVG-driven; no canvas animation loop needed
-    if (this.type === 'dots') {
-      return false;
-    }
+	// One animation step: keep the blob alive, spinning and breathing
+	override frame(dt: number): boolean {
+		// The dots loader is CSS/SVG-driven; no canvas animation loop needed
+		if (this.type === "dots") {
+			return false;
+		}
 
-    const body = this.body;
+		const body = this.body;
 
-    if (!body) {
-      return false;
-    }
+		if (!body) {
+			return false;
+		}
 
-    if (this.reducedMotion) {
-      this.clearCanvas();
-      this.paintBody(body, { fill: this.fill() });
-      return false; // calm static blob
-    }
+		if (this.reducedMotion) {
+			this.clearCanvas();
 
-    // Keep it alive: jump around the rim dropping gentle impulses so the
-    // blob never settles into a circle
-    this.timeAccumulator += dt;
+			this.paintBody(body, { fill: this.fill() });
 
-    if (this.timeAccumulator > 0.13) {
-      this.timeAccumulator = 0;
+			return false; // calm static blob
+		}
 
-      const n = body.membrane.length;
+		// Keep it alive: jump around the rim dropping gentle impulses so the
+		// blob never settles into a circle
+		this.timeAccumulator += dt;
 
-      this.idx = (this.idx + Math.round(n * 0.37)) % n;
+		if (this.timeAccumulator > 0.13) {
+			this.timeAccumulator = 0;
 
-      body.addMembraneImpulse(
-        this.idx,
-        body.config.insideLocalBulgeImpulse * 0.24,
-        body.config.rippleWidth * 2.4,
-      );
-    }
+			const n = body.membrane.length;
 
-    body.update(dt);
+			this.idx = (this.idx + Math.round(n * 0.37)) % n;
 
-    // A slow spin plus a gentle breathing squash (volume-preserving) turn the
-    // morphing blob into something that reads as a living organism, not a
-    // wobbling circle sitting still
-    this.angle += dt * 1.5;
+			body.addMembraneImpulse(
+				this.idx,
 
-    const breathe = 1 + Math.sin(this.angle * 1.7) * 0.05;
-    const cx      = this.cssW / 2;
-    const cy      = this.cssH / 2;
-    const ctx     = this.ctx;
+				body.config.insideLocalBulgeImpulse * 0.24,
 
-    this.clearCanvas();
+				body.config.rippleWidth * 2.4,
+			);
+		}
 
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(this.angle);
-    ctx.scale(breathe, 2 - breathe);
-    ctx.translate(-cx, -cy);
-    this.paintBody(body, { fill: this.fill() });
-    ctx.restore();
+		body.update(dt);
 
-    return true;
-  }
+		// A slow spin plus a gentle breathing squash (volume-preserving) turn the
+		// morphing blob into something that reads as a living organism, not a
+		// wobbling circle sitting still
+		this.angle += dt * 1.5;
 
+		const breathe = 1 + Math.sin(this.angle * 1.7) * 0.05;
+
+		const cx = this.cssW / 2;
+
+		const cy = this.cssH / 2;
+
+		const ctx = this.ctx;
+
+		this.clearCanvas();
+
+		ctx.save();
+
+		ctx.translate(cx, cy);
+
+		ctx.rotate(this.angle);
+
+		ctx.scale(breathe, 2 - breathe);
+
+		ctx.translate(-cx, -cy);
+
+		this.paintBody(body, { fill: this.fill() });
+
+		ctx.restore();
+
+		return true;
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-spinner', JellySpinner);
+customElements.define("jelly-spinner", JellySpinner);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-spinner': JellySpinner;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-spinner": JellySpinner;
+	}
 }

@@ -20,28 +20,28 @@
  * `node scripts/build-docs-data.mjs`.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
-import { GROUP_ORDER, COMPONENTS } from '../docs/content/content.js';
+import { GROUP_ORDER, COMPONENTS } from "../docs/content/content.js";
 
-const root         = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = resolve(root, 'custom-elements.json');
-const outputPath   = resolve(root, 'docs/content/data.js');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const manifestPath = resolve(root, "custom-elements.json");
+const outputPath = resolve(root, "docs/content/data.js");
 
 // ---- Load the manifest, indexed by tag name --------------------------------
 
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 
 const elements = new Map();
 
 for (const module of manifest.modules ?? []) {
-  for (const declaration of module.declarations ?? []) {
-    if (declaration.customElement && declaration.tagName) {
-      elements.set(declaration.tagName, declaration);
-    }
-  }
+	for (const declaration of module.declarations ?? []) {
+		if (declaration.customElement && declaration.tagName) {
+			elements.set(declaration.tagName, declaration);
+		}
+	}
 }
 
 // ---- Reconcile one list against the manifest -------------------------------
@@ -50,15 +50,16 @@ const warnings = [];
 
 // Attributes whose names begin with a reserved prefix are host-forwarding
 // implementation detail, never part of the documented public surface.
-const isInternalAttribute = (name) => name.startsWith('aria-') || name === 'role';
+const isInternalAttribute = (name) =>
+	name.startsWith("aria-") || name === "role";
 
 // CSS parts provided by the JellyElement base class (defined once in
 // element.ts, not re-declared per component), so a canvas component may
 // legitimately document them even though its own JSDoc doesn't repeat them.
-const BASE_PARTS = new Set(['jelly']);
+const BASE_PARTS = new Set(["jelly"]);
 
 // The manifest names the default slot ""; the docs label it "(default)".
-const normalizeSlot = (name) => (name === '' ? '(default)' : name);
+const normalizeSlot = (name) => (name === "" ? "(default)" : name);
 
 /*
  * Merge a curated list with the manifest's view of the same surface. `manItems`
@@ -66,66 +67,78 @@ const normalizeSlot = (name) => (name === '' ? '(default)' : name);
  * The manifest defines membership and order; content supplies the prose. Types
  * are taken from the manifest when present. Drift is collected as warnings.
  */
-function reconcile (tag, kind, manItems, contentItems, { includeType = false } = {}) {
-  const key     = kind === 'slot' ? normalizeSlot : (name) => name;
-  const content = new Map((contentItems ?? []).map((item) => [key(item.name), item]));
-  const seen    = new Set();
-  const merged  = [];
+function reconcile(
+	tag,
+	kind,
+	manItems,
+	contentItems,
+	{ includeType = false } = {},
+) {
+	const key = kind === "slot" ? normalizeSlot : (name) => name;
+	const content = new Map(
+		(contentItems ?? []).map((item) => [key(item.name), item]),
+	);
+	const seen = new Set();
+	const merged = [];
 
-  for (const manItem of manItems ?? []) {
-    if (kind === 'attribute' && isInternalAttribute(manItem.name)) {
-      continue;
-    }
+	for (const manItem of manItems ?? []) {
+		if (kind === "attribute" && isInternalAttribute(manItem.name)) {
+			continue;
+		}
 
-    const name = key(manItem.name);
-    seen.add(name);
+		const name = key(manItem.name);
+		seen.add(name);
 
-    const curated = content.get(name);
+		const curated = content.get(name);
 
-    if (!curated) {
-      warnings.push(`${tag}: ${kind} "${name}" is in the source but not documented in content.js`);
-    }
+		if (!curated) {
+			warnings.push(
+				`${tag}: ${kind} "${name}" is in the source but not documented in content.js`,
+			);
+		}
 
-    const entry = { name };
+		const entry = { name };
 
-    if (includeType) {
-      // Prefer the source's type; fall back to any prose type the content set
-      entry.type = manItem.type?.text ?? curated?.type;
-      if (entry.type === undefined) delete entry.type;
-    }
+		if (includeType) {
+			// Prefer the source's type; fall back to any prose type the content set
+			entry.type = manItem.type?.text ?? curated?.type;
+			if (entry.type === undefined) delete entry.type;
+		}
 
-    if (curated?.default !== undefined) {
-      entry.default = curated.default;
-    }
+		if (curated?.default !== undefined) {
+			entry.default = curated.default;
+		}
 
-    entry.description = curated?.description ?? manItem.description ?? '';
+		entry.description = curated?.description ?? manItem.description ?? "";
 
-    merged.push(entry);
-  }
+		merged.push(entry);
+	}
 
-  // Anything documented that the manifest no longer exposes is stale - unless
-  // it is a base-class part every canvas component inherits.
-  for (const item of contentItems ?? []) {
-    const name = key(item.name);
+	// Anything documented that the manifest no longer exposes is stale - unless
+	// it is a base-class part every canvas component inherits.
+	for (const item of contentItems ?? []) {
+		const name = key(item.name);
 
-    if (seen.has(name)) {
-      continue;
-    }
+		if (seen.has(name)) {
+			continue;
+		}
 
-    if (kind === 'part' && BASE_PARTS.has(name)) {
-      merged.push(item);
-      continue;
-    }
+		if (kind === "part" && BASE_PARTS.has(name)) {
+			merged.push(item);
+			continue;
+		}
 
-    if (kind === 'attribute' && isInternalAttribute(name)) {
-      continue;
-    }
+		if (kind === "attribute" && isInternalAttribute(name)) {
+			continue;
+		}
 
-    warnings.push(`${tag}: ${kind} "${name}" is documented in content.js but not found in the source`);
-    merged.push(item); // keep it so the docs page still renders; the warning flags it
-  }
+		warnings.push(
+			`${tag}: ${kind} "${name}" is documented in content.js but not found in the source`,
+		);
+		merged.push(item); // keep it so the docs page still renders; the warning flags it
+	}
 
-  return merged;
+	return merged;
 }
 
 /*
@@ -135,84 +148,118 @@ function reconcile (tag, kind, manItems, contentItems, { includeType = false } =
  * for each. We still surface any `@cssprop` the source DOES declare that the
  * content forgot, so a newly-documented token can't slip through undocumented.
  */
-function reconcileCssProperties (tag, manProps, contentProps) {
-  const documented = new Set((contentProps ?? []).map((prop) => prop.name));
+function reconcileCssProperties(tag, manProps, contentProps) {
+	const documented = new Set((contentProps ?? []).map((prop) => prop.name));
 
-  for (const manProp of manProps ?? []) {
-    if (!documented.has(manProp.name)) {
-      warnings.push(`${tag}: CSS property "${manProp.name}" is declared with @cssprop but not documented in content.js`);
-    }
-  }
+	for (const manProp of manProps ?? []) {
+		if (!documented.has(manProp.name)) {
+			warnings.push(
+				`${tag}: CSS property "${manProp.name}" is declared with @cssprop but not documented in content.js`,
+			);
+		}
+	}
 
-  return contentProps ?? [];
+	return contentProps ?? [];
 }
 
 // Events carry an optional detail payload shape alongside their description
-function reconcileEvents (tag, manEvents, contentEvents) {
-  const content = new Map((contentEvents ?? []).map((event) => [event.name, event]));
-  const seen    = new Set();
-  const merged  = [];
+function reconcileEvents(tag, manEvents, contentEvents) {
+	const content = new Map(
+		(contentEvents ?? []).map((event) => [event.name, event]),
+	);
+	const seen = new Set();
+	const merged = [];
 
-  for (const manEvent of manEvents ?? []) {
-    seen.add(manEvent.name);
+	for (const manEvent of manEvents ?? []) {
+		seen.add(manEvent.name);
 
-    const curated = content.get(manEvent.name);
+		const curated = content.get(manEvent.name);
 
-    if (!curated) {
-      warnings.push(`${tag}: event "${manEvent.name}" is in the source but not documented in content.js`);
-    }
+		if (!curated) {
+			warnings.push(
+				`${tag}: event "${manEvent.name}" is in the source but not documented in content.js`,
+			);
+		}
 
-    const entry = { name: manEvent.name, description: curated?.description ?? manEvent.description ?? '' };
+		const entry = {
+			name: manEvent.name,
+			description: curated?.description ?? manEvent.description ?? "",
+		};
 
-    if (curated?.detail !== undefined) {
-      entry.detail = curated.detail;
-    }
+		if (curated?.detail !== undefined) {
+			entry.detail = curated.detail;
+		}
 
-    merged.push(entry);
-  }
+		merged.push(entry);
+	}
 
-  for (const event of contentEvents ?? []) {
-    if (!seen.has(event.name)) {
-      warnings.push(`${tag}: event "${event.name}" is documented in content.js but not emitted by the source`);
-      merged.push(event);
-    }
-  }
+	for (const event of contentEvents ?? []) {
+		if (!seen.has(event.name)) {
+			warnings.push(
+				`${tag}: event "${event.name}" is documented in content.js but not emitted by the source`,
+			);
+			merged.push(event);
+		}
+	}
 
-  return merged;
+	return merged;
 }
 
 // ---- Build each component descriptor ---------------------------------------
 
 const built = COMPONENTS.map((component) => {
-  const element = elements.get(component.tag);
+	const element = elements.get(component.tag);
 
-  if (!element) {
-    warnings.push(`${component.tag}: documented in content.js but has no custom element in the manifest`);
-    return component;
-  }
+	if (!element) {
+		warnings.push(
+			`${component.tag}: documented in content.js but has no custom element in the manifest`,
+		);
+		return component;
+	}
 
-  return {
-    tag:           component.tag,
-    group:         component.group,
-    summary:       component.summary,
-    description:   component.description,
-    attributes:    reconcile(component.tag, 'attribute', element.attributes, component.attributes, { includeType: true }),
-    events:        reconcileEvents(component.tag, element.events, component.events),
-    properties:    component.properties ?? [],
-    methods:       component.methods ?? [],
-    slots:         reconcile(component.tag, 'slot', element.slots, component.slots),
-    parts:         reconcile(component.tag, 'part', element.cssParts, component.parts),
-    cssProperties: reconcileCssProperties(component.tag, element.cssProperties, component.cssProperties),
-    keyboard:      component.keyboard ?? [],
-    examples:      component.examples ?? [],
-  };
+	return {
+		tag: component.tag,
+		group: component.group,
+		summary: component.summary,
+		description: component.description,
+		attributes: reconcile(
+			component.tag,
+			"attribute",
+			element.attributes,
+			component.attributes,
+			{ includeType: true },
+		),
+		events: reconcileEvents(
+			component.tag,
+			element.events,
+			component.events,
+		),
+		properties: component.properties ?? [],
+		methods: component.methods ?? [],
+		slots: reconcile(component.tag, "slot", element.slots, component.slots),
+		parts: reconcile(
+			component.tag,
+			"part",
+			element.cssParts,
+			component.parts,
+		),
+		cssProperties: reconcileCssProperties(
+			component.tag,
+			element.cssProperties,
+			component.cssProperties,
+		),
+		keyboard: component.keyboard ?? [],
+		examples: component.examples ?? [],
+	};
 });
 
 // Every manifest element should be documented somewhere
 for (const tag of elements.keys()) {
-  if (!COMPONENTS.some((component) => component.tag === tag)) {
-    warnings.push(`${tag}: exists in the source but is not documented in content.js`);
-  }
+	if (!COMPONENTS.some((component) => component.tag === tag)) {
+		warnings.push(
+			`${tag}: exists in the source but is not documented in content.js`,
+		);
+	}
 }
 
 // ---- Emit docs/content/data.js -----------------------------------------------------
@@ -235,11 +282,13 @@ writeFileSync(outputPath, header);
 // ---- Report ----------------------------------------------------------------
 
 if (warnings.length) {
-  console.warn(`\n⚠ ${warnings.length} documentation drift warning(s):`);
-  for (const warning of warnings) {
-    console.warn(`  - ${warning}`);
-  }
-  console.warn('');
+	console.warn(`\n⚠ ${warnings.length} documentation drift warning(s):`);
+	for (const warning of warnings) {
+		console.warn(`  - ${warning}`);
+	}
+	console.warn("");
 }
 
-console.log(`✓ Wrote docs/content/data.js — ${built.length} components from the manifest.`);
+console.log(
+	`✓ Wrote docs/content/data.js — ${built.length} components from the manifest.`,
+);

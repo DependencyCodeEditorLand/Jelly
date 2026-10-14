@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 /*
  * Component tests run in a real Chromium via Playwright, so canvas painting,
@@ -7,13 +7,13 @@ import { defineConfig } from 'vitest/config';
  * component as `*.test.ts`.
  */
 export default defineConfig({
-  test: {
-    include: ['src/**/*.test.ts'],
-    browser: {
-      enabled: true,
-      provider: 'playwright',
-      headless: true,
-      name: 'chromium',
-    },
-  },
+	test: {
+		include: ["src/**/*.test.ts"],
+		browser: {
+			enabled: true,
+			provider: "playwright",
+			headless: true,
+			name: "chromium",
+		},
+	},
 });

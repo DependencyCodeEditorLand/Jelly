@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
+import { defineConfig } from "vite";
+
+import dts from "vite-plugin-dts";
 
 /*
  * Library build. Everything is bundled into a single ES module (the library
@@ -11,16 +12,16 @@ import dts from 'vite-plugin-dts';
  * Test config lives in vitest.config.ts.
  */
 export default defineConfig({
-  build: {
-    target: 'es2022',
-    lib: {
-      entry: 'src/jelly.ts',
-      formats: ['es'],
-      fileName: () => 'jelly.js',
-    },
-    sourcemap: true,
-  },
-  plugins: [
-    // dts({ rollupTypes: true, tsconfigPath: './tsconfig.json', skipDiagnostics: true }),
-  ],
+	build: {
+		target: "es2022",
+		lib: {
+			entry: "src/jelly.ts",
+			formats: ["es"],
+			fileName: () => "jelly.js",
+		},
+		sourcemap: true,
+	},
+	plugins: [
+		// dts({ rollupTypes: true, tsconfigPath: './tsconfig.json', skipDiagnostics: true }),
+	],
 });

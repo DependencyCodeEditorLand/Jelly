@@ -1,35 +1,41 @@
-import { expect, test } from 'vitest';
+import { expect, test } from "vitest";
 
-import { mount } from '../../testing/index.js';
+import { mount } from "../../testing/index.js";
 
-import './index.js';
-import type { JellyDivider } from './index.js';
+import "./index.js";
 
-test('upgrades as a separator with a plain rule', () => {
-  const host = mount('<jelly-divider></jelly-divider>');
-  const el = host.querySelector('jelly-divider') as JellyDivider;
+import type { JellyDivider } from "./index.js";
 
-  expect(el.getAttribute('role')).toBe('separator');
-  expect(el.shadowRoot!.querySelector('.line')).toBeTruthy();
+test("upgrades as a separator with a plain rule", () => {
+	const host = mount("<jelly-divider></jelly-divider>");
 
-  host.remove();
+	const el = host.querySelector("jelly-divider") as JellyDivider;
+
+	expect(el.getAttribute("role")).toBe("separator");
+
+	expect(el.shadowRoot!.querySelector(".line")).toBeTruthy();
+
+	host.remove();
 });
 
-test('renders a labelled rule from slotted text', () => {
-  const host = mount('<jelly-divider>or</jelly-divider>');
-  const el = host.querySelector('jelly-divider') as JellyDivider;
+test("renders a labelled rule from slotted text", () => {
+	const host = mount("<jelly-divider>or</jelly-divider>");
 
-  const labelled = el.shadowRoot!.querySelector('.labelled .label');
-  expect(labelled?.textContent).toBe('or');
+	const el = host.querySelector("jelly-divider") as JellyDivider;
 
-  host.remove();
+	const labelled = el.shadowRoot!.querySelector(".labelled .label");
+
+	expect(labelled?.textContent).toBe("or");
+
+	host.remove();
 });
 
-test('vertical dividers expose aria-orientation', () => {
-  const host = mount('<jelly-divider direction="vertical"></jelly-divider>');
-  const el = host.querySelector('jelly-divider') as JellyDivider;
+test("vertical dividers expose aria-orientation", () => {
+	const host = mount('<jelly-divider direction="vertical"></jelly-divider>');
 
-  expect(el.getAttribute('aria-orientation')).toBe('vertical');
+	const el = host.querySelector("jelly-divider") as JellyDivider;
 
-  host.remove();
+	expect(el.getAttribute("aria-orientation")).toBe("vertical");
+
+	host.remove();
 });

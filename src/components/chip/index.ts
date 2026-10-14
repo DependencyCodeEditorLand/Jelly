@@ -5,15 +5,17 @@
  * `remove` event and takes the element out of the DOM
  */
 
-import { JellyElement }  from '../../element/index.js';
-import type { Shape }    from '../../element/index.js';
+import { JellyElement } from "../../element/index.js";
 
-import { emit }          from '../../utilities/index.js';
-import { triggerHaptic } from '../../utilities/index.js';
+import type { Shape } from "../../element/index.js";
 
-import { variantColors } from '../../theme/index.js';
+import { emit } from "../../utilities/index.js";
 
-import chipStyles        from './chip.css?inline';
+import { triggerHaptic } from "../../utilities/index.js";
+
+import { variantColors } from "../../theme/index.js";
+
+import chipStyles from "./chip.css?inline";
 
 /**
  * A small jelly capsule / tag. Optionally selectable or removable.
@@ -38,341 +40,414 @@ import chipStyles        from './chip.css?inline';
  * @csspart remove - The ✕ remove button.
  */
 export class JellyChip extends JellyElement {
+	// Theme flips repaint so the crossfade re-resolves against the new tokens
+	onThemeFlip = (): void => {
+		this.requestFrame();
+	};
 
-  // Theme flips repaint so the crossfade re-resolves against the new tokens
-  onThemeFlip = (): void => {
-    this.requestFrame();
-  };
+	// Populated in onBuilt()
+	main!: HTMLElement;
 
-  // Populated in onBuilt()
-  main!: HTMLElement;
-  removeButton: HTMLElement | null = null;
-  selectTarget: number | null = null;
+	removeButton: HTMLElement | null = null;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['selected', 'disabled', 'selectable', 'removable', 'variant', 'shape'];
-  }
+	selectTarget: number | null = null;
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  override connectedCallback (): void {
-    super.connectedCallback();
-    window.addEventListener('jelly-theme-change', this.onThemeFlip);
-  }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return [
+			"selected",
+			"disabled",
+			"selectable",
+			"removable",
+			"variant",
+			"shape",
+		];
+	}
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  override disconnectedCallback (): void {
-    super.disconnectedCallback();
-    window.removeEventListener('jelly-theme-change', this.onThemeFlip);
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	override connectedCallback(): void {
+		super.connectedCallback();
 
-  // Component styles layered over the shared jelly base styles
-  override styles (): string {
-    return chipStyles + variantColors({ color: '--jelly-on', on: '--jelly-label-on' });
-  }
+		window.addEventListener("jelly-theme-change", this.onThemeFlip);
+	}
 
-  // The interactive markup that sits above the canvas
-  override content (): string {
-    const selectable = this.hasAttribute('selectable');
-    const removable  = this.hasAttribute('removable');
-    const disabled   = this.hasAttribute('disabled') ? ' disabled' : '';
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	override disconnectedCallback(): void {
+		super.disconnectedCallback();
 
-    const main = selectable
-      ? `<button class="main" part="main" aria-pressed="${this.hasAttribute('selected')}"${disabled}><slot></slot></button>`
-      : `<span class="main" part="main"><slot></slot></span>`;
+		window.removeEventListener("jelly-theme-change", this.onThemeFlip);
+	}
 
-    const remove = removable
-      ? `<button class="remove" part="remove" aria-label="Remove"${disabled}>
+	// Component styles layered over the shared jelly base styles
+	override styles(): string {
+		return (
+			chipStyles +
+			variantColors({ color: "--jelly-on", on: "--jelly-label-on" })
+		);
+	}
+
+	// The interactive markup that sits above the canvas
+	override content(): string {
+		const selectable = this.hasAttribute("selectable");
+
+		const removable = this.hasAttribute("removable");
+
+		const disabled = this.hasAttribute("disabled") ? " disabled" : "";
+
+		const main = selectable
+			? `<button class="main" part="main" aria-pressed="${this.hasAttribute("selected")}"${disabled}><slot></slot></button>`
+			: `<span class="main" part="main"><slot></slot></span>`;
+
+		const remove = removable
+			? `<button class="remove" part="remove" aria-label="Remove"${disabled}>
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
              <path d="M6 6l12 12M18 6L6 18" />
            </svg>
          </button>`
-      : '';
+			: "";
 
-    return `<div class="chip" part="chip">${main}${remove}</div>`;
-  }
+		return `<div class="chip" part="chip">${main}${remove}</div>`;
+	}
 
-  // The capsule (or, with shape="square", rounded rectangle) the physics body
-  // takes, inset so the wobble stays inside
-  override shape (width: number, height: number): Shape {
-    const w      = width - 6;
-    const h      = height - 6;
-    const square = this.getAttribute('shape') === 'square';
+	// The capsule (or, with shape="square", rounded rectangle) the physics body
+	// takes, inset so the wobble stays inside
+	override shape(width: number, height: number): Shape {
+		const w = width - 6;
 
-    // A plain-px --jelly-chip-radius override reaches the painted surface; the
-    // 999px pill default falls through to the ratio
-    const declared = parseFloat(getComputedStyle(this).getPropertyValue('--jelly-chip-radius'));
-    const radius   = Number.isFinite(declared) && declared < 900 ? Math.min(declared, h / 2) : (square ? h * 0.32 : h / 2);
+		const h = height - 6;
 
-    return { width: w, height: h, radius };
-  }
+		const square = this.getAttribute("shape") === "square";
 
-  // The current fill along the off → on crossfade
-  override fill (): string {
-    return this.mixFill(this.hasAttribute('selected') ? 1 : 0);
-  }
+		// A plain-px --jelly-chip-radius override reaches the painted surface; the
+		// 999px pill default falls through to the ratio
+		const declared = parseFloat(
+			getComputedStyle(this).getPropertyValue("--jelly-chip-radius"),
+		);
 
-  // Blend the off → on fills at factor t (0..1) so the color eases, not snaps.
-  // Both endpoints resolve fresh each paint so a runtime --jelly-on / --jelly-fill
-  // override (inline style, class swap) recolors the chip instead of being
-  // pinned to a stale cached triple.
-  mixFill (t: number): string {
-    return this.mixColor('var(--jelly-fill)', 'var(--jelly-on)', t);
-  }
+		const radius =
+			Number.isFinite(declared) && declared < 900
+				? Math.min(declared, h / 2)
+				: square
+					? h * 0.32
+					: h / 2;
 
-  /*
-   * Ease a selection factor so the jelly fill fades between tones instead
-   * of flipping instantly. Runs whenever `selected` changes (or the body
-   * wobbles).
-   */
-  override frame (dt: number): boolean {
-    const body = this.body;
+		return { width: w, height: h, radius };
+	}
 
-    if (!body) {
-      return false;
-    }
+	// The current fill along the off → on crossfade
+	override fill(): string {
+		return this.mixFill(this.hasAttribute("selected") ? 1 : 0);
+	}
 
-    const target = this.hasAttribute('selected') ? 1 : 0;
+	// Blend the off → on fills at factor t (0..1) so the color eases, not snaps.
+	// Both endpoints resolve fresh each paint so a runtime --jelly-on / --jelly-fill
+	// override (inline style, class swap) recolors the chip instead of being
+	// pinned to a stale cached triple.
+	mixFill(t: number): string {
+		return this.mixColor("var(--jelly-fill)", "var(--jelly-on)", t);
+	}
 
-    if (this.selectTarget == null) {
-      this.selectTarget = target;
-    }
+	/*
+	 * Ease a selection factor so the jelly fill fades between tones instead
+	 * of flipping instantly. Runs whenever `selected` changes (or the body
+	 * wobbles).
+	 */
+	override frame(dt: number): boolean {
+		const body = this.body;
 
-    this.selectTarget += (target - this.selectTarget) * Math.min(1, dt * 11);
+		if (!body) {
+			return false;
+		}
 
-    if (Math.abs(target - this.selectTarget) < 0.004) {
-      this.selectTarget = target;
-    }
+		const target = this.hasAttribute("selected") ? 1 : 0;
 
-    body.update(dt);
-    this.clearCanvas();
-    this.paintBody(body, { fill: this.mixFill(this.selectTarget), ring: this.focusRing() });
+		if (this.selectTarget == null) {
+			this.selectTarget = target;
+		}
 
-    return Math.abs(target - this.selectTarget) > 0.001 || !body.isResting();
-  }
+		this.selectTarget +=
+			(target - this.selectTarget) * Math.min(1, dt * 11);
 
-  // Called once after the shadow DOM and canvas exist. Wire events here.
-  override onBuilt (): void {
-    this.main         = this.shadowRoot!.querySelector('.main')!;
-    this.removeButton = this.shadowRoot!.querySelector('.remove');
+		if (Math.abs(target - this.selectTarget) < 0.004) {
+			this.selectTarget = target;
+		}
 
-    // Seed the fade factor to the initial state so the first toggle always
-    // eases (rather than depending on a frame having run while mounted)
-    this.selectTarget = this.hasAttribute('selected') ? 1 : 0;
+		body.update(dt);
 
-    const interactive = this.hasAttribute('selectable') || this.hasAttribute('removable');
+		this.clearCanvas();
 
-    if (interactive) {
-      const focusTarget = this.hasAttribute('selectable') ? this.main : this.removeButton;
-      this.useHostFocusTarget(focusTarget);
-    }
+		this.paintBody(body, {
+			fill: this.mixFill(this.selectTarget),
+			ring: this.focusRing(),
+		});
 
-    // Presses are wired by hand (not wirePress): capturing the pointer on
-    // the chip would retarget pointerup away from the ✕ button and swallow
-    // its click, so the press releases on pointerleave instead
-    const chip = this.shadowRoot!.querySelector('.chip') as HTMLElement;
+		return (
+			Math.abs(target - this.selectTarget) > 0.001 || !body.isResting()
+		);
+	}
 
-    chip.addEventListener('pointerdown', (event) => {
-      if (this.hasAttribute('disabled')) {
-        return;
-      }
-      this.pressAt(event.clientX, event.clientY, interactive ? 1 : 0.7);
-    });
+	// Called once after the shadow DOM and canvas exist. Wire events here.
+	override onBuilt(): void {
+		this.main = this.shadowRoot!.querySelector(".main")!;
 
-    const release = (): void => this.releaseBody();
+		this.removeButton = this.shadowRoot!.querySelector(".remove");
 
-    chip.addEventListener('pointerup', release);
-    chip.addEventListener('pointercancel', release);
-    chip.addEventListener('pointerleave', release);
+		// Seed the fade factor to the initial state so the first toggle always
+		// eases (rather than depending on a frame having run while mounted)
+		this.selectTarget = this.hasAttribute("selected") ? 1 : 0;
 
-    if (this.hasAttribute('selectable')) {
-      this.trackFocus(this.main);
+		const interactive =
+			this.hasAttribute("selectable") || this.hasAttribute("removable");
 
-      this.main.addEventListener('click', () => this.toggleSelected());
-      this.main.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-          return;
-        }
+		if (interactive) {
+			const focusTarget = this.hasAttribute("selectable")
+				? this.main
+				: this.removeButton;
 
-        // Route keyboard activation through the same click path as pointer
-        // activation so composed click listeners observe both consistently.
-        event.preventDefault();
+			this.useHostFocusTarget(focusTarget);
+		}
 
-        if (event.repeat || this.hasAttribute('disabled')) {
-          return;
-        }
+		// Presses are wired by hand (not wirePress): capturing the pointer on
+		// the chip would retarget pointerup away from the ✕ button and swallow
+		// its click, so the press releases on pointerleave instead
+		const chip = this.shadowRoot!.querySelector(".chip") as HTMLElement;
 
-        this.main.click();
-      });
-    }
+		chip.addEventListener("pointerdown", (event) => {
+			if (this.hasAttribute("disabled")) {
+				return;
+			}
 
-    if (this.removeButton) {
-      this.removeButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        this.removeChip();
-      });
-    }
+			this.pressAt(event.clientX, event.clientY, interactive ? 1 : 0.7);
+		});
 
-    // Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
-    if (!this.reducedMotion) {
-      const elIndex = [...document.querySelectorAll('jelly-chip')].indexOf(this);
+		const release = (): void => this.releaseBody();
 
-      this.addEventListener('pointerenter', (event: PointerEvent) => {
-        if (this.hasAttribute('disabled')) return;
-        this.updateHoverPointer(event.clientX, event.clientY);
-        this.startHoverLoop(elIndex);
-      });
+		chip.addEventListener("pointerup", release);
 
-      this.addEventListener('pointermove', (event: PointerEvent) => {
-        this.updateHoverPointer(event.clientX, event.clientY);
-      });
+		chip.addEventListener("pointercancel", release);
 
-      this.addEventListener('pointerleave', () => {
-        this.stopHoverLoop();
-      });
-    }
-  }
+		chip.addEventListener("pointerleave", release);
 
-  // Flip the selection, pop the jelly and notify listeners
-  toggleSelected (): void {
-    const next = !this.hasAttribute('selected');
+		if (this.hasAttribute("selectable")) {
+			this.trackFocus(this.main);
 
-    this.toggleAttribute('selected', next);
-    this.main.setAttribute('aria-pressed', String(next));
+			this.main.addEventListener("click", () => this.toggleSelected());
 
-    this.centerPop(next ? 1.05 : -0.85);
-    triggerHaptic();
+			this.main.addEventListener("keydown", (event) => {
+				if (event.key !== "Enter" && event.key !== " ") {
+					return;
+				}
 
-    emit(this, 'change');
-  }
+				// Route keyboard activation through the same click path as pointer
+				// activation so composed click listeners observe both consistently.
+				event.preventDefault();
 
-  // Fire the cancelable remove event, then collapse out of the layout
-  removeChip (): void {
-    if (emit(this, 'remove', null, { cancelable: true }) === false) {
-      return;
-    }
+				if (event.repeat || this.hasAttribute("disabled")) {
+					return;
+				}
 
-    this.centerPop(-1.1);
-    triggerHaptic();
+				this.main.click();
+			});
+		}
 
-    if (this.reducedMotion) {
-      this.remove();
-      return;
-    }
+		if (this.removeButton) {
+			this.removeButton.addEventListener("click", (event) => {
+				event.stopPropagation();
 
-    // Freeze the current width, then collapse it to 0 alongside the scale /
-    // fade so the row closes the gap organically instead of jumping when it's
-    // removed. Also swallow one flex gap (via negative margin) so the
-    // neighbours are already in their final spots when it leaves.
-    const gap = parseFloat(getComputedStyle(this.parentElement || this).columnGap) || 0;
-    const w   = this.getBoundingClientRect().width;
+				this.removeChip();
+			});
+		}
 
-    this.style.width = `${w}px`;
-    void this.offsetWidth; // reflow so the width transition has a start value
+		// Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
+		if (!this.reducedMotion) {
+			const elIndex = [
+				...document.querySelectorAll("jelly-chip"),
+			].indexOf(this);
 
-    this.classList.add('removing');
-    this.style.width = '0px';
+			this.addEventListener("pointerenter", (event: PointerEvent) => {
+				if (this.hasAttribute("disabled")) return;
 
-    if (gap) {
-      this.style.marginInlineEnd = `-${gap}px`;
-    }
+				this.updateHoverPointer(event.clientX, event.clientY);
 
-    let done = false;
+				this.startHoverLoop(elIndex);
+			});
 
-    const finish = (): void => {
-      if (done) {
-        return;
-      }
-      done = true;
-      this.remove();
-    };
+			this.addEventListener("pointermove", (event: PointerEvent) => {
+				this.updateHoverPointer(event.clientX, event.clientY);
+			});
 
-    this.addEventListener('transitionend', (event) => {
-      if (event.propertyName === 'width') {
-        finish();
-      }
-    });
+			this.addEventListener("pointerleave", () => {
+				this.stopHoverLoop();
+			});
+		}
+	}
 
-    setTimeout(finish, 480);
-  }
+	// Flip the selection, pop the jelly and notify listeners
+	toggleSelected(): void {
+		const next = !this.hasAttribute("selected");
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (!this.built) {
-      return;
-    }
+		this.toggleAttribute("selected", next);
 
-    switch (name) {
-      case 'selectable':
-      case 'removable':
-        // These decide whether the ✕ / toggle button exists, so re-render the
-        // interactive markup (the canvas + body are untouched siblings)
-        this.rebuildContent();
-        break;
+		this.main.setAttribute("aria-pressed", String(next));
 
-      case 'variant':
-        // A new variant swaps --jelly-on via CSS; repaint so the fill
-        // re-resolves (a resting body won't on its own)
-        this.requestFrame();
-        break;
+		this.centerPop(next ? 1.05 : -0.85);
 
-      case 'selected':
-        if (this.main?.tagName === 'BUTTON') {
-          this.main.setAttribute('aria-pressed', String(this.hasAttribute('selected')));
-        }
-        this.requestFrame();
-        break;
+		triggerHaptic();
 
-      case 'disabled':
-        if (this.main?.tagName === 'BUTTON') {
-          (this.main as HTMLButtonElement).disabled = this.hasAttribute('disabled');
-        }
-        if (this.removeButton) {
-          (this.removeButton as HTMLButtonElement).disabled = this.hasAttribute('disabled');
-        }
-        this.syncHostFocusTarget();
-        break;
+		emit(this, "change");
+	}
 
-      case 'shape':
-        this.reshapeMembrane();
-        break;
-    }
-  }
+	// Fire the cancelable remove event, then collapse out of the layout
+	removeChip(): void {
+		if (emit(this, "remove", null, { cancelable: true }) === false) {
+			return;
+		}
 
-  // Re-render the chip's interactive markup in place and re-wire it
-  rebuildContent (): void {
-    const content = this.shadowRoot!.querySelector('.jelly-content');
+		this.centerPop(-1.1);
 
-    if (!content) {
-      return;
-    }
+		triggerHaptic();
 
-    content.innerHTML = this.content();
-    this.onBuilt();
-    this.requestFrame();
-  }
+		if (this.reducedMotion) {
+			this.remove();
 
-  // The selection state as a property
-  get selected (): boolean {
-    return this.hasAttribute('selected');
-  }
+			return;
+		}
 
-  set selected (value: boolean) {
-    this.toggleAttribute('selected', !!value);
-  }
+		// Freeze the current width, then collapse it to 0 alongside the scale /
+		// fade so the row closes the gap organically instead of jumping when it's
+		// removed. Also swallow one flex gap (via negative margin) so the
+		// neighbours are already in their final spots when it leaves.
+		const gap =
+			parseFloat(
+				getComputedStyle(this.parentElement || this).columnGap,
+			) || 0;
 
-  // Route programmatic host focus onto the main (or remove) button
-  override focus (options?: FocusOptions): void {
-    (this.main || this.removeButton)?.focus(options);
-  }
+		const w = this.getBoundingClientRect().width;
 
+		this.style.width = `${w}px`;
+
+		void this.offsetWidth; // reflow so the width transition has a start value
+
+		this.classList.add("removing");
+
+		this.style.width = "0px";
+
+		if (gap) {
+			this.style.marginInlineEnd = `-${gap}px`;
+		}
+
+		let done = false;
+
+		const finish = (): void => {
+			if (done) {
+				return;
+			}
+
+			done = true;
+
+			this.remove();
+		};
+
+		this.addEventListener("transitionend", (event) => {
+			if (event.propertyName === "width") {
+				finish();
+			}
+		});
+
+		setTimeout(finish, 480);
+	}
+
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (!this.built) {
+			return;
+		}
+
+		switch (name) {
+			case "selectable":
+			case "removable":
+				// These decide whether the ✕ / toggle button exists, so re-render the
+				// interactive markup (the canvas + body are untouched siblings)
+				this.rebuildContent();
+
+				break;
+
+			case "variant":
+				// A new variant swaps --jelly-on via CSS; repaint so the fill
+				// re-resolves (a resting body won't on its own)
+				this.requestFrame();
+
+				break;
+
+			case "selected":
+				if (this.main?.tagName === "BUTTON") {
+					this.main.setAttribute(
+						"aria-pressed",
+						String(this.hasAttribute("selected")),
+					);
+				}
+
+				this.requestFrame();
+
+				break;
+
+			case "disabled":
+				if (this.main?.tagName === "BUTTON") {
+					(this.main as HTMLButtonElement).disabled =
+						this.hasAttribute("disabled");
+				}
+
+				if (this.removeButton) {
+					(this.removeButton as HTMLButtonElement).disabled =
+						this.hasAttribute("disabled");
+				}
+
+				this.syncHostFocusTarget();
+
+				break;
+
+			case "shape":
+				this.reshapeMembrane();
+
+				break;
+		}
+	}
+
+	// Re-render the chip's interactive markup in place and re-wire it
+	rebuildContent(): void {
+		const content = this.shadowRoot!.querySelector(".jelly-content");
+
+		if (!content) {
+			return;
+		}
+
+		content.innerHTML = this.content();
+
+		this.onBuilt();
+
+		this.requestFrame();
+	}
+
+	// The selection state as a property
+	get selected(): boolean {
+		return this.hasAttribute("selected");
+	}
+
+	set selected(value: boolean) {
+		this.toggleAttribute("selected", !!value);
+	}
+
+	// Route programmatic host focus onto the main (or remove) button
+	override focus(options?: FocusOptions): void {
+		(this.main || this.removeButton)?.focus(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-chip', JellyChip);
+customElements.define("jelly-chip", JellyChip);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-chip': JellyChip;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-chip": JellyChip;
+	}
 }

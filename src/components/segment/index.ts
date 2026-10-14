@@ -6,7 +6,7 @@
 
 // The minimal surface of a parent that re-reads its segments
 interface SegmentParent extends HTMLElement {
-  sync?: () => void;
+	sync?: () => void;
 }
 
 /**
@@ -21,49 +21,47 @@ interface SegmentParent extends HTMLElement {
  * @attr {boolean} disabled - Whether this segment cannot be selected.
  */
 export class JellySegment extends HTMLElement {
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["value", "selected", "disabled"];
+	}
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['value', 'selected', 'disabled'];
-  }
+	// The submitted value: the value attribute, falling back to the text label
+	get value(): string {
+		return this.hasAttribute("value")
+			? (this.getAttribute("value") ?? "")
+			: (this.textContent ?? "").trim();
+	}
 
-  // The submitted value: the value attribute, falling back to the text label
-  get value (): string {
-    return this.hasAttribute('value')
-      ? this.getAttribute('value') ?? ''
-      : (this.textContent ?? '').trim();
-  }
+	// The visible label rendered by the parent control
+	get label(): string {
+		return (this.textContent ?? "").trim();
+	}
 
-  // The visible label rendered by the parent control
-  get label (): string {
-    return (this.textContent ?? '').trim();
-  }
+	// True when this option cannot be selected
+	get disabled(): boolean {
+		return this.hasAttribute("disabled");
+	}
 
-  // True when this option cannot be selected
-  get disabled (): boolean {
-    return this.hasAttribute('disabled');
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		this.style.display = "none";
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    this.style.display = 'none';
+		// Ask the parent control to re-read its options
+		(this.closest("jelly-segmented") as SegmentParent | null)?.sync?.();
+	}
 
-    // Ask the parent control to re-read its options
-    (this.closest('jelly-segmented') as SegmentParent | null)?.sync?.();
-  }
-
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (): void {
-    (this.closest('jelly-segmented') as SegmentParent | null)?.sync?.();
-  }
-
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(): void {
+		(this.closest("jelly-segmented") as SegmentParent | null)?.sync?.();
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-segment', JellySegment);
+customElements.define("jelly-segment", JellySegment);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-segment': JellySegment;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-segment": JellySegment;
+	}
 }

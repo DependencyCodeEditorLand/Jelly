@@ -6,13 +6,15 @@
  * horizontal)
  */
 
-import { canonicalizeSize }  from '../../utilities/index.js';
-import { propagateSize }     from '../../utilities/index.js';
-import { uniqueId }          from '../../utilities/index.js';
+import { canonicalizeSize } from "../../utilities/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { propagateSize } from "../../utilities/index.js";
 
-import radioGroupStyles      from './radio-group.css?inline';
+import { uniqueId } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import radioGroupStyles from "./radio-group.css?inline";
 
 /**
  * A labelled container that gives its `<jelly-radio>` children radiogroup
@@ -30,87 +32,96 @@ import radioGroupStyles      from './radio-group.css?inline';
  * @csspart items - The radiogroup container.
  */
 export class JellyRadioGroup extends HTMLElement {
+	built = false;
 
-  built = false;
-  legendId = '';
+	legendId = "";
 
-  // Populated in build()
-  legend!: HTMLElement;
-  items!: HTMLElement;
-  slotEl!: HTMLSlotElement;
+	// Populated in build()
+	legend!: HTMLElement;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['label', 'direction', 'size'];
-  }
+	items!: HTMLElement;
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+	slotEl!: HTMLSlotElement;
 
-    if (!this.built) {
-      this.build();
-    }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["label", "direction", "size"];
+	}
 
-    this.syncLabel();
-    propagateSize(this, 'jelly-radio');
-  }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-  // Render the shadow DOM once
-  build (): void {
-    this.built    = true;
-    this.legendId = uniqueId('jelly-radio-group-legend');
+		canonicalizeSize(this);
 
-    this.attachShadow({ mode: 'open' });
+		if (!this.built) {
+			this.build();
+		}
 
-    this.shadowRoot!.innerHTML = `
+		this.syncLabel();
+
+		propagateSize(this, "jelly-radio");
+	}
+
+	// Render the shadow DOM once
+	build(): void {
+		this.built = true;
+
+		this.legendId = uniqueId("jelly-radio-group-legend");
+
+		this.attachShadow({ mode: "open" });
+
+		this.shadowRoot!.innerHTML = `
       <style>${radioGroupStyles}</style>
       <div class="legend" part="legend" id="${this.legendId}"></div>
       <div class="items" part="items" role="radiogroup"><slot></slot></div>`;
 
-    this.legend = this.shadowRoot!.querySelector('.legend')!;
-    this.items  = this.shadowRoot!.querySelector('.items')!;
-    this.slotEl = this.shadowRoot!.querySelector('slot')!;
+		this.legend = this.shadowRoot!.querySelector(".legend")!;
 
-    // Radios slotted in later still pick up the group's size
-    this.slotEl.addEventListener('slotchange', () => propagateSize(this, 'jelly-radio'));
-  }
+		this.items = this.shadowRoot!.querySelector(".items")!;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    if (!this.built) {
-      return;
-    }
+		this.slotEl = this.shadowRoot!.querySelector("slot")!;
 
-    if (name === 'label') {
-      this.syncLabel();
-    } else if (name === 'size') {
-      canonicalizeSize(this);
-      propagateSize(this, 'jelly-radio');
-    }
-  }
+		// Radios slotted in later still pick up the group's size
+		this.slotEl.addEventListener("slotchange", () =>
+			propagateSize(this, "jelly-radio"),
+		);
+	}
 
-  // Show the legend text and link it to the group as its accessible name
-  syncLabel (): void {
-    const label = this.getAttribute('label') || '';
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		if (!this.built) {
+			return;
+		}
 
-    this.legend.textContent = label;
+		if (name === "label") {
+			this.syncLabel();
+		} else if (name === "size") {
+			canonicalizeSize(this);
 
-    if (label) {
-      this.items.setAttribute('aria-labelledby', this.legendId);
-    } else {
-      this.items.removeAttribute('aria-labelledby');
-    }
-  }
+			propagateSize(this, "jelly-radio");
+		}
+	}
 
+	// Show the legend text and link it to the group as its accessible name
+	syncLabel(): void {
+		const label = this.getAttribute("label") || "";
+
+		this.legend.textContent = label;
+
+		if (label) {
+			this.items.setAttribute("aria-labelledby", this.legendId);
+		} else {
+			this.items.removeAttribute("aria-labelledby");
+		}
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-radio-group', JellyRadioGroup);
+customElements.define("jelly-radio-group", JellyRadioGroup);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-radio-group': JellyRadioGroup;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-radio-group": JellyRadioGroup;
+	}
 }

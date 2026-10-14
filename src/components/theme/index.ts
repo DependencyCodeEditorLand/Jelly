@@ -20,49 +20,66 @@
  * <jelly-theme style="--jelly-color-background-azure: #4F46E5">…</jelly-theme>
  */
 
-import { ensureThemeTokens } from '../../theme/index.js';
-import { notifyThemeChange } from '../../theme/index.js';
-import { LIGHT_TOKENS }      from '../../theme/index.js';
-import { DARK_TOKENS }       from '../../theme/index.js';
-import type { ThemeMode }    from '../../theme/index.js';
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import { notifyThemeChange } from "../../theme/index.js";
+
+import { LIGHT_TOKENS } from "../../theme/index.js";
+
+import { DARK_TOKENS } from "../../theme/index.js";
+
+import type { ThemeMode } from "../../theme/index.js";
 
 // Parse a resolved rgb()/color(srgb) CSS color into normalized RGBA channels
-function colorChannels (color: string): number[] {
-  const values = String(color).match(/[\d.]+/g)?.slice(0, 3).map(Number) || [0, 0, 0];
-  const channels = color.startsWith('color(')
-    ? values
-    : values.map((channel) => channel / 255);
-  const alpha = Number(String(color).match(/[\d.]+/g)?.[3] ?? 1);
+function colorChannels(color: string): number[] {
+	const values = String(color)
+		.match(/[\d.]+/g)
+		?.slice(0, 3)
+		.map(Number) || [0, 0, 0];
 
-  return [...channels, Math.max(0, Math.min(1, alpha))];
+	const channels = color.startsWith("color(")
+		? values
+		: values.map((channel) => channel / 255);
+
+	const alpha = Number(String(color).match(/[\d.]+/g)?.[3] ?? 1);
+
+	return [...channels, Math.max(0, Math.min(1, alpha))];
 }
 
 // Relative luminance for normalized sRGB channels
-function luminance (channels: number[]): number {
-  const linear = channels.slice(0, 3).map((s) => {
-    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
+function luminance(channels: number[]): number {
+	const linear = channels.slice(0, 3).map((s) => {
+		return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+	});
 
-  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+	return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
 }
 
 // Pick whichever shared foreground has stronger contrast with a custom accent.
 // Composite translucent accents over the active surface before measuring them.
-function readableOn (color: string, backdrop: string): string {
-  const foreground = colorChannels(color);
-  const background = colorChannels(backdrop);
-  const alpha      = foreground[3];
-  const composite  = foreground.slice(0, 3).map((channel, index) => {
-    return channel * alpha + background[index] * (1 - alpha);
-  });
-  const accent = luminance(composite);
-  const dark   = luminance(colorChannels('rgb(30, 34, 42)'));
-  const light  = 1;
-  const ratio  = (a: number, b: number): number => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+function readableOn(color: string, backdrop: string): string {
+	const foreground = colorChannels(color);
 
-  // The dark on-color is the card surface (#1E222A), not pure black, so dark-mode
-  // fills stay in the same family as the rest of the surface tokens.
-  return ratio(accent, dark) >= ratio(accent, light) ? '#1E222A' : '#FFFFFF';
+	const background = colorChannels(backdrop);
+
+	const alpha = foreground[3];
+
+	const composite = foreground.slice(0, 3).map((channel, index) => {
+		return channel * alpha + background[index] * (1 - alpha);
+	});
+
+	const accent = luminance(composite);
+
+	const dark = luminance(colorChannels("rgb(30, 34, 42)"));
+
+	const light = 1;
+
+	const ratio = (a: number, b: number): number =>
+		(Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+	// The dark on-color is the card surface (#1E222A), not pure black, so dark-mode
+	// fills stay in the same family as the rest of the surface tokens.
+	return ratio(accent, dark) >= ratio(accent, light) ? "#1E222A" : "#FFFFFF";
 }
 
 /**
@@ -76,158 +93,178 @@ function readableOn (color: string, backdrop: string): string {
  * @attr {string} accent - A named hue or any CSS color to re-tint the accent.
  */
 export class JellyTheme extends HTMLElement {
+	schemeQuery: MediaQueryList | null;
 
-  schemeQuery: MediaQueryList | null;
-  onSchemeChange: () => void;
-  tokenStyle: HTMLStyleElement | null = null;
-  colorProbe: HTMLSpanElement | null = null;
+	onSchemeChange: () => void;
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['mode', 'accent'];
-  }
+	tokenStyle: HTMLStyleElement | null = null;
 
-  constructor () {
-    super();
+	colorProbe: HTMLSpanElement | null = null;
 
-    // Re-resolve an 'auto' subtree when the operating system scheme flips
-    this.schemeQuery    = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
-    this.onSchemeChange = () => this.sync();
-  }
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["mode", "accent"];
+	}
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
+	constructor() {
+		super();
 
-    if (!this.shadowRoot) {
-      // The provider is layout-invisible; sync() fills the token style below
-      this.attachShadow({ mode: 'open' });
+		// Re-resolve an 'auto' subtree when the operating system scheme flips
+		this.schemeQuery =
+			typeof matchMedia === "function"
+				? matchMedia("(prefers-color-scheme: dark)")
+				: null;
 
-      this.shadowRoot!.innerHTML = `
+		this.onSchemeChange = () => this.sync();
+	}
+
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
+
+		if (!this.shadowRoot) {
+			// The provider is layout-invisible; sync() fills the token style below
+			this.attachShadow({ mode: "open" });
+
+			this.shadowRoot!.innerHTML = `
         <style data-jelly-theme-tokens>:host { display: contents; }</style>
 
         <slot></slot>
       `;
-    }
+		}
 
-    this.tokenStyle = this.shadowRoot!.querySelector('[data-jelly-theme-tokens]');
+		this.tokenStyle = this.shadowRoot!.querySelector(
+			"[data-jelly-theme-tokens]",
+		);
 
-    this.schemeQuery?.addEventListener?.('change', this.onSchemeChange);
+		this.schemeQuery?.addEventListener?.("change", this.onSchemeChange);
 
-    this.sync();
-  }
+		this.sync();
+	}
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  disconnectedCallback (): void {
-    this.schemeQuery?.removeEventListener?.('change', this.onSchemeChange);
-  }
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	disconnectedCallback(): void {
+		this.schemeQuery?.removeEventListener?.("change", this.onSchemeChange);
+	}
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (): void {
-    if (this.isConnected) {
-      this.sync();
-    }
-  }
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(): void {
+		if (this.isConnected) {
+			this.sync();
+		}
+	}
 
-  // The requested mode: 'light', 'dark', or 'auto' (follow the OS)
-  get mode (): ThemeMode {
-    const mode = this.getAttribute('mode');
+	// The requested mode: 'light', 'dark', or 'auto' (follow the OS)
+	get mode(): ThemeMode {
+		const mode = this.getAttribute("mode");
 
-    return mode === 'light' || mode === 'dark' ? mode : 'auto';
-  }
+		return mode === "light" || mode === "dark" ? mode : "auto";
+	}
 
-  set mode (value: ThemeMode) {
-    this.setAttribute('mode', value);
-  }
+	set mode(value: ThemeMode) {
+		this.setAttribute("mode", value);
+	}
 
-  // The re-tinted accent hue for this subtree (null when unset)
-  get accent (): string | null {
-    return this.getAttribute('accent');
-  }
+	// The re-tinted accent hue for this subtree (null when unset)
+	get accent(): string | null {
+		return this.getAttribute("accent");
+	}
 
-  set accent (value: string | null) {
-    if (value == null) {
-      this.removeAttribute('accent');
-    } else {
-      this.setAttribute('accent', value);
-    }
-  }
+	set accent(value: string | null) {
+		if (value == null) {
+			this.removeAttribute("accent");
+		} else {
+			this.setAttribute("accent", value);
+		}
+	}
 
-  // The mode in effect right now, with 'auto' resolved against the OS
-  get resolvedMode (): 'light' | 'dark' {
-    if (this.mode !== 'auto') {
-      return this.mode;
-    }
+	// The mode in effect right now, with 'auto' resolved against the OS
+	get resolvedMode(): "light" | "dark" {
+		if (this.mode !== "auto") {
+			return this.mode;
+		}
 
-    return this.schemeQuery?.matches ? 'dark' : 'light';
-  }
+		return this.schemeQuery?.matches ? "dark" : "light";
+	}
 
-  // Resolve any supported CSS color syntax to computed sRGB for contrast math
-  resolveColor (color: string): string {
-    if (!this.colorProbe) {
-      this.colorProbe = document.createElement('span');
-      this.colorProbe.setAttribute('aria-hidden', 'true');
-      this.colorProbe.style.cssText =
-        'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none';
-      this.shadowRoot!.appendChild(this.colorProbe);
-    }
+	// Resolve any supported CSS color syntax to computed sRGB for contrast math
+	resolveColor(color: string): string {
+		if (!this.colorProbe) {
+			this.colorProbe = document.createElement("span");
 
-    const probe = this.colorProbe!;
+			this.colorProbe.setAttribute("aria-hidden", "true");
 
-    probe.style.color = `color-mix(in srgb, ${color} 100%, transparent)`;
+			this.colorProbe.style.cssText =
+				"position:absolute;width:0;height:0;visibility:hidden;pointer-events:none";
 
-    return getComputedStyle(probe).color;
-  }
+			this.shadowRoot!.appendChild(this.colorProbe);
+		}
 
-  /*
-   * Apply the resolved token set through the shadow :host rule, so the whole
-   * subtree - including canvas-painted components that read computed tokens -
-   * picks up the theme through normal CSS inheritance. Writing it as a :host
-   * selector rule (rather than inline styles on the host) means a consumer's
-   * own inline `style="--jelly-color-…"` still wins.
-   */
-  sync (): void {
-    if (!this.tokenStyle) {
-      return;
-    }
+		const probe = this.colorProbe!;
 
-    const tokens = this.resolvedMode === 'dark' ? DARK_TOKENS : LIGHT_TOKENS;
-    const decls  = Object.entries(tokens).map(([name, value]) => `--jelly-color-${name}: ${value};`);
+		probe.style.color = `color-mix(in srgb, ${color} 100%, transparent)`;
 
-    const accent = this.getAttribute('accent')?.trim();
+		return getComputedStyle(probe).color;
+	}
 
-    if (accent) {
-      // A named hue (rose/amber/azure/mint) maps through the palette with the
-      // shared on-emphasis label; a valid custom CSS color is used with a
-      // luminance-picked on-color. Custom properties accept arbitrary text, so
-      // validate before publishing; otherwise canvas consumers keep a stale color.
-      const named = tokens['background-' + accent];
-      const hue   = named || accent;
-      const valid = Boolean(named) || CSS.supports('color', hue);
+	/*
+	 * Apply the resolved token set through the shadow :host rule, so the whole
+	 * subtree - including canvas-painted components that read computed tokens -
+	 * picks up the theme through normal CSS inheritance. Writing it as a :host
+	 * selector rule (rather than inline styles on the host) means a consumer's
+	 * own inline `style="--jelly-color-…"` still wins.
+	 */
+	sync(): void {
+		if (!this.tokenStyle) {
+			return;
+		}
 
-      if (valid) {
-        const on = named
-          ? tokens['foreground-on-emphasis']
-          : readableOn(this.resolveColor(hue), this.resolveColor(tokens['background-surface']));
+		const tokens =
+			this.resolvedMode === "dark" ? DARK_TOKENS : LIGHT_TOKENS;
 
-        decls.push(`--jelly-color-background-accent: ${hue};`);
-        decls.push(`--jelly-color-foreground-on-accent: ${on};`);
-      }
-    }
+		const decls = Object.entries(tokens).map(
+			([name, value]) => `--jelly-color-${name}: ${value};`,
+		);
 
-    this.tokenStyle.textContent = `:host { display: contents; color-scheme: ${this.resolvedMode}; ${decls.join(' ')} }`;
+		const accent = this.getAttribute("accent")?.trim();
 
-    // Wake resting canvases inside this subtree so they repaint with the new colors
-    notifyThemeChange();
-  }
+		if (accent) {
+			// A named hue (rose/amber/azure/mint) maps through the palette with the
+			// shared on-emphasis label; a valid custom CSS color is used with a
+			// luminance-picked on-color. Custom properties accept arbitrary text, so
+			// validate before publishing; otherwise canvas consumers keep a stale color.
+			const named = tokens["background-" + accent];
 
+			const hue = named || accent;
+
+			const valid = Boolean(named) || CSS.supports("color", hue);
+
+			if (valid) {
+				const on = named
+					? tokens["foreground-on-emphasis"]
+					: readableOn(
+							this.resolveColor(hue),
+							this.resolveColor(tokens["background-surface"]),
+						);
+
+				decls.push(`--jelly-color-background-accent: ${hue};`);
+
+				decls.push(`--jelly-color-foreground-on-accent: ${on};`);
+			}
+		}
+
+		this.tokenStyle.textContent = `:host { display: contents; color-scheme: ${this.resolvedMode}; ${decls.join(" ")} }`;
+
+		// Wake resting canvases inside this subtree so they repaint with the new colors
+		notifyThemeChange();
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-theme', JellyTheme);
+customElements.define("jelly-theme", JellyTheme);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-theme': JellyTheme;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-theme": JellyTheme;
+	}
 }

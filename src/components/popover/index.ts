@@ -9,18 +9,23 @@
  *   </jelly-popover>
  */
 
-import { placeAnchored }     from '../../anchor/index.js';
-import { trackAnchor }       from '../../anchor/index.js';
-import { springIn }          from '../../anchor/index.js';
-import { springOut }         from '../../anchor/index.js';
-import type { Placement }    from '../../anchor/index.js';
+import { placeAnchored } from "../../anchor/index.js";
 
-import { emit }              from '../../utilities/index.js';
-import { canonicalizeSize }  from '../../utilities/index.js';
+import { trackAnchor } from "../../anchor/index.js";
 
-import { ensureThemeTokens } from '../../theme/index.js';
+import { springIn } from "../../anchor/index.js";
 
-import popoverStyles         from './popover.css?inline';
+import { springOut } from "../../anchor/index.js";
+
+import type { Placement } from "../../anchor/index.js";
+
+import { emit } from "../../utilities/index.js";
+
+import { canonicalizeSize } from "../../utilities/index.js";
+
+import { ensureThemeTokens } from "../../theme/index.js";
+
+import popoverStyles from "./popover.css?inline";
 
 /**
  * A click-triggered, non-modal floating panel anchored to its trigger.
@@ -40,50 +45,52 @@ import popoverStyles         from './popover.css?inline';
  * @csspart panel - The floating panel.
  */
 export class JellyPopover extends HTMLElement {
+	built = false;
 
-  built = false;
-  isOpen = false;
+	isOpen = false;
 
-  // Populated in connectedCallback()
-  panel!: HTMLElement;
+	// Populated in connectedCallback()
+	panel!: HTMLElement;
 
-  untrack: (() => void) | null = null;
+	untrack: (() => void) | null = null;
 
-  // Document-level dismissal, attached only while open
-  onDocumentPointer = (event: PointerEvent): void => {
-    if (this.isOpen && !event.composedPath().includes(this)) {
-      this.close();
-    }
-  };
+	// Document-level dismissal, attached only while open
+	onDocumentPointer = (event: PointerEvent): void => {
+		if (this.isOpen && !event.composedPath().includes(this)) {
+			this.close();
+		}
+	};
 
-  onDocumentKey = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && !event.defaultPrevented) {
-      // Mark it handled so an enclosing dialog/drawer doesn't also close
-      event.preventDefault();
-      this.close();
-    }
-  };
+	onDocumentKey = (event: KeyboardEvent): void => {
+		if (event.key === "Escape" && !event.defaultPrevented) {
+			// Mark it handled so an enclosing dialog/drawer doesn't also close
+			event.preventDefault();
 
-  // Tells the browser to trigger attributeChangedCallback when these attributes change
-  static get observedAttributes (): string[] {
-    return ['placement', 'size', 'label'];
-  }
+			this.close();
+		}
+	};
 
-  // Lifecycle method: Called automatically when the element is appended to the DOM
-  connectedCallback (): void {
-    ensureThemeTokens();
-    canonicalizeSize(this);
+	// Tells the browser to trigger attributeChangedCallback when these attributes change
+	static get observedAttributes(): string[] {
+		return ["placement", "size", "label"];
+	}
 
-    if (this.built) {
-      return;
-    }
+	// Lifecycle method: Called automatically when the element is appended to the DOM
+	connectedCallback(): void {
+		ensureThemeTokens();
 
-    this.built = true;
+		canonicalizeSize(this);
 
-    // Encapsulate styles and markup inside a Shadow DOM so they don't leak out
-    this.attachShadow({ mode: 'open', delegatesFocus: true });
+		if (this.built) {
+			return;
+		}
 
-    this.shadowRoot!.innerHTML = `
+		this.built = true;
+
+		// Encapsulate styles and markup inside a Shadow DOM so they don't leak out
+		this.attachShadow({ mode: "open", delegatesFocus: true });
+
+		this.shadowRoot!.innerHTML = `
       <style>${popoverStyles}</style>
 
       <slot name="trigger"></slot>
@@ -91,168 +98,197 @@ export class JellyPopover extends HTMLElement {
       <div class="panel" part="panel" role="dialog" aria-modal="false" tabindex="-1"><slot name="content"></slot></div>
     `;
 
-    this.panel = this.shadowRoot!.querySelector('.panel')!;
+		this.panel = this.shadowRoot!.querySelector(".panel")!;
 
-    const triggerSlot = this.shadowRoot!.querySelector('slot[name="trigger"]')!;
+		const triggerSlot = this.shadowRoot!.querySelector(
+			'slot[name="trigger"]',
+		)!;
 
-    triggerSlot.addEventListener('click', () => this.toggle());
-    triggerSlot.addEventListener('slotchange', () => this.reflectTrigger());
-    this.reflectTrigger();
+		triggerSlot.addEventListener("click", () => this.toggle());
 
-    this.syncLabel();
-  }
+		triggerSlot.addEventListener("slotchange", () => this.reflectTrigger());
 
-  // Lifecycle method: Called automatically when the element leaves the DOM
-  disconnectedCallback (): void {
-    if (this.isOpen) {
-      this.isOpen = false;
-      this.untrack?.();
-      this.untrack = null;
+		this.reflectTrigger();
 
-      document.removeEventListener('pointerdown', this.onDocumentPointer, true);
-      document.removeEventListener('keydown', this.onDocumentKey);
+		this.syncLabel();
+	}
 
-      this.panel?.removeAttribute('data-open');
-    }
-  }
+	// Lifecycle method: Called automatically when the element leaves the DOM
+	disconnectedCallback(): void {
+		if (this.isOpen) {
+			this.isOpen = false;
 
-  // Lifecycle method: Fires when observed HTML attributes change dynamically
-  attributeChangedCallback (name: string): void {
-    switch (name) {
-      case 'size':
-        canonicalizeSize(this);
-        break;
+			this.untrack?.();
 
-      case 'label':
-        this.syncLabel();
-        break;
-    }
+			this.untrack = null;
 
-    if (this.isOpen) {
-      this.place();
-    }
-  }
+			document.removeEventListener(
+				"pointerdown",
+				this.onDocumentPointer,
+				true,
+			);
 
-  // The panel's accessible name comes from the label attribute
-  syncLabel (): void {
-    const label = this.getAttribute('label');
+			document.removeEventListener("keydown", this.onDocumentKey);
 
-    if (label) {
-      this.panel?.setAttribute('aria-label', label);
-    } else {
-      this.panel?.removeAttribute('aria-label');
-    }
-  }
+			this.panel?.removeAttribute("data-open");
+		}
+	}
 
-  // The current trigger, resolved live from the slot (never stale)
-  get trigger (): HTMLElement {
-    const slot = this.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
+	// Lifecycle method: Fires when observed HTML attributes change dynamically
+	attributeChangedCallback(name: string): void {
+		switch (name) {
+			case "size":
+				canonicalizeSize(this);
 
-    return (slot?.assignedElements()[0] as HTMLElement | undefined) || this;
-  }
+				break;
 
-  // Mark the trigger as opening a dialog and mirror the open state onto it
-  reflectTrigger (): void {
-    const trigger = this.trigger;
+			case "label":
+				this.syncLabel();
 
-    if (!trigger || trigger === this) {
-      return;
-    }
+				break;
+		}
 
-    trigger.setAttribute('aria-haspopup', 'dialog');
-    trigger.setAttribute('aria-expanded', this.isOpen ? 'true' : 'false');
-  }
+		if (this.isOpen) {
+			this.place();
+		}
+	}
 
-  // Flip between open and closed
-  toggle (): void {
-    if (this.isOpen) {
-      this.close();
-    } else {
-      this.open();
-    }
-  }
+	// The panel's accessible name comes from the label attribute
+	syncLabel(): void {
+		const label = this.getAttribute("label");
 
-  // Open the panel, move focus into it and start following the trigger
-  open (): void {
-    if (this.isOpen) {
-      return;
-    }
+		if (label) {
+			this.panel?.setAttribute("aria-label", label);
+		} else {
+			this.panel?.removeAttribute("aria-label");
+		}
+	}
 
-    this.isOpen = true;
-    this.reflectTrigger();
+	// The current trigger, resolved live from the slot (never stale)
+	get trigger(): HTMLElement {
+		const slot = this.shadowRoot?.querySelector(
+			'slot[name="trigger"]',
+		) as HTMLSlotElement | null;
 
-    this.panel.setAttribute('data-open', '');
-    this.place();
+		return (slot?.assignedElements()[0] as HTMLElement | undefined) || this;
+	}
 
-    springIn(this.panel, 'top center');
+	// Mark the trigger as opening a dialog and mirror the open state onto it
+	reflectTrigger(): void {
+		const trigger = this.trigger;
 
-    document.addEventListener('pointerdown', this.onDocumentPointer, true);
-    document.addEventListener('keydown', this.onDocumentKey);
+		if (!trigger || trigger === this) {
+			return;
+		}
 
-    // Focus lands on the first focusable content, else the panel itself
-    const focusable = this.querySelector<HTMLElement>(
-      '[slot="content"] a, [slot="content"] button, [slot="content"] input, [slot="content"] [tabindex]',
-    );
+		trigger.setAttribute("aria-haspopup", "dialog");
 
-    (focusable || this.panel).focus({ preventScroll: true });
+		trigger.setAttribute("aria-expanded", this.isOpen ? "true" : "false");
+	}
 
-    emit(this, 'open');
-  }
+	// Flip between open and closed
+	toggle(): void {
+		if (this.isOpen) {
+			this.close();
+		} else {
+			this.open();
+		}
+	}
 
-  // Anchor the panel to the trigger and keep it pinned on scroll
-  place (): void {
-    if (!this.panel) {
-      return;
-    }
+	// Open the panel, move focus into it and start following the trigger
+	open(): void {
+		if (this.isOpen) {
+			return;
+		}
 
-    const placement = (this.getAttribute('placement') as Placement | null) || 'bottom';
-    const anchor    = this.trigger;
+		this.isOpen = true;
 
-    placeAnchored(anchor, this.panel, placement, 8);
+		this.reflectTrigger();
 
-    this.untrack?.();
-    // Close on scroll-out WITHOUT returning focus - focusing the trigger would
-    // scroll it back into view and undo the very dismissal we just triggered.
-    this.untrack = trackAnchor(anchor, this.panel, placement, 8, () => this.close({ returnFocus: false }));
-  }
+		this.panel.setAttribute("data-open", "");
 
-  // Close the panel. Hands focus back to the trigger for a user-driven close
-  // (Escape, click-outside, selection); scroll-out closes pass returnFocus:
-  // false so the page doesn't jump back to the now-off-screen trigger.
-  close ({ returnFocus = true }: { returnFocus?: boolean } = {}): void {
-    if (!this.isOpen) {
-      return;
-    }
+		this.place();
 
-    this.isOpen = false;
+		springIn(this.panel, "top center");
 
-    this.untrack?.();
-    this.untrack = null;
+		document.addEventListener("pointerdown", this.onDocumentPointer, true);
 
-    document.removeEventListener('pointerdown', this.onDocumentPointer, true);
-    document.removeEventListener('keydown', this.onDocumentKey);
+		document.addEventListener("keydown", this.onDocumentKey);
 
-    springOut(this.panel, () => this.panel.removeAttribute('data-open'));
+		// Focus lands on the first focusable content, else the panel itself
+		const focusable = this.querySelector<HTMLElement>(
+			'[slot="content"] a, [slot="content"] button, [slot="content"] input, [slot="content"] [tabindex]',
+		);
 
-    if (returnFocus) {
-      this.trigger?.focus?.();
-    }
+		(focusable || this.panel).focus({ preventScroll: true });
 
-    emit(this, 'close');
-  }
+		emit(this, "open");
+	}
 
-  // Route programmatic host focus onto the trigger
-  override focus (options?: FocusOptions): void {
-    this.trigger?.focus?.(options);
-  }
+	// Anchor the panel to the trigger and keep it pinned on scroll
+	place(): void {
+		if (!this.panel) {
+			return;
+		}
 
+		const placement =
+			(this.getAttribute("placement") as Placement | null) || "bottom";
+
+		const anchor = this.trigger;
+
+		placeAnchored(anchor, this.panel, placement, 8);
+
+		this.untrack?.();
+
+		// Close on scroll-out WITHOUT returning focus - focusing the trigger would
+		// scroll it back into view and undo the very dismissal we just triggered.
+		this.untrack = trackAnchor(anchor, this.panel, placement, 8, () =>
+			this.close({ returnFocus: false }),
+		);
+	}
+
+	// Close the panel. Hands focus back to the trigger for a user-driven close
+	// (Escape, click-outside, selection); scroll-out closes pass returnFocus:
+	// false so the page doesn't jump back to the now-off-screen trigger.
+	close({ returnFocus = true }: { returnFocus?: boolean } = {}): void {
+		if (!this.isOpen) {
+			return;
+		}
+
+		this.isOpen = false;
+
+		this.untrack?.();
+
+		this.untrack = null;
+
+		document.removeEventListener(
+			"pointerdown",
+			this.onDocumentPointer,
+			true,
+		);
+
+		document.removeEventListener("keydown", this.onDocumentKey);
+
+		springOut(this.panel, () => this.panel.removeAttribute("data-open"));
+
+		if (returnFocus) {
+			this.trigger?.focus?.();
+		}
+
+		emit(this, "close");
+	}
+
+	// Route programmatic host focus onto the trigger
+	override focus(options?: FocusOptions): void {
+		this.trigger?.focus?.(options);
+	}
 }
 
 // Register the custom element
-customElements.define('jelly-popover', JellyPopover);
+customElements.define("jelly-popover", JellyPopover);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'jelly-popover': JellyPopover;
-  }
+	interface HTMLElementTagNameMap {
+		"jelly-popover": JellyPopover;
+	}
 }
