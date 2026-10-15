@@ -5,9 +5,9 @@
  * is the single source of truth the docs site is generated from.
  */
 export default {
-	globs: ["src/components/**/*.ts"],
-	exclude: ["src/**/*.test.ts"],
-	outdir: ".",
-	litelement: false,
-	dev: false,
+  globs: ['src/components/**/*.ts'],
+  exclude: ['src/**/*.test.ts'],
+  outdir: '.',
+  litelement: false,
+  dev: false,
 };
