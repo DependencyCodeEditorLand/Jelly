@@ -21,18 +21,27 @@ const G2 = (3 - Math.sqrt(3)) / 6;
 
 const GRAD3: [number, number][] = [
 	[1, 1],
+
 	[-1, 1],
+
 	[1, -1],
+
 	[-1, -1],
 
 	[1, 0],
+
 	[-1, 0],
+
 	[1, 0],
+
 	[-1, 0],
 
 	[0, 1],
+
 	[0, -1],
+
 	[0, 1],
+
 	[0, -1],
 ];
 
@@ -94,9 +103,11 @@ export function jellyNoise(x: number, y: number): number {
 
 	if (x0 > y0) {
 		i1 = 1;
+
 		j1 = 0;
 	} else {
 		i1 = 0;
+
 		j1 = 1;
 	}
 
@@ -126,6 +137,7 @@ export function jellyNoise(x: number, y: number): number {
 
 	if (t0 > 0) {
 		t0 *= t0;
+
 		n0 = t0 * t0 * dot2(GRAD3[gi0], x0, y0);
 	}
 
@@ -133,6 +145,7 @@ export function jellyNoise(x: number, y: number): number {
 
 	if (t1 > 0) {
 		t1 *= t1;
+
 		n1 = t1 * t1 * dot2(GRAD3[gi1], x1, y1);
 	}
 
@@ -140,6 +153,7 @@ export function jellyNoise(x: number, y: number): number {
 
 	if (t2 > 0) {
 		t2 *= t2;
+
 		n2 = t2 * t2 * dot2(GRAD3[gi2], x2, y2);
 	}
 

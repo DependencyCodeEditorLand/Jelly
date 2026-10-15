@@ -115,6 +115,7 @@ export class JellyDialog extends HTMLElement {
 
 		this.shadowRoot!.querySelector(".close")!.addEventListener(
 			"click",
+
 			() => {
 				this.open = false;
 			},
@@ -135,7 +136,9 @@ export class JellyDialog extends HTMLElement {
 	// Lifecycle method: Fires when observed HTML attributes change dynamically
 	attributeChangedCallback(
 		name: string,
+
 		was: string | null,
+
 		now: string | null,
 	): void {
 		if (was === now || !this.dialog) {
@@ -170,6 +173,7 @@ export class JellyDialog extends HTMLElement {
 		} else if (heading) {
 			this.dialog.setAttribute(
 				"aria-label",
+
 				(heading.textContent ?? "").trim(),
 			);
 		}

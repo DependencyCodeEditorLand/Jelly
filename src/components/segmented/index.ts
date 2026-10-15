@@ -167,18 +167,22 @@ export class JellySegmented extends JellyElement {
 		switch (event.type) {
 			case "click":
 				this.onClick(event as MouseEvent);
+
 				break;
 
 			case "keydown":
 				this.onKey(event as KeyboardEvent);
+
 				break;
 
 			case "focusin":
 				this.onFocusIn(event as FocusEvent);
+
 				break;
 
 			case "focusout":
 				this.onFocusOut();
+
 				break;
 		}
 	}
@@ -487,10 +491,15 @@ export class JellySegmented extends JellyElement {
 		} else {
 			[this.pillX, this.pillXVelocity] = integrateSpring(
 				this.pillX,
+
 				this.pillXVelocity,
+
 				this.pillTarget,
+
 				260,
+
 				32,
+
 				dt,
 			);
 		}
@@ -546,9 +555,13 @@ export class JellySegmented extends JellyElement {
 
 		ctx.roundRect(
 			cx - this.trackW / 2,
+
 			cy - this.trackH / 2,
+
 			this.trackW,
+
 			this.trackH,
+
 			this.trackH / 2,
 		);
 

@@ -33,21 +33,25 @@ export interface ToastOptions {
 const TONES: Record<ToastTone, { color: string; spoken: string }> = {
 	info: {
 		color: `var(--jelly-color-background-azure, ${PALETTE["background-azure"]})`,
+
 		spoken: "Info",
 	},
 
 	success: {
 		color: `var(--jelly-color-background-mint,  ${PALETTE["background-mint"]})`,
+
 		spoken: "Success",
 	},
 
 	warning: {
 		color: `var(--jelly-color-background-amber, ${PALETTE["background-amber"]})`,
+
 		spoken: "Warning",
 	},
 
 	danger: {
 		color: `var(--jelly-color-background-rose,  ${PALETTE["background-rose"]})`,
+
 		spoken: "Error",
 	},
 };
@@ -89,6 +93,7 @@ export class JellyToaster extends HTMLElement {
 	// Add one toast; returns its element (click or timeout removes it)
 	push(
 		message: string,
+
 		{ tone = "info", duration = 3500 }: ToastOptions = {},
 	): HTMLElement {
 		const toneInfo = TONES[tone] || TONES.info;
@@ -151,6 +156,7 @@ export class JellyToaster extends HTMLElement {
 
 		close.addEventListener("click", (event) => {
 			event.stopPropagation();
+
 			remove();
 		});
 
@@ -164,6 +170,7 @@ customElements.define("jelly-toaster", JellyToaster);
 // Show a toast, creating the shared toaster host on first use
 export function jellyToast(
 	message: string,
+
 	options?: ToastOptions,
 ): HTMLElement {
 	let toaster = document.querySelector(

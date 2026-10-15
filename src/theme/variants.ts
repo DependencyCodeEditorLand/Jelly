@@ -34,6 +34,7 @@ const VARIANT_TOKENS: Record<string, VariantToken> = {
 
 	graphite: {
 		fill: "background-neutral-emphasis",
+
 		on: "foreground-on-emphasis",
 	},
 };

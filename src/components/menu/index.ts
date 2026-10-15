@@ -157,7 +157,9 @@ export class JellyMenu extends HTMLElement {
 
 			document.removeEventListener(
 				"pointerdown",
+
 				this.onDocumentPointer,
+
 				true,
 			);
 
@@ -238,6 +240,7 @@ export class JellyMenu extends HTMLElement {
 			.map(
 				(
 					item,
+
 					i,
 				) => `<div class="item" role="menuitem" tabindex="-1" data-i="${i}"
         ${item.disabled ? 'aria-disabled="true"' : ""} ${item.hasAttribute("danger") ? "data-danger" : ""}>${item.innerHTML}</div>`,
@@ -305,7 +308,9 @@ export class JellyMenu extends HTMLElement {
 
 		document.removeEventListener(
 			"pointerdown",
+
 			this.onDocumentPointer,
+
 			true,
 		);
 

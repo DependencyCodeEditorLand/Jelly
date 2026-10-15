@@ -103,6 +103,7 @@ export class JellyResizable extends HTMLElement {
 		if (this.isBothAxes) {
 			return {
 				cols: normalize(this.colGrow),
+
 				rows: normalize(this.rowGrow),
 			};
 		}
@@ -180,10 +181,12 @@ export class JellyResizable extends HTMLElement {
 		if (this.isBothAxes) {
 			this.shadowRoot
 				?.querySelector(".divider-x")
+
 				?.setAttribute("aria-orientation", "vertical");
 
 			this.shadowRoot
 				?.querySelector(".divider-y")
+
 				?.setAttribute("aria-orientation", "horizontal");
 
 			this.applyBoth();
@@ -224,6 +227,7 @@ export class JellyResizable extends HTMLElement {
 
 				div.setAttribute(
 					"aria-valuenow",
+
 					percent(this.grow[i], this.grow[i + 1]),
 				);
 			}
@@ -489,21 +493,25 @@ export class JellyResizable extends HTMLElement {
 	applyBoth(): void {
 		this.container?.style.setProperty(
 			"--jelly-resizable-col-a",
+
 			`${this.colGrow[0]}fr`,
 		);
 
 		this.container?.style.setProperty(
 			"--jelly-resizable-col-b",
+
 			`${this.colGrow[1]}fr`,
 		);
 
 		this.container?.style.setProperty(
 			"--jelly-resizable-row-a",
+
 			`${this.rowGrow[0]}fr`,
 		);
 
 		this.container?.style.setProperty(
 			"--jelly-resizable-row-b",
+
 			`${this.rowGrow[1]}fr`,
 		);
 

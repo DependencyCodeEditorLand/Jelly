@@ -192,10 +192,15 @@ export class JellyRadio extends JellyElement {
 		// One uniform scale spring - the control expands / collapses, never wiggles
 		[this.scale, this.scaleVelocity] = integrateSpring(
 			this.scale,
+
 			this.scaleVelocity,
+
 			1,
+
 			260,
+
 			17,
+
 			dt,
 		);
 

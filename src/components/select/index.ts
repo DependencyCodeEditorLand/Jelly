@@ -308,28 +308,34 @@ export class JellySelect extends JellyElement {
 		switch (event.type) {
 			case "pointerdown":
 				this.pressTrigger(event as PointerEvent);
+
 				break;
 
 			case "pointerup":
 			case "pointercancel":
 			case "pointerleave":
 				this.releaseBody();
+
 				break;
 
 			case "pointermove":
 				this.onRowHover(event as PointerEvent);
+
 				break;
 
 			case "keydown":
 				this.onTriggerKey(event as KeyboardEvent);
+
 				break;
 
 			case "focus":
 				this.setFocused(true);
+
 				break;
 
 			case "blur":
 				this.setFocused(false);
+
 				break;
 
 			case "click":
@@ -738,39 +744,54 @@ export class JellySelect extends JellyElement {
 		switch (event.key) {
 			case "ArrowDown":
 				event.preventDefault();
+
 				this.moveActive(1);
+
 				break;
 
 			case "ArrowUp":
 				event.preventDefault();
+
 				this.moveActive(-1);
+
 				break;
 
 			case "Home":
 				event.preventDefault();
+
 				this.activeIndex = -1;
+
 				this.moveActive(1);
+
 				break;
 
 			case "End":
 				event.preventDefault();
+
 				this.activeIndex = 0;
+
 				this.moveActive(-1);
+
 				break;
 
 			case "Enter":
 			case " ":
 				event.preventDefault();
+
 				this.selectIndex(this.activeIndex);
+
 				break;
 
 			case "Escape":
 				event.preventDefault();
+
 				this.close();
+
 				break;
 
 			case "Tab":
 				this.close();
+
 				break;
 
 			default:
@@ -904,7 +925,9 @@ export class JellySelect extends JellyElement {
 
 		return {
 			color: this.ringColor(),
+
 			width: FOCUS_RING.width,
+
 			gap: FOCUS_RING.gap,
 		};
 	}

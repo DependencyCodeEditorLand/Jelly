@@ -27,25 +27,39 @@ import textareaStyles from "./textarea.css?inline";
 // Layout-shaping styles the caret mirror copies from the real textarea
 const MIRRORED_STYLES = [
 	"direction",
+
 	"paddingTop",
+
 	"paddingRight",
+
 	"paddingBottom",
+
 	"paddingLeft",
 
 	"fontFamily",
+
 	"fontSize",
+
 	"fontWeight",
+
 	"fontStyle",
+
 	"fontVariant",
 
 	"letterSpacing",
+
 	"textTransform",
+
 	"wordSpacing",
+
 	"lineHeight",
 
 	"textIndent",
+
 	"tabSize",
+
 	"textAlign",
+
 	"wordBreak",
 ];
 
@@ -93,13 +107,21 @@ export class JellyTextarea extends JellyElement implements EventListenerObject {
 	static get observedAttributes(): string[] {
 		return [
 			"value",
+
 			"placeholder",
+
 			"rows",
+
 			"label",
+
 			"disabled",
+
 			"readonly",
+
 			"autocomplete",
+
 			"no-autofill",
+
 			"size",
 		];
 	}
@@ -245,18 +267,22 @@ export class JellyTextarea extends JellyElement implements EventListenerObject {
 		switch (event.type) {
 			case "focus":
 				this.handleFocus();
+
 				break;
 
 			case "blur":
 				this.handleBlur();
+
 				break;
 
 			case "input":
 				this.handleInput();
+
 				break;
 
 			case "change":
 				emit(this, "change");
+
 				break;
 		}
 	}

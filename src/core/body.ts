@@ -169,9 +169,13 @@ function gaussian(distance: number, width: number): number {
  */
 function roundedRectSDF(
 	x: number,
+
 	y: number,
+
 	halfW: number,
+
 	halfH: number,
+
 	radius: number,
 ): number {
 	const r = Math.min(radius, halfW, halfH);
@@ -198,8 +202,11 @@ function roundedRectSDF(
  */
 function createRoundedRectMembrane(
 	width: number,
+
 	height: number,
+
 	radius: number,
+
 	targetSamples: number,
 ): MembranePoint[] {
 	const halfW = width / 2;
@@ -220,9 +227,13 @@ function createRoundedRectMembrane(
 
 	function line(
 		ax: number,
+
 		ay: number,
+
 		bx: number,
+
 		by: number,
+
 		includeStart: boolean,
 	): void {
 		for (let i = includeStart ? 0 : 1; i <= edgeSteps; i++) {
@@ -318,6 +329,7 @@ function createRoundedRectMembrane(
 // Outward normal estimated from a point's ring neighbors
 function outwardNormalFromNeighbors(
 	points: MembranePoint[],
+
 	index: number,
 ): Normal {
 	const length = points.length;
@@ -387,7 +399,9 @@ function polygonArea(points: readonly Point[]): number {
  */
 export function traceSmoothPath(
 	ctx: CanvasRenderingContext2D,
+
 	points: readonly Point[],
+
 	tension = DEFAULT_CONFIG.curveTension,
 ): void {
 	const length = points.length;
@@ -460,8 +474,11 @@ export class JellyBody {
 
 		this.membrane = createRoundedRectMembrane(
 			width,
+
 			height,
+
 			this.radius,
+
 			this.config.samples,
 		);
 
@@ -532,8 +549,11 @@ export class JellyBody {
 
 		this.membrane = createRoundedRectMembrane(
 			width,
+
 			height,
+
 			this.radius,
+
 			this.config.samples,
 		);
 
@@ -544,9 +564,13 @@ export class JellyBody {
 	sdf(x: number, y: number): number {
 		return roundedRectSDF(
 			x,
+
 			y,
+
 			this.width / 2,
+
 			this.height / 2,
+
 			this.radius,
 		);
 	}
@@ -637,11 +661,13 @@ export class JellyBody {
 
 		const local = gaussian(
 			distanceFromClick,
+
 			this.config.insidePointInfluenceWidth,
 		);
 
 		const halo = gaussian(
 			distanceFromClick,
+
 			this.config.insidePointHaloWidth,
 		);
 
@@ -779,7 +805,9 @@ export class JellyBody {
 
 		return {
 			x: point.x * perspective,
+
 			y: point.y * perspective,
+
 			z: point.z,
 		};
 	}
@@ -787,7 +815,9 @@ export class JellyBody {
 	// Aim the held-press springs at the pointer's current position
 	updatePressTargets(
 		localX: number,
+
 		localY: number,
+
 		influence = 1,
 	): { insideWeight: number } {
 		this.state.pointerLocalX = localX;
@@ -815,8 +845,11 @@ export class JellyBody {
 	// Press at a point already in local (shape-centered) coordinates
 	pressAtLocal(
 		localX: number,
+
 		localY: number,
+
 		strength = 1,
+
 		influence = 1,
 	): void {
 		const index = this.nearestMembraneIndex(localX, localY);
@@ -827,7 +860,9 @@ export class JellyBody {
 
 		const { insideWeight } = this.updatePressTargets(
 			localX,
+
 			localY,
+
 			influence,
 		);
 
@@ -945,69 +980,100 @@ export class JellyBody {
 
 		[s.clickDepth, s.clickDepthV] = integrateSpring(
 			s.clickDepth,
+
 			s.clickDepthV,
+
 			s.targetClickDepth,
 
 			c.clickDepthSpring,
+
 			c.clickDepthDamping,
+
 			dt,
 		);
 
 		[s.insidePress, s.insidePressV] = integrateSpring(
 			s.insidePress,
+
 			s.insidePressV,
+
 			s.targetInsidePress,
 
 			c.insidePressSpring,
+
 			c.insidePressDamping,
+
 			dt,
 		);
 
 		[s.press, s.pressV] = integrateSpring(
 			s.press,
+
 			s.pressV,
+
 			s.targetPress,
 
 			c.pressSpring,
+
 			c.pressDamping,
+
 			dt,
 		);
 
 		[s.insideCurveHold, s.insideCurveHoldV] = integrateSpring(
 			s.insideCurveHold,
+
 			s.insideCurveHoldV,
+
 			s.targetInsideCurveHold,
 
 			c.heldCurveSpring,
+
 			c.heldCurveDamping,
+
 			dt,
 		);
 
 		// rotateZ springs back toward zero (no target of its own)
 		[s.rotateZ, s.rotateZV] = integrateSpring(
 			s.rotateZ,
+
 			s.rotateZV,
+
 			0,
+
 			c.zRotateSpring,
+
 			c.zRotateDamping,
+
 			dt,
 		);
 
 		[s.tiltX, s.tiltXV] = integrateSpring(
 			s.tiltX,
+
 			s.tiltXV,
+
 			s.targetTiltX,
+
 			c.axisSpring,
+
 			c.axisDamping,
+
 			dt,
 		);
 
 		[s.tiltY, s.tiltYV] = integrateSpring(
 			s.tiltY,
+
 			s.tiltYV,
+
 			s.targetTiltY,
+
 			c.axisSpring,
+
 			c.axisDamping,
+
 			dt,
 		);
 
@@ -1038,7 +1104,9 @@ export class JellyBody {
 
 		const areaError = clamp(
 			(this.baseArea - area) / this.baseArea,
+
 			-0.08,
+
 			0.08,
 		);
 
@@ -1209,24 +1277,31 @@ export class JellyBody {
 		}
 
 		s.clickDepth = 0;
+
 		s.clickDepthV = 0;
 
 		s.insidePress = 0;
+
 		s.insidePressV = 0;
 
 		s.press = 0;
+
 		s.pressV = 0;
 
 		s.insideCurveHold = 0;
+
 		s.insideCurveHoldV = 0;
 
 		s.rotateZ = 0;
+
 		s.rotateZV = 0;
 
 		s.tiltX = 0;
+
 		s.tiltXV = 0;
 
 		s.tiltY = 0;
+
 		s.tiltYV = 0;
 	}
 

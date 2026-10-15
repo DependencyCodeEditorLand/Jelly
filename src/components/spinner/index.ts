@@ -70,6 +70,7 @@ export class JellySpinner extends JellyElement {
 			case "label":
 				this.setAttribute(
 					"aria-label",
+
 					this.getAttribute("label") || "Loading",
 				);
 
@@ -131,6 +132,7 @@ export class JellySpinner extends JellyElement {
 		if (!this.hasAttribute("aria-label")) {
 			this.setAttribute(
 				"aria-label",
+
 				this.getAttribute("label") || "Loading",
 			);
 		}

@@ -102,6 +102,7 @@ export class JellyTooltip extends HTMLElement {
 		// The description lands on the slotted trigger when it (re)arrives
 		this.shadowRoot!.querySelector("slot:not([name])")!.addEventListener(
 			"slotchange",
+
 			() => this.syncDescription(),
 		);
 
@@ -208,18 +209,22 @@ export class JellyTooltip extends HTMLElement {
 		switch (event.type) {
 			case "pointerenter":
 				this.show();
+
 				break;
 
 			case "focusin":
 				this.show();
+
 				break;
 
 			case "pointerleave":
 				this.hide();
+
 				break;
 
 			case "focusout":
 				this.hide();
+
 				break;
 		}
 	}

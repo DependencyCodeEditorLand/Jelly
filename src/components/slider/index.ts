@@ -215,23 +215,28 @@ export class JellySlider extends JellyElement implements EventListenerObject {
 		switch (event.type) {
 			case "input":
 				this.updateFromInput();
+
 				break;
 
 			case "keydown":
 				this.onKey(event as KeyboardEvent);
+
 				break;
 
 			case "pointerdown":
 				this.onDown(event as PointerEvent);
+
 				break;
 
 			case "pointermove":
 				this.onMove(event as PointerEvent);
+
 				break;
 
 			case "pointerup":
 			case "pointercancel":
 				this.onUp(event as PointerEvent);
+
 				break;
 		}
 	}
@@ -484,10 +489,15 @@ export class JellySlider extends JellyElement implements EventListenerObject {
 		} else {
 			[this.thumbX, this.thumbXVelocity] = integrateSpring(
 				this.thumbX,
+
 				this.thumbXVelocity,
+
 				this.thumbTarget,
+
 				310,
+
 				22,
+
 				dt,
 			);
 		}
@@ -562,15 +572,21 @@ export class JellySlider extends JellyElement implements EventListenerObject {
 		if (isRTL(this)) {
 			ctx.fillRect(
 				cx + this.thumbX,
+
 				cy - trackH / 2,
+
 				tW / 2 - this.thumbX,
+
 				trackH,
 			);
 		} else {
 			ctx.fillRect(
 				cx - tW / 2,
+
 				cy - trackH / 2,
+
 				this.thumbX + tW / 2,
+
 				trackH,
 			);
 		}

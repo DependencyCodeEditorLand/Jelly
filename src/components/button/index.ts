@@ -53,16 +53,23 @@ export class JellyButton extends JellyElement {
 	static get observedAttributes(): string[] {
 		return [
 			"disabled",
+
 			"label",
+
 			"type",
+
 			"shape",
 
 			// Global ARIA state forwarded to the inner focusable button, so the
 			// roled/focusable element - not the roleless host - carries the state
 			"aria-current",
+
 			"aria-expanded",
+
 			"aria-haspopup",
+
 			"aria-controls",
+
 			"aria-pressed",
 		];
 	}

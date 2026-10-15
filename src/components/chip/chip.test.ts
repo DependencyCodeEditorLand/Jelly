@@ -57,6 +57,7 @@ test("removable chips fire a cancelable remove event", async () => {
 
 	el.addEventListener("remove", (event) => {
 		removed += 1;
+
 		event.preventDefault();
 	});
 

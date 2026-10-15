@@ -23,6 +23,7 @@ const VIEWPORT_MARGIN = 8;
  */
 export function resolvePlacement(
 	placement: Placement,
+
 	anchorEl: HTMLElement,
 ): PhysicalPlacement {
 	if (placement !== "start" && placement !== "end") {
@@ -106,11 +107,13 @@ export function placeAnchored(
 
 	left = Math.max(
 		VIEWPORT_MARGIN,
+
 		Math.min(vw - f.width - VIEWPORT_MARGIN, left),
 	);
 
 	top = Math.max(
 		VIEWPORT_MARGIN,
+
 		Math.min(vh - f.height - VIEWPORT_MARGIN, top),
 	);
 

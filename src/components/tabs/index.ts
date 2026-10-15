@@ -100,6 +100,7 @@ export class JellyTabs extends HTMLElement {
 		// A host value attribute wins; otherwise the panel marked `active` leads
 		const activeIndex = Math.max(
 			0,
+
 			panels.findIndex((panel) => panel.hasAttribute("active")),
 		);
 

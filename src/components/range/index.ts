@@ -142,12 +142,19 @@ export class JellyRange extends JellyElement implements EventListenerObject {
 	static get observedAttributes(): string[] {
 		return [
 			"min",
+
 			"max",
+
 			"step",
+
 			"low",
+
 			"high",
+
 			"label",
+
 			"disabled",
+
 			"size",
 		];
 	}
@@ -263,27 +270,33 @@ export class JellyRange extends JellyElement implements EventListenerObject {
 		switch (event.type) {
 			case "pointerdown":
 				this.down(event as PointerEvent, this.knobIndex(event));
+
 				break;
 
 			case "pointermove":
 				this.move(event as PointerEvent);
+
 				break;
 
 			case "pointerup":
 			case "pointercancel":
 				this.up(event as PointerEvent);
+
 				break;
 
 			case "keydown":
 				this.key(event as KeyboardEvent, this.knobIndex(event));
+
 				break;
 
 			case "focus":
 				this.focusKnob(event as FocusEvent);
+
 				break;
 
 			case "blur":
 				this.blurKnob();
+
 				break;
 		}
 	}
@@ -472,6 +485,7 @@ export class JellyRange extends JellyElement implements EventListenerObject {
 
 			knob.setAttribute(
 				"aria-label",
+
 				label ? `${label} ${name.toLowerCase()}` : name,
 			);
 
@@ -691,10 +705,15 @@ export class JellyRange extends JellyElement implements EventListenerObject {
 			} else {
 				[this.x[i], this.xVelocity[i]] = integrateSpring(
 					this.x[i],
+
 					this.xVelocity[i],
+
 					this.target[i],
+
 					310,
+
 					22,
+
 					dt,
 				);
 			}
@@ -744,8 +763,11 @@ export class JellyRange extends JellyElement implements EventListenerObject {
 
 		ctx.fillRect(
 			Math.min(xa, xb),
+
 			cy - trackH / 2,
+
 			Math.abs(xb - xa),
+
 			trackH,
 		);
 

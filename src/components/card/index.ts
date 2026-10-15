@@ -73,7 +73,9 @@ export class JellyCard extends JellyElement {
 
 		return {
 			width,
+
 			height,
+
 			radius: Math.min(radius, Math.min(width, height) / 2),
 		};
 	}

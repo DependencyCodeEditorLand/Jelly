@@ -124,7 +124,9 @@ export class JellyPopover extends HTMLElement {
 
 			document.removeEventListener(
 				"pointerdown",
+
 				this.onDocumentPointer,
+
 				true,
 			);
 
@@ -263,7 +265,9 @@ export class JellyPopover extends HTMLElement {
 
 		document.removeEventListener(
 			"pointerdown",
+
 			this.onDocumentPointer,
+
 			true,
 		);
 

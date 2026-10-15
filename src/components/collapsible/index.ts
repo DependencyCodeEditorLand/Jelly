@@ -87,6 +87,7 @@ export class JellyCollapsible extends HTMLElement {
 
 		this.head?.setAttribute(
 			"aria-expanded",
+
 			String(this.hasAttribute("open")),
 		);
 	}

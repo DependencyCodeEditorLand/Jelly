@@ -156,6 +156,7 @@ export function onThemeChange(callback: () => void): () => void {
 if (typeof matchMedia === "function") {
 	matchMedia("(prefers-color-scheme: dark)").addEventListener?.(
 		"change",
+
 		() => notifyThemeChange(),
 	);
 }

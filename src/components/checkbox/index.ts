@@ -66,10 +66,15 @@ export class JellyCheckbox extends JellyElement {
 	static get observedAttributes(): string[] {
 		return [
 			"checked",
+
 			"disabled",
+
 			"indeterminate",
+
 			"label",
+
 			"size",
+
 			"value",
 		];
 	}
@@ -197,10 +202,15 @@ export class JellyCheckbox extends JellyElement {
 		// One uniform scale spring - the box expands / collapses, never wiggles
 		[this.scale, this.scaleVelocity] = integrateSpring(
 			this.scale,
+
 			this.scaleVelocity,
+
 			1,
+
 			260,
+
 			17,
+
 			dt,
 		);
 

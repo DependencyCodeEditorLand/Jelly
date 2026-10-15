@@ -40,7 +40,9 @@ export function emit(
 // Read a numeric attribute, falling back when missing or unparseable
 export function numberAttribute(
 	element: Element,
+
 	name: string,
+
 	fallback = 0,
 ): number {
 	const raw = element.getAttribute(name);

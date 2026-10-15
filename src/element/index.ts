@@ -279,10 +279,15 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 */
 	jellyBox(): {
 		width: number;
+
 		height: number;
+
 		offsetX: number;
+
 		offsetY: number;
+
 		screenX: number;
+
 		screenY: number;
 	} {
 		const hostRect = this.getBoundingClientRect();
@@ -586,7 +591,9 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		return {
 			color: this.ringColor(),
+
 			width,
+
 			gap: Number.isFinite(gap) ? gap : FOCUS_RING.gap,
 		};
 	}
@@ -686,6 +693,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	// rgb() for compactness; rgba() is required whenever transparency matters.
 	colorString(
 		[r, g, b, a = 1]: number[],
+
 		{ forceAlpha = false }: { forceAlpha?: boolean } = {},
 	): string {
 		const red = Math.round(r);
@@ -809,7 +817,9 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	// Convert client coords into the body's local (shape-centered) frame
 	toLocal(
 		clientX: number,
+
 		clientY: number,
+
 		body: JellyBody | null = this.body,
 	): { x: number; y: number } {
 		const box = this.jellyBox();
@@ -905,6 +915,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 */
 	wirePress(
 		element: HTMLElement,
+
 		{
 			keyboard = true,
 			disabled = () => this.hasAttribute("disabled"),

@@ -68,6 +68,7 @@ export class JellyLabel extends HTMLElement {
 		// Late-slotted text should still reach the target's accessible name
 		this.shadowRoot!.querySelector("slot")!.addEventListener(
 			"slotchange",
+
 			() => this.sync(),
 		);
 

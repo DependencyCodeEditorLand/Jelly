@@ -60,6 +60,7 @@ export class JellyAccordion extends HTMLElement {
 		// Newly slotted items pick up the group size
 		this.shadowRoot!.querySelector("slot")!.addEventListener(
 			"slotchange",
+
 			() => {
 				propagateSize(this, "jelly-collapsible");
 			},

@@ -161,19 +161,28 @@ export class JellyProgress extends JellyElement {
 	// Clip the drawing context to a rounded track segment
 	roundedClip(
 		ctx: CanvasRenderingContext2D,
+
 		x: number,
+
 		y: number,
+
 		w: number,
+
 		h: number,
+
 		r: number,
 	): void {
 		ctx.beginPath();
 
 		ctx.roundRect(
 			x,
+
 			y,
+
 			Math.max(0, w),
+
 			h,
+
 			Math.min(r, Math.max(0, w) / 2, h / 2),
 		);
 
@@ -338,10 +347,15 @@ export class JellyProgress extends JellyElement {
 
 			this.roundedClip(
 				ctx,
+
 				fillX,
+
 				cy - trackH / 2,
+
 				fillW,
+
 				trackH,
+
 				trackH / 2,
 			);
 

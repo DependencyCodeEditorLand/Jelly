@@ -56,10 +56,15 @@ export class JellyChip extends JellyElement {
 	static get observedAttributes(): string[] {
 		return [
 			"selected",
+
 			"disabled",
+
 			"selectable",
+
 			"removable",
+
 			"variant",
+
 			"shape",
 		];
 	}
@@ -383,6 +388,7 @@ export class JellyChip extends JellyElement {
 				if (this.main?.tagName === "BUTTON") {
 					this.main.setAttribute(
 						"aria-pressed",
+
 						String(this.hasAttribute("selected")),
 					);
 				}

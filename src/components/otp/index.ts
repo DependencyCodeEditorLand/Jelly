@@ -73,18 +73,22 @@ export class JellyOtp extends HTMLElement {
 		switch (name) {
 			case "size":
 				canonicalizeSize(this);
+
 				break;
 
 			case "length":
 				this.render();
+
 				break;
 
 			case "disabled":
 				this.syncDisabled();
+
 				break;
 
 			case "label":
 				this.syncLabel();
+
 				break;
 		}
 	}
@@ -93,6 +97,7 @@ export class JellyOtp extends HTMLElement {
 	render(): void {
 		const count = Math.max(
 			1,
+
 			parseInt(this.getAttribute("length") ?? "", 10) || 6,
 		);
 
@@ -160,6 +165,7 @@ export class JellyOtp extends HTMLElement {
 
 		row?.setAttribute(
 			"aria-label",
+
 			this.getAttribute("label") || "One-time code",
 		);
 	}

@@ -34,6 +34,7 @@ import type { ThemeMode } from "../../theme/index.js";
 function colorChannels(color: string): number[] {
 	const values = String(color)
 		.match(/[\d.]+/g)
+
 		?.slice(0, 3)
 		.map(Number) || [0, 0, 0];
 
@@ -244,6 +245,7 @@ export class JellyTheme extends HTMLElement {
 					? tokens["foreground-on-emphasis"]
 					: readableOn(
 							this.resolveColor(hue),
+
 							this.resolveColor(tokens["background-surface"]),
 						);
 

@@ -137,6 +137,7 @@ export class JellySwitch extends JellyElement {
 	// The capsule the physics body takes - the track region, not the label
 	override shape(
 		width: number = this.sizeConfig.width,
+
 		height: number = this.sizeConfig.height,
 	): Shape {
 		return { width, height, radius: height / 2 };
@@ -236,6 +237,7 @@ export class JellySwitch extends JellyElement {
 		// Clicking the label text toggles too, like a native checkbox label
 		this.shadowRoot!.querySelector(".label")!.addEventListener(
 			"click",
+
 			() => {
 				if (!this.hasAttribute("disabled")) {
 					this.setChecked(!this.checked, true);
@@ -411,10 +413,15 @@ export class JellySwitch extends JellyElement {
 		} else {
 			[this.thumbX, this.thumbXVelocity] = integrateSpring(
 				this.thumbX,
+
 				this.thumbXVelocity,
+
 				this.thumbTarget,
+
 				300,
+
 				26,
+
 				dt,
 			);
 		}
@@ -435,7 +442,9 @@ export class JellySwitch extends JellyElement {
 		if (!this.reducedMotion && Math.abs(this.thumbX - prevX) > 0.01) {
 			track.pulseAt(
 				this.thumbX,
+
 				-this.trackSize.height / 2,
+
 				0.02 * Math.min(3, speed / 120),
 			);
 		}

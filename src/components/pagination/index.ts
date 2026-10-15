@@ -83,6 +83,7 @@ export class JellyPagination extends HTMLElement {
 	disconnectedCallback(): void {
 		window.removeEventListener(
 			"jelly-theme-change",
+
 			this.onDirectionChange,
 		);
 	}
@@ -107,6 +108,7 @@ export class JellyPagination extends HTMLElement {
 	get page(): number {
 		return Math.min(
 			this.total,
+
 			Math.max(1, parseInt(this.getAttribute("page") ?? "", 10) || 1),
 		);
 	}
@@ -160,7 +162,9 @@ export class JellyPagination extends HTMLElement {
 
 		const makeButton = (
 			label: string,
+
 			page: number,
+
 			{
 				current = false,
 				disabled = false,

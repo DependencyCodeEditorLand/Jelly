@@ -68,13 +68,21 @@ export class JellyInput extends JellyElement implements EventListenerObject {
 	static get observedAttributes(): string[] {
 		return [
 			"value",
+
 			"placeholder",
+
 			"type",
+
 			"label",
+
 			"disabled",
+
 			"readonly",
+
 			"autocomplete",
+
 			"no-autofill",
+
 			"size",
 		];
 	}
@@ -186,18 +194,22 @@ export class JellyInput extends JellyElement implements EventListenerObject {
 		switch (event.type) {
 			case "focus":
 				this.handleFocus();
+
 				break;
 
 			case "blur":
 				this.handleBlur();
+
 				break;
 
 			case "input":
 				this.handleInput();
+
 				break;
 
 			case "change":
 				emit(this, "change");
+
 				break;
 		}
 	}

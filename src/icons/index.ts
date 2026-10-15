@@ -100,6 +100,7 @@ export interface IconOptions {
  */
 export function jellyIcon(
 	name: IconName,
+
 	{ size = 20, label = null }: IconOptions = {},
 ): string {
 	const svg = ICONS[name];

@@ -117,6 +117,7 @@ export class JellyDrawer extends HTMLElement {
 
 		this.shadowRoot!.querySelector(".backdrop")!.addEventListener(
 			"click",
+
 			() => {
 				this.open = false;
 			},
@@ -124,6 +125,7 @@ export class JellyDrawer extends HTMLElement {
 
 		this.shadowRoot!.querySelector(".close")!.addEventListener(
 			"click",
+
 			() => {
 				this.open = false;
 			},
@@ -144,7 +146,9 @@ export class JellyDrawer extends HTMLElement {
 	// Lifecycle method: Fires when observed HTML attributes change dynamically
 	attributeChangedCallback(
 		name: string,
+
 		was: string | null,
+
 		now: string | null,
 	): void {
 		if (!this.sheet || was === now) {
@@ -175,6 +179,7 @@ export class JellyDrawer extends HTMLElement {
 		} else if (heading) {
 			this.sheet.setAttribute(
 				"aria-label",
+
 				(heading.textContent ?? "").trim(),
 			);
 		}
@@ -270,19 +275,25 @@ export class JellyDrawer extends HTMLElement {
 		const map: Record<"right" | "left" | "bottom", SlideFrames> = {
 			right: {
 				off: "translateX(115%)",
+
 				over: "translateX(-1%)",
+
 				rest: "translateX(0)",
 			},
 
 			left: {
 				off: "translateX(-115%)",
+
 				over: "translateX(1%)",
+
 				rest: "translateX(0)",
 			},
 
 			bottom: {
 				off: "translateY(115%)",
+
 				over: "translateY(-1%)",
+
 				rest: "translateY(0)",
 			},
 		};
