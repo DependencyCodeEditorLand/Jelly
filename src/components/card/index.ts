@@ -119,10 +119,13 @@ export class JellyCard extends JellyElement {
 		this.syncSquish();
 
 		// Hover: continuous multi-channel simplex-noise wobble driven by a
-		// dedicated requestAnimationFrame loop - same as jelly-button.
-		// Runs independently of the press hold-state so clicking adds its
-		// own force on top without killing the hover wobble.
-		if (!this.reducedMotion) {
+				// dedicated requestAnimationFrame loop - same as jelly-button.
+				// Runs independently of the press hold-state so clicking adds its
+				// own force on top without killing the hover wobble. Flat (radius 0)
+				// cards skip it - a square has no corners to jelly, so the wobble
+				// would only distort the corners (unlike buttons, where the jelly
+				// is the intended interactive feel).
+				if (!this.reducedMotion && popRadius > 0) {
 			const elIndex = [
 				...document.querySelectorAll("jelly-card"),
 			].indexOf(this);

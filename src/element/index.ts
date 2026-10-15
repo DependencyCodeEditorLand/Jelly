@@ -1025,10 +1025,6 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	startHoverLoop(elIndex: number): void {
 			if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
 
-			// Flat shapes (radius 0) have no corners to jelly - skip the
-			// membrane force so square cards stay perfectly square.
-			if (!(this.body.radius > 0)) return;
-
 			this._hoverElIndex = elIndex;
 
 			this._hoverRafId = requestAnimationFrame(this._hoverFrame);
