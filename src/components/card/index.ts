@@ -102,13 +102,19 @@ export class JellyCard extends JellyElement {
 	}
 
 	// Called once after the shadow DOM and canvas exist. Wire events here.
-	override onBuilt(): void {
-		this.card = this.shadowRoot!.querySelector(".card")!;
+		override onBuilt(): void {
+			this.card = this.shadowRoot!.querySelector(".card")!;
 
-		// Spring in on first appearance
-		if (!this.reducedMotion) {
-			requestAnimationFrame(() => this.centerPop(0.7));
-		}
+			// Spring in on first appearance - but a flat (radius 0) card has no
+			// corners to pop; skip the pulse so squares stay perfectly square.
+			const popRadius =
+				parseFloat(
+					getComputedStyle(this).getPropertyValue("--jelly-radius"),
+				) || 0;
+
+			if (!this.reducedMotion && popRadius > 0) {
+				requestAnimationFrame(() => this.centerPop(0.7));
+			}
 
 		this.syncSquish();
 

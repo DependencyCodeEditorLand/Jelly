@@ -662,7 +662,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	}
 
 	// Resolve a color expression to an [r, g, b, a] tuple. RGB channels use
-	// 0–255; alpha uses 0–1. Keeping alpha here prevents short hex colors such
+	// 0-255; alpha uses 0-1. Keeping alpha here prevents short hex colors such
 	// as #fff0 from becoming opaque as they pass through canvas animation.
 	rgbaTuple(expr: string): RGBA {
 		const resolved = this.resolveColor(String(expr));
@@ -1006,7 +1006,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 	/* ---- Hover (continuous noise-driven membrane force, independent) ---- */
 
-	// Hover frame-loop state — completely independent of press/click so a
+	// Hover frame-loop state - completely independent of press/click so a
 	// click adds its own force on top instead of overriding the hover;
 	// when the click releases, the hover energy is still there.
 	_hoverRafId = 0;
@@ -1023,12 +1023,16 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 * pulse in lockstep.
 	 */
 	startHoverLoop(elIndex: number): void {
-		if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
+			if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
 
-		this._hoverElIndex = elIndex;
+			// Flat shapes (radius 0) have no corners to jelly - skip the
+			// membrane force so square cards stay perfectly square.
+			if (!(this.body.radius > 0)) return;
 
-		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
-	}
+			this._hoverElIndex = elIndex;
+
+			this._hoverRafId = requestAnimationFrame(this._hoverFrame);
+		}
 
 	/** Stop the hover loop and let residual energy dissipate naturally. */
 	stopHoverLoop(): void {
@@ -1038,7 +1042,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		this._hoverRafId = 0;
 
-		// Don't zero hoverForce instantly — let the membrane settle through
+		// Don't zero hoverForce instantly - let the membrane settle through
 		// its natural damping, which reads as a smooth exhale.
 		if (this.body) {
 			this.body.state.hoverForce = 0;
@@ -1078,7 +1082,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		const i = this._hoverElIndex;
 
-		// Faster than Staccato's 0.0001 — hover needs visible variation
+		// Faster than Staccato's 0.0001 - hover needs visible variation
 		// within a second, not ~8 seconds.  0.0005 gives ~2s cycles.
 		const s = 0.0005;
 
@@ -1087,7 +1091,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		const force = jellyQuantize(rawForce, 6);
 
-		// Map from quantized [-1, 1] → [0.75, 1.0] — always pronounced
+		// Map from quantized [-1, 1] → [0.75, 1.0] - always pronounced
 		const fMapped = 0.75 + ((force + 1) / 2) * 0.25;
 
 		// Morph channel: spreads or tightens the bulge (5 levels)
