@@ -514,25 +514,25 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 			traceSmoothPath(ctx, ringPoints, undefined, body.radius <= 0);
 
-						ctx.lineWidth = ring.width;
+			ctx.lineWidth = ring.width;
 
-						ctx.strokeStyle = ring.color;
+			ctx.strokeStyle = ring.color;
 
-						ctx.lineJoin = body.radius <= 0 ? "miter" : "round";
+			ctx.lineJoin = body.radius <= 0 ? "miter" : "round";
 
-						ctx.stroke();
-					}
+			ctx.stroke();
+		}
 
-					const points = body.getSurfacePoints().map(project);
+		const points = body.getSurfacePoints().map(project);
 
-					traceSmoothPath(ctx, points, undefined, body.radius <= 0);
+		traceSmoothPath(ctx, points, undefined, body.radius <= 0);
 
-					ctx.fillStyle = surface;
+		ctx.fillStyle = surface;
 
-					ctx.fill();
+		ctx.fill();
 
-					if (border) {
-						traceSmoothPath(ctx, points, undefined, body.radius <= 0);
+		if (border) {
+			traceSmoothPath(ctx, points, undefined, body.radius <= 0);
 
 			ctx.lineWidth = border.width;
 
@@ -1023,12 +1023,12 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 * pulse in lockstep.
 	 */
 	startHoverLoop(elIndex: number): void {
-			if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
+		if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
 
-			this._hoverElIndex = elIndex;
+		this._hoverElIndex = elIndex;
 
-			this._hoverRafId = requestAnimationFrame(this._hoverFrame);
-		}
+		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
+	}
 
 	/** Stop the hover loop and let residual energy dissipate naturally. */
 	stopHoverLoop(): void {

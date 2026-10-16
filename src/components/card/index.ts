@@ -102,27 +102,27 @@ export class JellyCard extends JellyElement {
 	}
 
 	// Called once after the shadow DOM and canvas exist. Wire events here.
-		override onBuilt(): void {
-			this.card = this.shadowRoot!.querySelector(".card")!;
+	override onBuilt(): void {
+		this.card = this.shadowRoot!.querySelector(".card")!;
 
-			// Spring in on first appearance - but a flat (radius 0) card has no
-			// corners to pop; skip the pulse so squares stay perfectly square.
-			const popRadius =
-				parseFloat(
-					getComputedStyle(this).getPropertyValue("--jelly-radius"),
-				) || 0;
+		// Spring in on first appearance - but a flat (radius 0) card has no
+		// corners to pop; skip the pulse so squares stay perfectly square.
+		const popRadius =
+			parseFloat(
+				getComputedStyle(this).getPropertyValue("--jelly-radius"),
+			) || 0;
 
-			if (!this.reducedMotion && popRadius > 0) {
-				requestAnimationFrame(() => this.centerPop(0.7));
-			}
+		if (!this.reducedMotion && popRadius > 0) {
+			requestAnimationFrame(() => this.centerPop(0.7));
+		}
 
 		this.syncSquish();
 
 		// Hover: continuous multi-channel simplex-noise wobble driven by a
-				// dedicated requestAnimationFrame loop - same as jelly-button.
-				// Runs independently of the press hold-state so clicking adds its
-				// own force on top without killing the hover wobble.
-				if (!this.reducedMotion) {
+		// dedicated requestAnimationFrame loop - same as jelly-button.
+		// Runs independently of the press hold-state so clicking adds its
+		// own force on top without killing the hover wobble.
+		if (!this.reducedMotion) {
 			const elIndex = [
 				...document.querySelectorAll("jelly-card"),
 			].indexOf(this);

@@ -399,18 +399,18 @@ function polygonArea(points: readonly Point[]): number {
  */
 function lineIntersect(
 	a: Point,
+
 	b: Point,
+
 	c: Point,
+
 	d: Point,
 ): Point {
-	const denom =
-		(a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
+	const denom = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
 
 	if (Math.abs(denom) < 1e-9) return { x: b.x, y: b.y };
 
-	const t =
-		((a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)) /
-		denom;
+	const t = ((a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)) / denom;
 
 	return {
 		x: a.x + t * (b.x - a.x),
