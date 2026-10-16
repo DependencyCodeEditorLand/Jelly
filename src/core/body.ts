@@ -394,6 +394,57 @@ function polygonArea(points: readonly Point[]): number {
 }
 
 /*
+ * Andrew's monotone chain convex hull. The membrane ring is re-sampled at
+ * even perimeter spacing, so its samples rarely land exactly on the shape's
+ * geometric corners - tracing the raw ring with lineTo chamfers the corners
+ * between samples (irregular, off-by-one-corner look). The hull's vertices
+ * ARE the true corner intersections (the extreme samples of each edge), so
+ * sharp shapes get exact 90-degree corners while the outward jelly wobble
+ * stays (inward edge dips are flattened by the hull - acceptable at the
+ * small amplitudes the membrane produces).
+ */
+function convexHull(points: readonly Point[]): Point[] {
+	const sorted = [...points].sort(
+		(a, b) => a.x - b.x || a.y - b.y,
+	);
+
+	const cross = (
+		o: Point,
+		a: Point,
+		b: Point,
+	): number =>
+		(a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+	const lower: Point[] = [];
+
+	for (const p of sorted) {
+		while (
+			lower.length >= 2 &&
+			cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0
+		)
+			lower.pop();
+
+		lower.push(p);
+	}
+
+	const upper: Point[] = [];
+
+	for (let i = sorted.length - 1; i >= 0; i--) {
+		const p = sorted[i];
+
+		while (
+			upper.length >= 2 &&
+			cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0
+		)
+			upper.pop();
+
+		upper.push(p);
+	}
+
+	return lower.slice(0, -1).concat(upper.slice(0, -1));
+}
+
+/*
  * Trace a closed Catmull-Rom spline (as cubic beziers) through the points.
  * The caller controls fill / stroke.
  */
@@ -413,12 +464,17 @@ export function traceSmoothPath(
 	ctx.moveTo(points[0].x, points[0].y);
 
 	if (sharp) {
-		// Flat shapes (radius 0): a plain polygon - the Catmull-Rom bezier
-		// tracer geometrically rounds corners even at radius 0, which reads
-		// as "not fully square". lineTo keeps true 90-degree corners while
-		// the membrane points still move (the wobble shows as edge bulge).
-		for (let i = 1; i < length; i++) {
-			ctx.lineTo(points[i].x, points[i].y);
+		// Flat shapes (radius 0): trace the convex hull as a polygon - the
+		// Catmull-Rom bezier tracer rounds corners even at radius 0, and the
+		// raw ring samples chamfer corners between samples. The hull gives
+		// true 90-degree corners while the membrane points still move (the
+		// wobble shows as edge bulge).
+		const hull = convexHull(points);
+
+		ctx.moveTo(hull[0].x, hull[0].y);
+
+		for (let i = 1; i < hull.length; i++) {
+			ctx.lineTo(hull[i].x, hull[i].y);
 		}
 	} else {
 		for (let i = 0; i < length; i++) {
