@@ -512,27 +512,27 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 				.getSurfacePoints(ring.gap + ring.width / 2)
 				.map(project);
 
-			traceSmoothPath(ctx, ringPoints);
+			traceSmoothPath(ctx, ringPoints, undefined, body.radius <= 0);
 
-			ctx.lineWidth = ring.width;
+						ctx.lineWidth = ring.width;
 
-			ctx.strokeStyle = ring.color;
+						ctx.strokeStyle = ring.color;
 
-			ctx.lineJoin = "round";
+						ctx.lineJoin = body.radius <= 0 ? "miter" : "round";
 
-			ctx.stroke();
-		}
+						ctx.stroke();
+					}
 
-		const points = body.getSurfacePoints().map(project);
+					const points = body.getSurfacePoints().map(project);
 
-		traceSmoothPath(ctx, points);
+					traceSmoothPath(ctx, points, undefined, body.radius <= 0);
 
-		ctx.fillStyle = surface;
+					ctx.fillStyle = surface;
 
-		ctx.fill();
+					ctx.fill();
 
-		if (border) {
-			traceSmoothPath(ctx, points);
+					if (border) {
+						traceSmoothPath(ctx, points, undefined, body.radius <= 0);
 
 			ctx.lineWidth = border.width;
 

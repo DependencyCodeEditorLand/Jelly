@@ -107,7 +107,7 @@ interface JellyState {
 
 	pointerLocalY: number;
 
-	// Continuous hover wobble — driven by the per-frame noise loop in
+	// Continuous hover wobble - driven by the per-frame noise loop in
 	// JellyElement._hoverFrame, independent of press/click hold state.
 	hoverForce: number;
 }
@@ -403,6 +403,8 @@ export function traceSmoothPath(
 	points: readonly Point[],
 
 	tension = DEFAULT_CONFIG.curveTension,
+
+	sharp = false,
 ): void {
 	const length = points.length;
 
@@ -410,24 +412,34 @@ export function traceSmoothPath(
 
 	ctx.moveTo(points[0].x, points[0].y);
 
-	for (let i = 0; i < length; i++) {
-		const p0 = points[wrap(i - 1, length)];
+	if (sharp) {
+		// Flat shapes (radius 0): a plain polygon - the Catmull-Rom bezier
+		// tracer geometrically rounds corners even at radius 0, which reads
+		// as "not fully square". lineTo keeps true 90-degree corners while
+		// the membrane points still move (the wobble shows as edge bulge).
+		for (let i = 1; i < length; i++) {
+			ctx.lineTo(points[i].x, points[i].y);
+		}
+	} else {
+		for (let i = 0; i < length; i++) {
+			const p0 = points[wrap(i - 1, length)];
 
-		const p1 = points[i];
+			const p1 = points[i];
 
-		const p2 = points[wrap(i + 1, length)];
+			const p2 = points[wrap(i + 1, length)];
 
-		const p3 = points[wrap(i + 2, length)];
+			const p3 = points[wrap(i + 2, length)];
 
-		const cp1x = p1.x + ((p2.x - p0.x) * tension) / 6;
+			const cp1x = p1.x + ((p2.x - p0.x) * tension) / 6;
 
-		const cp1y = p1.y + ((p2.y - p0.y) * tension) / 6;
+			const cp1y = p1.y + ((p2.y - p0.y) * tension) / 6;
 
-		const cp2x = p2.x - ((p3.x - p1.x) * tension) / 6;
+			const cp2x = p2.x - ((p3.x - p1.x) * tension) / 6;
 
-		const cp2y = p2.y - ((p3.y - p1.y) * tension) / 6;
+			const cp2y = p2.y - ((p3.y - p1.y) * tension) / 6;
 
-		ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+			ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+		}
 	}
 
 	ctx.closePath();
@@ -1157,10 +1169,10 @@ export class JellyBody {
 		// Hover wobble: continuous outward force at the pointer position,
 		// independent of press/click hold state.  Uses a wide gaussian so the
 		// bulge is centered at the cursor and tapers smoothly to zero at the
-		// button edges — no uniform inflation, no directional skew.
+		// button edges - no uniform inflation, no directional skew.
 		//
 		// The force multiplier (24× base) is tuned so the steady-state
-		// displacement at the pointer is ~5 px — clearly visible but not
+		// displacement at the pointer is ~5 px - clearly visible but not
 		// distracting, and comparable to the click dent.
 		if (this.state.hoverForce > 0.005) {
 			const H = this.state.hoverForce;
@@ -1173,7 +1185,7 @@ export class JellyBody {
 			for (let i = 0; i < length; i++) {
 				const influence = this.insidePointInfluence(i);
 
-				// Only local component — no global bulge, no directional skew
+				// Only local component - no global bulge, no directional skew
 				membraneAccel[i] += peakF * influence.local;
 
 				membraneAccel[i] -= peakF * 0.08 * influence.halo;
