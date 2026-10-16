@@ -394,54 +394,95 @@ function polygonArea(points: readonly Point[]): number {
 }
 
 /*
- * Andrew's monotone chain convex hull. The membrane ring is re-sampled at
- * even perimeter spacing, so its samples rarely land exactly on the shape's
- * geometric corners - tracing the raw ring with lineTo chamfers the corners
- * between samples (irregular, off-by-one-corner look). The hull's vertices
- * ARE the true corner intersections (the extreme samples of each edge), so
- * sharp shapes get exact 90-degree corners while the outward jelly wobble
- * stays (inward edge dips are flattened by the hull - acceptable at the
- * small amplitudes the membrane produces).
+ * Intersection of the infinite lines through (a,b) and (c,d). Used to pin
+ * the true corner of a sharp shape where two deformed edge lines meet.
  */
-function convexHull(points: readonly Point[]): Point[] {
-	const sorted = [...points].sort(
-		(a, b) => a.x - b.x || a.y - b.y,
-	);
+function lineIntersect(
+	a: Point,
+	b: Point,
+	c: Point,
+	d: Point,
+): Point {
+	const denom =
+		(a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
 
-	const cross = (
-		o: Point,
-		a: Point,
-		b: Point,
-	): number =>
-		(a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+	if (Math.abs(denom) < 1e-9) return { x: b.x, y: b.y };
 
-	const lower: Point[] = [];
+	const t =
+		((a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)) /
+		denom;
 
-	for (const p of sorted) {
-		while (
-			lower.length >= 2 &&
-			cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0
-		)
-			lower.pop();
+	return {
+		x: a.x + t * (b.x - a.x),
 
-		lower.push(p);
+		y: a.y + t * (b.y - a.y),
+	};
+}
+
+/*
+ * Trace a sharp (radius 0) shape: walk the membrane ring in order, tracing
+ * every sample with lineTo so the jelly wobble is fully preserved, but where
+ * the direction between segments turns sharply (the corners) replace the
+ * sample with the intersection of the two adjacent edge lines. The ring is
+ * re-sampled at even perimeter spacing so samples rarely sit exactly on the
+ * geometric corners - without this, corners come out chamfered or offset.
+ * At rest the edge lines are the rectangle edges, so corners are exact 90°.
+ */
+function traceSharpPath(
+	ctx: CanvasRenderingContext2D,
+
+	points: readonly Point[],
+): void {
+	const length = points.length;
+
+	ctx.moveTo(points[0].x, points[0].y);
+
+	let lastDx = points[1].x - points[0].x;
+
+	let lastDy = points[1].y - points[0].y;
+
+	for (let i = 1; i <= length; i++) {
+		const p0 = points[wrap(i - 2, length)];
+
+		const p1 = points[wrap(i - 1, length)];
+
+		const p2 = points[wrap(i, length)];
+
+		const dx = p2.x - p1.x;
+
+		const dy = p2.y - p1.y;
+
+		const segLen = Math.hypot(dx, dy);
+
+		let turn = 0;
+
+		if (segLen > 1e-6) {
+			// Angle between the incoming and outgoing segment directions,
+			// normalized to [0, pi].
+			const ang = Math.abs(
+				Math.atan2(dy, dx) - Math.atan2(lastDy, lastDx),
+			);
+
+			turn = Math.min(ang, Math.PI * 2 - ang);
+		}
+
+		if (turn > Math.PI / 4) {
+			// Corner: the two edge lines meet at the true corner point.
+			const corner = lineIntersect(p0, p1, p1, p2);
+
+			ctx.lineTo(corner.x, corner.y);
+		} else {
+			ctx.lineTo(p1.x, p1.y);
+		}
+
+		if (segLen > 1e-6) {
+			lastDx = dx;
+
+			lastDy = dy;
+		}
 	}
 
-	const upper: Point[] = [];
-
-	for (let i = sorted.length - 1; i >= 0; i--) {
-		const p = sorted[i];
-
-		while (
-			upper.length >= 2 &&
-			cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0
-		)
-			upper.pop();
-
-		upper.push(p);
-	}
-
-	return lower.slice(0, -1).concat(upper.slice(0, -1));
+	ctx.closePath();
 }
 
 /*
@@ -464,18 +505,9 @@ export function traceSmoothPath(
 	ctx.moveTo(points[0].x, points[0].y);
 
 	if (sharp) {
-		// Flat shapes (radius 0): trace the convex hull as a polygon - the
-		// Catmull-Rom bezier tracer rounds corners even at radius 0, and the
-		// raw ring samples chamfer corners between samples. The hull gives
-		// true 90-degree corners while the membrane points still move (the
-		// wobble shows as edge bulge).
-		const hull = convexHull(points);
-
-		ctx.moveTo(hull[0].x, hull[0].y);
-
-		for (let i = 1; i < hull.length; i++) {
-			ctx.lineTo(hull[i].x, hull[i].y);
-		}
+		// Flat shapes (radius 0): corner-aware polygon tracing - full jelly
+		// wobble preserved, corners pinned to their true edge intersections.
+		traceSharpPath(ctx, points);
 	} else {
 		for (let i = 0; i < length; i++) {
 			const p0 = points[wrap(i - 1, length)];
