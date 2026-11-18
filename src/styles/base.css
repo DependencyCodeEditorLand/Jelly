@@ -29,3 +29,22 @@
 	width: 100%;
 	height: 100%;
 }
+
+/*
+ * The flat fast path: a surface with no radius and a solid fill is painted by
+ * CSS instead of by a canvas (JellyElement.applyShape). The fill lands on the
+ * host - the same box the canvas was sized to - and the hairline rides a
+ * pseudo-element so it cannot shrink the host's content box the way a real
+ * border would.
+ */
+:host([data-jelly-flat]) {
+	background: var(--jelly-flat-fill, var(--jelly-fill));
+}
+
+:host([data-jelly-flat])::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border: var(--jelly-flat-border, 1px solid var(--jelly-color-border-default, rgba(7, 7, 7, 0.08)));
+	pointer-events: none;
+}

@@ -66,9 +66,27 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	// Padding around the shape so the wobble can overflow without clipping
 	static PAD = 48;
 
+	/*
+	 * The largest canvas this library will allocate, in device pixels. Past
+	 * either limit the compositor cannot hold the texture (Chrome refuses a
+	 * canvas past 16,384 px on an edge and every GPU has a texture budget),
+	 * so the element paints itself as CSS instead - see `applyShape`.
+	 */
+	static MAX_CANVAS_EDGE = 8192;
+
+	static MAX_CANVAS_AREA = 16_777_216;
+
 	body: JellyBody | null = null;
 
 	built = false;
+
+	/*
+	 * True while this element paints its surface with CSS instead of a
+	 * canvas: a flat rect has nothing for the physics to draw, and a box past
+	 * MAX_CANVAS_* cannot be held as a texture. Either way no backing store
+	 * exists and no frame loop runs.
+	 */
+	flat = false;
 
 	dpr = 1;
 
@@ -151,6 +169,17 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	// Given the measured host size, return the jelly shape to build
 	shape(width: number, height: number): Shape {
 		return { width, height, radius: Math.min(width, height) / 2 };
+	}
+
+	/*
+	 * Whether a plain rect (radius 0) may be painted as CSS instead of a
+	 * canvas. A rect with a solid fill is exactly what CSS already draws, so
+	 * the canvas would add nothing but a texture and a frame loop. Components
+	 * whose surface *is* the rectangle opt in; controls that keep a press
+	 * dent or a wobble at radius 0 leave it false.
+	 */
+	flatSurfaceAllowed(): boolean {
+		return false;
 	}
 
 	// Resolve the current fill color (the canvas reads the computed token)
@@ -352,6 +381,33 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		const pxH = Math.round(cssH * dpr);
 
+		/*
+		 * Two reasons to paint this surface with CSS instead of allocating a
+		 * canvas: a flat rect (radius 0, the whole site's rule - the identity
+		 * is flat) has nothing for the physics to draw, and a box past the
+		 * texture limits cannot be held by the compositor at all. Either way
+		 * the canvas would only ever paint a rectangle, so skip the backing
+		 * store and the frame loop that maintains it.
+		 */
+		const flat = shape.radius <= 0 && this.flatSurfaceAllowed();
+
+		const oversized =
+			pxW > JellyElement.MAX_CANVAS_EDGE ||
+			pxH > JellyElement.MAX_CANVAS_EDGE ||
+			pxW * pxH > JellyElement.MAX_CANVAS_AREA;
+
+		if (flat || oversized) {
+			this.useCssSurface(cssW, cssH);
+
+			return;
+		}
+
+		// The box came back inside the limits (a flat token was re-rounded, a
+		// window shrank): restore the canvas before sizing it below.
+		if (this.flat) {
+			this.useCanvasSurface();
+		}
+
 		// Repositioning the canvas is cheap and never clears it - always do it
 		this.canvas.style.left = `${box.offsetX}px`;
 
@@ -408,6 +464,82 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		}
 
 		this.requestFrame();
+	}
+
+	/*
+	 * Paint the surface as CSS: publish the fill and the hairline the canvas
+	 * used to draw, release the backing store, and drop the physics body so
+	 * nothing can schedule a repaint of a texture that no longer exists.
+	 */
+	useCssSurface(cssW: number, cssH: number): void {
+		const first = !this.flat;
+
+		this.flat = true;
+
+		// Park the hover loop before the body it feeds is gone.
+		this.stopHoverLoop();
+
+		this.body = null;
+
+		this.cssW = cssW;
+
+		this.cssH = cssH;
+
+		this.dpr = 1;
+
+		// Zeroing the bitmap is what actually frees the texture; hiding it
+		// keeps a 0x0 canvas from participating in layout or paint.
+		if (this.canvas.width !== 0 || this.canvas.height !== 0) {
+			this.canvas.width = 0;
+
+			this.canvas.height = 0;
+		}
+
+		this.canvas.hidden = true;
+
+		if (first) {
+			this.setAttribute("data-jelly-flat", "");
+
+			this.onShape();
+		}
+
+		this.syncFlatSurface();
+	}
+
+	// Leave the CSS fast path and hand the surface back to the canvas
+	useCanvasSurface(): void {
+		this.flat = false;
+
+		this.canvas.hidden = false;
+
+		this.removeAttribute("data-jelly-flat");
+
+		this.style.removeProperty("--jelly-flat-fill");
+
+		this.style.removeProperty("--jelly-flat-border");
+	}
+
+	/*
+	 * Publish the flat surface's paint. The fill is a token expression, so it
+	 * is handed to CSS unresolved and re-resolved by the browser; the
+	 * hairline is the border the canvas would have stroked. Guarded against
+	 * rewriting an identical value: every write mutates the host's style
+	 * attribute, which the element's own MutationObserver wakes a frame for.
+	 */
+	syncFlatSurface(): void {
+		const fill = this.fill();
+
+		const border = this.surfaceBorder();
+
+		const hairline = border ? `${border.width}px solid ${border.color}` : "0";
+
+		if (this.style.getPropertyValue("--jelly-flat-fill") !== fill) {
+			this.style.setProperty("--jelly-flat-fill", fill);
+		}
+
+		if (this.style.getPropertyValue("--jelly-flat-border") !== hairline) {
+			this.style.setProperty("--jelly-flat-border", hairline);
+		}
 	}
 
 	/*
@@ -551,6 +683,12 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		const body = this.body;
 
 		if (!body) {
+			// A CSS-painted surface still tracks theme and attribute changes;
+			// it just has no texture to repaint.
+			if (this.flat) {
+				this.syncFlatSurface();
+			}
+
 			return false;
 		}
 
@@ -1025,6 +1163,14 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	startHoverLoop(elIndex: number): void {
 		if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
 
+		/*
+		 * A host taller than the viewport is a document, not a control: the
+		 * pointer resting on it is reading, and the membrane under it is far
+		 * too large to repaint at 60fps. The physics would also be sampling a
+		 * pointer over a shape it can never meaningfully deform.
+		 */
+		if (this.offsetHeight > window.innerHeight) return;
+
 		this._hoverElIndex = elIndex;
 
 		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
@@ -1064,8 +1210,6 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	_hoverFrame = (): void => {
 		if (!this._hoverRafId || !this.body) return;
 
-		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
-
 		// Update pointer-local position for the membrane influence
 		const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
 
@@ -1102,6 +1246,37 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		this.body.state.hoverForce = fMapped * morphM;
 
 		this.requestFrame();
+
+		/*
+		 * Park when the membrane is at rest, the rule `defaultFrame` already
+		 * applies. This loop used to reschedule unconditionally, so a pointer
+		 * merely resting on a surface kept its whole texture repainting at
+		 * 60fps for as long as it stayed there.
+		 *
+		 * Only park when the pointer is outside the shape. Inside it, the
+		 * force just written will move the membrane on the engine's next
+		 * frame - the body is momentarily "at rest" only because the physics
+		 * has not stepped since the force was set, and parking here would
+		 * kill the wobble after a single frame. Outside it the gaussian
+		 * influence is nil and the body really has settled.
+		 *
+		 * The force is dropped before parking: leaving it set would keep the
+		 * engine's own frame alive against a constant bulge, which is the
+		 * same spin under a different owner.
+		 */
+		const inside =
+			Math.abs(local.x) <= this.body.width / 2 &&
+			Math.abs(local.y) <= this.body.height / 2;
+
+		if (!inside && this.body.isResting()) {
+			this.body.state.hoverForce = 0;
+
+			this._hoverRafId = 0;
+
+			return;
+		}
+
+		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
 	};
 }
 

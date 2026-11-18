@@ -51,3 +51,148 @@ test("squish cards become keyboard-activatable buttons", async () => {
 
 	host.remove();
 });
+
+test("a flat card paints itself in CSS and allocates no canvas", async () => {
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 0; --jelly-fill: rgb(1, 2, 3)">Flat</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	const canvas = el.shadowRoot!.querySelector("canvas") as HTMLCanvasElement;
+
+	expect(el.flat).toBe(true);
+
+	expect(el.hasAttribute("data-jelly-flat")).toBe(true);
+
+	expect(el.body).toBeNull();
+
+	// The backing store is released, not merely hidden.
+	expect(canvas.width).toBe(0);
+
+	expect(canvas.height).toBe(0);
+
+	expect(getComputedStyle(el).backgroundColor).toBe("rgb(1, 2, 3)");
+
+	// With no body there is nothing to wobble, so hovering starts no loop.
+	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 4, clientY: 4 }));
+
+	expect(el._hoverRafId).toBe(0);
+
+	host.remove();
+});
+
+test("a rounded card keeps its canvas", async () => {
+	const host = mount('<jelly-card style="--jelly-radius: 12px">Round</jelly-card>');
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	const canvas = el.shadowRoot!.querySelector("canvas") as HTMLCanvasElement;
+
+	expect(el.flat).toBe(false);
+
+	expect(el.hasAttribute("data-jelly-flat")).toBe(false);
+
+	expect(el.body).toBeTruthy();
+
+	expect(canvas.width).toBeGreaterThan(0);
+
+	expect(canvas.height).toBeGreaterThan(0);
+
+	host.remove();
+});
+
+test("a card past the texture limits falls back to CSS", async () => {
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; display: block; height: 9000px">Tall</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	const canvas = el.shadowRoot!.querySelector("canvas") as HTMLCanvasElement;
+
+	expect(el.flat).toBe(true);
+
+	expect(el.body).toBeNull();
+
+	expect(canvas.height).toBe(0);
+
+	host.remove();
+});
+
+test("the hover loop refuses a host taller than the viewport", async () => {
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; display: block; height: 1200px">Tall</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	// Inside the texture limits, so this one really does have a canvas.
+	expect(el.body).toBeTruthy();
+
+	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }));
+
+	expect(el._hoverRafId).toBe(0);
+
+	host.remove();
+});
+
+test("the hover loop still runs on a control-sized card", async () => {
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; display: block; width: 200px; height: 120px">Small</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }));
+
+	expect(el._hoverRafId).not.toBe(0);
+
+	// The loop keeps itself alive while the pointer is over the surface: the
+	// membrane is driven, so it is not at rest.
+	await settle(5);
+
+	expect(el._hoverRafId).not.toBe(0);
+
+	expect(el.body!.state.hoverForce).toBeGreaterThan(0);
+
+	el.dispatchEvent(new PointerEvent("pointerleave"));
+
+	expect(el._hoverRafId).toBe(0);
+
+	host.remove();
+});
+
+test("the hover loop parks once the pointer is outside the membrane", async () => {
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; display: block; width: 200px; height: 120px">Small</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	// pointerenter, but nowhere near the shape: the gaussian influence is nil,
+	// the membrane settles, and the loop must stop instead of rescheduling.
+	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 5000, clientY: 5000 }));
+
+	// Long enough for the card's entry pop to settle as well: the loop parks
+	// once the membrane is genuinely at rest, not before.
+	await settle(150);
+
+	expect(el._hoverRafId).toBe(0);
+
+	expect(el.body!.state.hoverForce).toBe(0);
+
+	host.remove();
+});

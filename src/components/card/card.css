@@ -54,6 +54,15 @@
 	pointer-events: none;
 }
 
+/* Flat surfaces paint their focus ring in CSS - the canvas that used to
+   stroke it is not allocated. Same custom properties, so the ring keeps the
+   theme's width, gap and colour. */
+:host([data-jelly-flat]) .card:focus-visible {
+	outline: var(--jelly-ring-width) solid
+		var(--jelly-ring-color, var(--jelly-ring, var(--jelly-color-border-focus)));
+	outline-offset: var(--jelly-ring-gap);
+}
+
 @media (forced-colors: active) {
 	.card {
 		border: 1px solid CanvasText;

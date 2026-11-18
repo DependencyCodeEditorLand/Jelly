@@ -64,6 +64,14 @@ export class JellyCard extends JellyElement {
 		return `<div class="card" part="card" ${attrs}><slot></slot></div>`;
 	}
 
+	// A card at radius 0 is a rectangle with a solid fill: the canvas would
+	// paint exactly what CSS paints, so the card takes the flat fast path and
+	// allocates no texture (see JellyElement.applyShape). Cards that carry a
+	// radius keep the canvas - the corners are the part physics is for.
+	override flatSurfaceAllowed(): boolean {
+		return true;
+	}
+
 	// The rounded surface the physics body takes (radius follows the token)
 	override shape(width: number, height: number): Shape {
 		const radius =
