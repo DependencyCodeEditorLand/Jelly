@@ -1,7 +1,5 @@
 import { defineConfig } from "vite";
 
-import dts from "vite-plugin-dts";
-
 /*
  * Library build. Everything is bundled into a single ES module (the library
  * ships zero runtime dependencies), so the same dist/jelly.js works both as an
