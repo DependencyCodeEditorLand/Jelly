@@ -64,13 +64,12 @@ export class JellyCard extends JellyElement {
 		return `<div class="card" part="card" ${attrs}><slot></slot></div>`;
 	}
 
-	// A card at radius 0 is a rectangle with a solid fill: the canvas would
-	// paint exactly what CSS paints, so the card takes the flat fast path and
-	// allocates no texture (see JellyElement.applyShape). Cards that carry a
-	// radius keep the canvas - the corners are the part physics is for.
-	override flatSurfaceAllowed(): boolean {
-		return true;
-	}
+	// No flat fast path. A card at radius 0 keeps its physics surface, so the
+	// canvas paints the soft body instead of a CSS rectangle - this site's
+	// identity pins every radius to 0, so the old fast path flattened every
+	// card on it. The two guards that fast path existed for still hold: the
+	// oversized cap in `applyShape` flattens a document-sized host, and the
+	// hover loop's `offsetHeight > window.innerHeight` check refuses one.
 
 	// The rounded surface the physics body takes (radius follows the token)
 	override shape(width: number, height: number): Shape {
