@@ -531,7 +531,9 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		const border = this.surfaceBorder();
 
-		const hairline = border ? `${border.width}px solid ${border.color}` : "0";
+		const hairline = border
+			? `${border.width}px solid ${border.color}`
+			: "0";
 
 		if (this.style.getPropertyValue("--jelly-flat-fill") !== fill) {
 			this.style.setProperty("--jelly-flat-fill", fill);

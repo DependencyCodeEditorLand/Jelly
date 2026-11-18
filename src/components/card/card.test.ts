@@ -77,7 +77,9 @@ test("a flat card paints itself in CSS and allocates no canvas", async () => {
 	expect(getComputedStyle(el).backgroundColor).toBe("rgb(1, 2, 3)");
 
 	// With no body there is nothing to wobble, so hovering starts no loop.
-	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 4, clientY: 4 }));
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 4, clientY: 4 }),
+	);
 
 	expect(el._hoverRafId).toBe(0);
 
@@ -85,7 +87,9 @@ test("a flat card paints itself in CSS and allocates no canvas", async () => {
 });
 
 test("a rounded card keeps its canvas", async () => {
-	const host = mount('<jelly-card style="--jelly-radius: 12px">Round</jelly-card>');
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px">Round</jelly-card>',
+	);
 
 	const el = host.querySelector("jelly-card") as JellyCard;
 
@@ -138,7 +142,9 @@ test("the hover loop refuses a host taller than the viewport", async () => {
 	// Inside the texture limits, so this one really does have a canvas.
 	expect(el.body).toBeTruthy();
 
-	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }));
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }),
+	);
 
 	expect(el._hoverRafId).toBe(0);
 
@@ -154,7 +160,9 @@ test("the hover loop still runs on a control-sized card", async () => {
 
 	await settle(4);
 
-	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }));
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }),
+	);
 
 	expect(el._hoverRafId).not.toBe(0);
 
@@ -184,7 +192,9 @@ test("the hover loop parks once the pointer is outside the membrane", async () =
 
 	// pointerenter, but nowhere near the shape: the gaussian influence is nil,
 	// the membrane settles, and the loop must stop instead of rescheduling.
-	el.dispatchEvent(new PointerEvent("pointerenter", { clientX: 5000, clientY: 5000 }));
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 5000, clientY: 5000 }),
+	);
 
 	// Long enough for the card's entry pop to settle as well: the loop parks
 	// once the membrane is genuinely at rest, not before.

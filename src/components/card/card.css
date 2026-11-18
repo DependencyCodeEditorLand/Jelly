@@ -59,7 +59,10 @@
    theme's width, gap and colour. */
 :host([data-jelly-flat]) .card:focus-visible {
 	outline: var(--jelly-ring-width) solid
-		var(--jelly-ring-color, var(--jelly-ring, var(--jelly-color-border-focus)));
+		var(
+			--jelly-ring-color,
+			var(--jelly-ring, var(--jelly-color-border-focus))
+		);
 	outline-offset: var(--jelly-ring-gap);
 }
 
