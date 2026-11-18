@@ -88,6 +88,16 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 */
 	flat = false;
 
+	/*
+	 * True while this element is out of the shared loop because it has no box
+	 * to paint: `display: none`, a collapsed parent, or a control the wiring
+	 * has not revealed yet. A parked element costs the engine nothing - it is
+	 * not stepped, it cannot throw a frame against a canvas with no size, and
+	 * `requestFrame()` is a no-op for it - and the ResizeObserver wakes it the
+	 * moment its box comes back.
+	 */
+	parked = false;
+
 	dpr = 1;
 
 	cssW = 0;
@@ -244,6 +254,11 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 	// Lifecycle method: Called automatically when the element leaves the DOM
 	disconnectedCallback(): void {
+		// Stop the hover chain before dropping out of the loop: a pending hover
+		// frame calls requestFrame(), which would put a detached element straight
+		// back into `active` and keep stepping it for the rest of the session.
+		this.stopHoverLoop();
+
 		engine.drop(this);
 
 		window.removeEventListener("jelly-theme-change", this.onThemeChange);
@@ -355,6 +370,24 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		};
 	}
 
+	/*
+	 * Take this element out of the shared loop without disconnecting it. Used
+	 * when the host has no box (see `applyShape`): a hidden control is not a
+	 * control the engine should be stepping, and `hidden` is not a DOM removal,
+	 * so `disconnectedCallback` never runs to drop it.
+	 *
+	 * The physics body is kept - it is still the right body for this element -
+	 * so coming back is a resize and a repaint, not a rebuild.
+	 */
+	park(): void {
+		this.parked = true;
+
+		// Before stopHoverLoop: its settling requestFrame() must not re-add us.
+		this.stopHoverLoop();
+
+		engine.drop(this);
+	}
+
 	// Size the canvas for the current shape and (re)build the physics body
 	applyShape(): void {
 		if (!this.built) {
@@ -364,8 +397,22 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		const box = this.jellyBox();
 
 		if (box.width < 1 || box.height < 1) {
+			// No box, nothing to paint. Leave the shared loop and stop the hover
+			// chain: a control hidden under the pointer (the copy cycle does
+			// exactly that) would otherwise stay in `active` with a 0x0 host,
+			// stepping a body whose canvas has no size, and keep the engine - and
+			// itself - awake for the rest of the session.
+			this.park();
+
 			return;
 		}
+
+		// Coming back from a park: the canvas kept its size and its pixels, but
+		// the element left the loop, so it has to be handed back even when
+		// nothing about the texture changed.
+		const returning = this.parked;
+
+		this.parked = false;
 
 		const shape = this.shape(box.width, box.height);
 
@@ -421,6 +468,12 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 			this.canvas.width === pxW &&
 			this.canvas.height === pxH
 		) {
+			// Same texture. A returning element still needs the loop back: it
+			// kept its canvas through the park but not its place in `active`.
+			if (returning) {
+				this.requestFrame();
+			}
+
 			return;
 		}
 
@@ -951,6 +1004,13 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 	// Ask the shared engine for animation frames until the body rests
 	requestFrame(): void {
+		// A parked element has no box to paint: waking it would put a component
+		// with a 0x0 host back into the loop, which is the state parking exists
+		// to prevent. The ResizeObserver un-parks and asks again.
+		if (this.parked) {
+			return;
+		}
+
 		engine.wake(this);
 	}
 
@@ -1165,6 +1225,10 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	startHoverLoop(elIndex: number): void {
 		if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
 
+		// A parked element has no box: the membrane it would push is not on
+		// screen, and the loop would wake the engine every frame for nothing.
+		if (this.parked) return;
+
 		/*
 		 * A host taller than the viewport is a document, not a control: the
 		 * pointer resting on it is reading, and the membrane under it is far
@@ -1210,7 +1274,21 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 * of the press/click hold state.
 	 */
 	_hoverFrame = (): void => {
-		if (!this._hoverRafId || !this.body) return;
+		if (!this._hoverRafId) return;
+
+		/*
+		 * No body, or a host with no box: stop for good rather than merely
+		 * returning. `_hoverRafId` doubles as "a chain is running", and
+		 * startHoverLoop refuses to start a second one while it is non-zero -
+		 * so leaving it set here would retire this element's hover for the rest
+		 * of the session, which is exactly the "the button no longer has its
+		 * hover" half of the copy-button report.
+		 */
+		if (this.parked || !this.body) {
+			this._hoverRafId = 0;
+
+			return;
+		}
 
 		// Update pointer-local position for the membrane influence
 		const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
