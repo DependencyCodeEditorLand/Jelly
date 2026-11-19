@@ -100,8 +100,8 @@ function v(o, t, e) {
   return Math.max(t, Math.min(e, o));
 }
 function T(o, t, e, i, s, r) {
-  const n = (e - o) * i - t * s, l = t + n * r;
-  return [o + l * r, l];
+  const n = (e - o) * i - t * s, a = t + n * r;
+  return [o + a * r, a];
 }
 const kt = typeof matchMedia == "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 function I() {
@@ -115,7 +115,7 @@ function F(o = 8) {
     } catch {
     }
 }
-function G(o, t = !1) {
+function J(o, t = !1) {
   return o === "ArrowRight" ? t ? -1 : 1 : o === "ArrowLeft" ? t ? 1 : -1 : 0;
 }
 function It(o, t, e, {
@@ -124,17 +124,17 @@ function It(o, t, e, {
   horizontal: r = !0,
   vertical: n = !0
 } = {}) {
-  let l = 0;
-  if (r && (l = G(o, i)), n && l === 0 && (o === "ArrowDown" && (l = 1), o === "ArrowUp" && (l = -1)), o === "Home")
+  let a = 0;
+  if (r && (a = J(o, i)), n && a === 0 && (o === "ArrowDown" && (a = 1), o === "ArrowUp" && (a = -1)), o === "Home")
     return 0;
   if (o === "End")
     return e - 1;
-  if (l === 0 || e === 0)
+  if (a === 0 || e === 0)
     return -1;
-  const c = t + l;
+  const c = t + a;
   return s ? (c + e) % e : v(c, 0, e - 1);
 }
-const Yt = 0.5 * (Math.sqrt(3) - 1), K = (3 - Math.sqrt(3)) / 6, lt = [
+const Yt = 0.5 * (Math.sqrt(3) - 1), K = (3 - Math.sqrt(3)) / 6, at = [
   [1, 1],
   [-1, 1],
   [1, -1],
@@ -148,9 +148,9 @@ const Yt = 0.5 * (Math.sqrt(3) - 1), K = (3 - Math.sqrt(3)) / 6, lt = [
   [0, 1],
   [0, -1]
 ];
-let q, Z;
+let q, _;
 function Kt() {
-  q = new Uint8Array(512), Z = new Uint8Array(512);
+  q = new Uint8Array(512), _ = new Uint8Array(512);
   const o = [];
   for (let e = 0; e < 256; e++) o[e] = e;
   let t = 42;
@@ -160,88 +160,88 @@ function Kt() {
     [o[e], o[i]] = [o[i], o[e]];
   }
   for (let e = 0; e < 512; e++)
-    q[e] = o[e & 255], Z[e] = q[e] % 12;
+    q[e] = o[e & 255], _[e] = q[e] % 12;
 }
-function at(o, t, e) {
+function lt(o, t, e) {
   return o[0] * t + o[1] * e;
 }
-function _(o, t) {
+function Z(o, t) {
   q || Kt();
-  const e = (o + t) * Yt, i = Math.floor(o + e), s = Math.floor(t + e), r = (i + s) * K, n = i - r, l = s - r, c = o - n, h = t - l;
-  let a, d;
-  c > h ? (a = 1, d = 0) : (a = 0, d = 1);
-  const p = c - a + K, u = h - d + K, f = c - 1 + 2 * K, w = h - 1 + 2 * K, m = i & 255, x = s & 255, y = Z[m + q[x]], k = Z[m + a + q[x + d]], S = Z[m + 1 + q[x + 1]];
-  let M = 0, E = 0, Q = 0, B = 0.5 - c * c - h * h;
-  B > 0 && (B *= B, M = B * B * at(lt[y], c, h));
+  const e = (o + t) * Yt, i = Math.floor(o + e), s = Math.floor(t + e), r = (i + s) * K, n = i - r, a = s - r, c = o - n, h = t - a;
+  let l, d;
+  c > h ? (l = 1, d = 0) : (l = 0, d = 1);
+  const p = c - l + K, u = h - d + K, f = c - 1 + 2 * K, w = h - 1 + 2 * K, m = i & 255, x = s & 255, y = _[m + q[x]], k = _[m + l + q[x + d]], L = _[m + 1 + q[x + 1]];
+  let M = 0, E = 0, Q = 0, R = 0.5 - c * c - h * h;
+  R > 0 && (R *= R, M = R * R * lt(at[y], c, h));
   let N = 0.5 - p * p - u * u;
-  N > 0 && (N *= N, E = N * N * at(lt[k], p, u));
+  N > 0 && (N *= N, E = N * N * lt(at[k], p, u));
   let Y = 0.5 - f * f - w * w;
-  return Y > 0 && (Y *= Y, Q = Y * Y * at(lt[S], f, w)), 70 * (M + E + Q);
+  return Y > 0 && (Y *= Y, Q = Y * Y * lt(at[L], f, w)), 70 * (M + E + Q);
 }
-function J(o, t) {
+function G(o, t) {
   return Math.floor(o * t) / t;
 }
-const Zt = 1e-4;
-function ls(o, t) {
-  const e = Zt, i = t, s = _(o * e, i * 101), r = _(o * e * 0.18, i * 203), n = _(o * e * 0.25, i * 307);
+const _t = 1e-4;
+function as(o, t) {
+  const e = _t, i = t, s = Z(o * e, i * 101), r = Z(o * e * 0.18, i * 203), n = Z(o * e * 0.25, i * 307);
   return {
-    force: J(s, 6),
-    phase: J(r, 4),
-    morph: J(n, 5)
+    force: G(s, 6),
+    phase: G(r, 4),
+    morph: G(n, 5)
   };
 }
-const _t = 1 / 58;
-function At(o, t, e) {
+const Zt = 1 / 58;
+function Ct(o, t, e) {
   const i = v((e - o) / (t - o), 0, 1);
   return i * i * (3 - 2 * i);
 }
-function C(o, t) {
+function z(o, t) {
   return (o + t) % t;
 }
-function Ct(o, t, e) {
+function At(o, t, e) {
   const i = Math.abs(o - t);
   return Math.min(i, e - i);
 }
 function tt(o, t) {
   return Math.exp(-(o * o) / (2 * t * t));
 }
-function Jt(o, t, e, i, s) {
-  const r = Math.min(s, e, i), n = Math.abs(o) - (e - r), l = Math.abs(t) - (i - r), c = Math.hypot(Math.max(n, 0), Math.max(l, 0)), h = Math.min(Math.max(n, l), 0);
+function Gt(o, t, e, i, s) {
+  const r = Math.min(s, e, i), n = Math.abs(o) - (e - r), a = Math.abs(t) - (i - r), c = Math.hypot(Math.max(n, 0), Math.max(a, 0)), h = Math.min(Math.max(n, a), 0);
   return c + h - r;
 }
 function zt(o, t, e, i) {
-  const s = o / 2, r = t / 2, n = Math.min(e, s, r), l = [], c = (m, x) => {
-    l.push({ x: m, y: x });
-  }, h = 48, a = 48;
-  function d(m, x, y, k, S) {
-    for (let M = S ? 0 : 1; M <= h; M++) {
+  const s = o / 2, r = t / 2, n = Math.min(e, s, r), a = [], c = (m, x) => {
+    a.push({ x: m, y: x });
+  }, h = 48, l = 48;
+  function d(m, x, y, k, L) {
+    for (let M = L ? 0 : 1; M <= h; M++) {
       const E = M / h;
       c(m + (y - m) * E, x + (k - x) * E);
     }
   }
   function p(m, x, y, k) {
-    for (let S = 1; S <= a; S++) {
-      const M = y + (k - y) * (S / a);
+    for (let L = 1; L <= l; L++) {
+      const M = y + (k - y) * (L / l);
       c(m + Math.cos(M) * n, x + Math.sin(M) * n);
     }
   }
   d(-s + n, -r, s - n, -r, !0), p(s - n, -r + n, -Math.PI / 2, 0), d(s, -r + n, s, r - n, !1), p(s - n, r - n, 0, Math.PI / 2), d(s - n, r, -s + n, r, !1), p(-s + n, r - n, Math.PI / 2, Math.PI), d(-s, r - n, -s, -r + n, !1), p(-s + n, -r + n, Math.PI, Math.PI * 1.5);
   const u = [0];
   let f = 0;
-  for (let m = 0; m < l.length; m++) {
-    const x = l[m], y = l[C(m + 1, l.length)];
+  for (let m = 0; m < a.length; m++) {
+    const x = a[m], y = a[z(m + 1, a.length)];
     f += Math.hypot(y.x - x.x, y.y - x.y), u.push(f);
   }
   const w = [];
   for (let m = 0; m < i; m++) {
     const x = m / i * f;
     let y = 0;
-    for (; y < l.length - 1 && u[y + 1] < x; )
+    for (; y < a.length - 1 && u[y + 1] < x; )
       y += 1;
-    const k = l[y], S = l[(y + 1) % l.length], M = u[y], E = u[y + 1], Q = Math.max(E - M, 1e-4), B = (x - M) / Q;
+    const k = a[y], L = a[(y + 1) % a.length], M = u[y], E = u[y + 1], Q = Math.max(E - M, 1e-4), R = (x - M) / Q;
     w.push({
-      x: k.x + (S.x - k.x) * B,
-      y: k.y + (S.y - k.y) * B,
+      x: k.x + (L.x - k.x) * R,
+      y: k.y + (L.y - k.y) * R,
       nx: 0,
       ny: 0,
       d: 0,
@@ -252,19 +252,19 @@ function zt(o, t, e, i) {
   }
   return Ut(w), w;
 }
-function Gt(o, t) {
-  const e = o.length, i = o[C(t - 1, e)], s = o[C(t + 1, e)], r = s.x - i.x, n = s.y - i.y, l = Math.hypot(n, -r) || 1;
-  return { nx: n / l, ny: -r / l };
+function Jt(o, t) {
+  const e = o.length, i = o[z(t - 1, e)], s = o[z(t + 1, e)], r = s.x - i.x, n = s.y - i.y, a = Math.hypot(n, -r) || 1;
+  return { nx: n / a, ny: -r / a };
 }
 function Ut(o) {
   const t = o.length;
   let e = o.map(
-    (i, s) => Gt(o, s)
+    (i, s) => Jt(o, s)
   );
   for (let i = 0; i < mt.normalBlendPasses; i++)
     e = e.map((s, r) => {
-      const n = e[C(r - 1, t)], l = e[C(r + 1, t)], c = n.nx * 0.22 + s.nx * 0.56 + l.nx * 0.22, h = n.ny * 0.22 + s.ny * 0.56 + l.ny * 0.22, a = Math.hypot(c, h) || 1;
-      return { nx: c / a, ny: h / a };
+      const n = e[z(r - 1, t)], a = e[z(r + 1, t)], c = n.nx * 0.22 + s.nx * 0.56 + a.nx * 0.22, h = n.ny * 0.22 + s.ny * 0.56 + a.ny * 0.22, l = Math.hypot(c, h) || 1;
+      return { nx: c / l, ny: h / l };
     });
   for (let i = 0; i < t; i++)
     o[i].nx = e[i].nx, o[i].ny = e[i].ny;
@@ -272,7 +272,7 @@ function Ut(o) {
 function ht(o) {
   let t = 0;
   for (let e = 0; e < o.length; e++) {
-    const i = o[e], s = o[C(e + 1, o.length)];
+    const i = o[e], s = o[z(e + 1, o.length)];
     t += i.x * s.y - s.x * i.y;
   }
   return Math.abs(t) * 0.5;
@@ -291,20 +291,20 @@ function te(o, t) {
   o.moveTo(t[0].x, t[0].y);
   let i = t[1].x - t[0].x, s = t[1].y - t[0].y;
   for (let r = 1; r <= e; r++) {
-    const n = t[C(r - 2, e)], l = t[C(r - 1, e)], c = t[C(r, e)], h = c.x - l.x, a = c.y - l.y, d = Math.hypot(h, a);
+    const n = t[z(r - 2, e)], a = t[z(r - 1, e)], c = t[z(r, e)], h = c.x - a.x, l = c.y - a.y, d = Math.hypot(h, l);
     let p = 0;
     if (d > 1e-6) {
       const u = Math.abs(
-        Math.atan2(a, h) - Math.atan2(s, i)
+        Math.atan2(l, h) - Math.atan2(s, i)
       );
       p = Math.min(u, Math.PI * 2 - u);
     }
     if (p > Math.PI / 4) {
-      const u = Qt(n, l, l, c);
+      const u = Qt(n, a, a, c);
       o.lineTo(u.x, u.y);
     } else
-      o.lineTo(l.x, l.y);
-    d > 1e-6 && (i = h, s = a);
+      o.lineTo(a.x, a.y);
+    d > 1e-6 && (i = h, s = l);
   }
   o.closePath();
 }
@@ -314,8 +314,8 @@ function ct(o, t, e = mt.curveTension, i = !1) {
     te(o, t);
   else
     for (let r = 0; r < s; r++) {
-      const n = t[C(r - 1, s)], l = t[r], c = t[C(r + 1, s)], h = t[C(r + 2, s)], a = l.x + (c.x - n.x) * e / 6, d = l.y + (c.y - n.y) * e / 6, p = c.x - (h.x - l.x) * e / 6, u = c.y - (h.y - l.y) * e / 6;
-      o.bezierCurveTo(a, d, p, u, c.x, c.y);
+      const n = t[z(r - 1, s)], a = t[r], c = t[z(r + 1, s)], h = t[z(r + 2, s)], l = a.x + (c.x - n.x) * e / 6, d = a.y + (c.y - n.y) * e / 6, p = c.x - (h.x - a.x) * e / 6, u = c.y - (h.y - a.y) * e / 6;
+      o.bezierCurveTo(l, d, p, u, c.x, c.y);
     }
   o.closePath();
 }
@@ -366,7 +366,7 @@ class $ {
   }
   // Signed distance from a local point to the resting surface
   sdf(t, e) {
-    return Jt(
+    return Gt(
       t,
       e,
       this.width / 2,
@@ -378,7 +378,7 @@ class $ {
   nearestMembraneIndex(t, e) {
     let i = 0, s = 1 / 0;
     for (let r = 0; r < this.membrane.length; r++) {
-      const n = this.membrane[r], l = t - n.x, c = e - n.y, h = l * l + c * c;
+      const n = this.membrane[r], a = t - n.x, c = e - n.y, h = a * a + c * c;
       h < s && (s = h, i = r);
     }
     return i;
@@ -387,7 +387,7 @@ class $ {
   addMembraneImpulse(t, e, i) {
     const s = this.membrane.length;
     for (let r = 0; r < s; r++) {
-      const n = Ct(r, t, s);
+      const n = At(r, t, s);
       this.membrane[r].v += e * tt(n, i);
     }
   }
@@ -395,7 +395,7 @@ class $ {
   addDepthImpulse(t, e, i) {
     const s = this.membrane.length;
     for (let r = 0; r < s; r++) {
-      const n = Ct(r, t, s);
+      const n = At(r, t, s);
       this.membrane[r].zv += e * tt(n, i);
     }
   }
@@ -408,15 +408,15 @@ class $ {
   }
   // Five-tap smoothing of one membrane channel around an index
   smoothedMembraneValue(t, e) {
-    const i = this.membrane.length, s = this.membrane[C(t - 2, i)][e], r = this.membrane[C(t - 1, i)][e], n = this.membrane[t][e], l = this.membrane[C(t + 1, i)][e], c = this.membrane[C(t + 2, i)][e];
-    return s * 0.06 + r * 0.2 + n * 0.48 + l * 0.2 + c * 0.06;
+    const i = this.membrane.length, s = this.membrane[z(t - 2, i)][e], r = this.membrane[z(t - 1, i)][e], n = this.membrane[t][e], a = this.membrane[z(t + 1, i)][e], c = this.membrane[z(t + 2, i)][e];
+    return s * 0.06 + r * 0.2 + n * 0.48 + a * 0.2 + c * 0.06;
   }
   // How strongly the pointer's held position affects one membrane point
   insidePointInfluence(t) {
     const e = this.membrane[t], i = e.x - this.state.pointerLocalX, s = e.y - this.state.pointerLocalY, r = Math.hypot(i, s), n = tt(
       r,
       this.config.insidePointInfluenceWidth
-    ), l = tt(
+    ), a = tt(
       r,
       this.config.insidePointHaloWidth
     ), c = v(
@@ -426,10 +426,10 @@ class $ {
       ),
       0,
       1
-    ), h = 1 + At(0.12, 0.82, c) * this.config.insidePointEdgeBoost;
+    ), h = 1 + Ct(0.12, 0.82, c) * this.config.insidePointEdgeBoost;
     return {
       local: n * h,
-      halo: Math.max(l - n * 0.34, 0)
+      halo: Math.max(a - n * 0.34, 0)
     };
   }
   // Sustained bulge / depth offsets while the pointer is held inside
@@ -443,7 +443,7 @@ class $ {
   // Five-tap smoothing over a plain array of ring values
   smoothArrayValue(t, e) {
     const i = t.length;
-    return t[C(e - 2, i)] * 0.06 + t[C(e - 1, i)] * 0.2 + t[e] * 0.48 + t[C(e + 1, i)] * 0.2 + t[C(e + 2, i)] * 0.06;
+    return t[z(e - 2, i)] * 0.06 + t[z(e - 1, i)] * 0.2 + t[e] * 0.48 + t[z(e + 1, i)] * 0.2 + t[z(e + 2, i)] * 0.06;
   }
   /*
    * The current deformed surface. `offset` pushes every point outward along
@@ -452,11 +452,11 @@ class $ {
   getSurfacePoints(t = 0) {
     const e = [], i = this.membrane.length, s = new Array(i), r = new Array(i);
     for (let n = 0; n < i; n++) {
-      const l = this.heldMembraneOffsets(n);
-      s[n] = this.smoothedMembraneValue(n, "d") + l.d, r[n] = this.smoothedMembraneValue(n, "z") + l.z;
+      const a = this.heldMembraneOffsets(n);
+      s[n] = this.smoothedMembraneValue(n, "d") + a.d, r[n] = this.smoothedMembraneValue(n, "z") + a.z;
     }
     for (let n = 0; n < i; n++) {
-      const l = this.membrane[n], c = this.smoothArrayValue(s, n), h = this.smoothArrayValue(r, n), a = this.smoothArrayValue(s, C(n - 1, i)), p = this.smoothArrayValue(s, C(n + 1, i)) - a, u = -l.ny, f = l.nx, w = p * 0.05, m = this.leanAmount === 0 ? 0 : this.lean * v(l.x / (this.width / 2), -1, 1) * this.leanAmount, x = l.x + l.nx * (c + t + m) + u * w, y = l.y + l.ny * (c + t + m) + f * w, k = v(x / (this.width / 2), -1, 1), S = v(y / (this.height / 2), -1, 1), M = -(k * this.state.tiltY + S * this.state.tiltX) * this.config.axisDepth;
+      const a = this.membrane[n], c = this.smoothArrayValue(s, n), h = this.smoothArrayValue(r, n), l = this.smoothArrayValue(s, z(n - 1, i)), p = this.smoothArrayValue(s, z(n + 1, i)) - l, u = -a.ny, f = a.nx, w = p * 0.05, m = this.leanAmount === 0 ? 0 : this.lean * v(a.x / (this.width / 2), -1, 1) * this.leanAmount, x = a.x + a.nx * (c + t + m) + u * w, y = a.y + a.ny * (c + t + m) + f * w, k = v(x / (this.width / 2), -1, 1), L = v(y / (this.height / 2), -1, 1), M = -(k * this.state.tiltY + L * this.state.tiltX) * this.config.axisDepth;
       e.push({ x, y, z: M + h });
     }
     return e;
@@ -473,7 +473,7 @@ class $ {
   // Aim the held-press springs at the pointer's current position
   updatePressTargets(t, e, i = 1) {
     this.state.pointerLocalX = t, this.state.pointerLocalY = e;
-    const s = this.sdf(t, e), r = (1 - At(-2, 5, s)) * i;
+    const s = this.sdf(t, e), r = (1 - Ct(-2, 5, s)) * i;
     return this.state.pointerInsideWeight = r, this.state.targetClickDepth = r, this.state.targetInsidePress = r, this.state.targetPress = r * this.config.holdPressAmount, this.state.targetInsideCurveHold = r, { insideWeight: r };
   }
   // Press at a point already in local (shape-centered) coordinates
@@ -484,10 +484,10 @@ class $ {
       t,
       e,
       s
-    ), l = i * 1.15 * s;
+    ), a = i * 1.15 * s;
     n > 0.01 && (this.addInsidePointImpulse(
-      this.config.insideLocalBulgeImpulse * n * l
-    ), this.state.pressV += 1.9 * n * l);
+      this.config.insideLocalBulgeImpulse * n * a
+    ), this.state.pressV += 1.9 * n * a);
   }
   // Follow the pointer while it is held down
   moveToLocal(t, e, i = 1) {
@@ -514,10 +514,10 @@ class $ {
    * jelly-alert's shake.
    */
   stretchAlong(t, e, i = 1) {
-    const s = Math.hypot(t, e) || 1, r = t / s, n = e / s, l = this.config.insideLocalBulgeImpulse * 0.42 * i;
+    const s = Math.hypot(t, e) || 1, r = t / s, n = e / s, a = this.config.insideLocalBulgeImpulse * 0.42 * i;
     for (const c of this.membrane) {
       const h = c.nx * r + c.ny * n;
-      c.v += l * h;
+      c.v += a * h;
     }
   }
   // A one-shot ripple with no hold (typing feedback, toggles, etc.)
@@ -593,33 +593,33 @@ class $ {
       (this.baseArea - r) / this.baseArea,
       -0.08,
       0.08
-    ), l = new Array(e), c = new Array(e);
-    for (let a = 0; a < e; a++) {
-      const d = this.membrane[a], p = this.membrane[C(a - 1, e)], u = this.membrane[C(a + 1, e)], f = p.d + u.d - 2 * d.d, w = p.z + u.z - 2 * d.z;
-      l[a] = -d.d * i.membraneSpring + f * i.waveCoupling - d.v * i.membraneDamping + n * i.pressure, c[a] = -d.z * i.depthSpring + w * i.depthCoupling - d.zv * i.depthDamping;
+    ), a = new Array(e), c = new Array(e);
+    for (let l = 0; l < e; l++) {
+      const d = this.membrane[l], p = this.membrane[z(l - 1, e)], u = this.membrane[z(l + 1, e)], f = p.d + u.d - 2 * d.d, w = p.z + u.z - 2 * d.z;
+      a[l] = -d.d * i.membraneSpring + f * i.waveCoupling - d.v * i.membraneDamping + n * i.pressure, c[l] = -d.z * i.depthSpring + w * i.depthCoupling - d.zv * i.depthDamping;
     }
     if (this.state.pointerActive && this.state.pointerInsideWeight > 0.02)
-      for (let a = 0; a < e; a++) {
-        const d = this.insidePointInfluence(a);
-        l[a] += i.insideLocalHoldBulgeForce * d.local * this.state.pointerInsideWeight, l[a] -= i.insideLocalHoldBulgeForce * 0.18 * d.halo * this.state.pointerInsideWeight;
+      for (let l = 0; l < e; l++) {
+        const d = this.insidePointInfluence(l);
+        a[l] += i.insideLocalHoldBulgeForce * d.local * this.state.pointerInsideWeight, a[l] -= i.insideLocalHoldBulgeForce * 0.18 * d.halo * this.state.pointerInsideWeight;
       }
     if (this.state.hoverForce > 5e-3) {
-      const a = this.state.hoverForce, d = i.insideLocalHoldBulgeForce * a * 24;
+      const l = this.state.hoverForce, d = i.insideLocalHoldBulgeForce * l * 24;
       for (let p = 0; p < e; p++) {
         const u = this.insidePointInfluence(p);
-        l[p] += d * u.local, l[p] -= d * 0.08 * u.halo;
+        a[p] += d * u.local, a[p] -= d * 0.08 * u.halo;
       }
     }
-    for (let a = 0; a < e; a++) {
-      const d = this.membrane[a];
-      d.v += l[a] * t, d.d += d.v * t, d.zv += c[a] * t, d.z += d.zv * t, d.d = v(d.d, -i.maxDent, i.maxBulge), d.v = v(d.v, -410, 410), d.z = v(d.z, i.maxDepthIn, i.maxDepthOut), d.zv = v(d.zv, -600, 600);
+    for (let l = 0; l < e; l++) {
+      const d = this.membrane[l];
+      d.v += a[l] * t, d.d += d.v * t, d.zv += c[l] * t, d.z += d.zv * t, d.d = v(d.d, -i.maxDent, i.maxBulge), d.v = v(d.v, -410, 410), d.z = v(d.z, i.maxDepthIn, i.maxDepthOut), d.zv = v(d.zv, -600, 600);
     }
     let h = 0;
-    for (const a of this.membrane)
-      h += a.d;
+    for (const l of this.membrane)
+      h += l.d;
     h /= e;
-    for (const a of this.membrane)
-      a.d -= h * i.volumeCorrection;
+    for (const l of this.membrane)
+      l.d -= h * i.volumeCorrection;
   }
   /*
    * Advance the simulation by a frame delta. The delta is split into
@@ -627,7 +627,7 @@ class $ {
    * slow frames, low-Hz displays and after background-tab pauses.
    */
   update(t) {
-    const e = Math.max(1, Math.ceil(t / _t)), i = t / e;
+    const e = Math.max(1, Math.ceil(t / Zt)), i = t / e;
     for (let s = 0; s < e; s++)
       this.updateGlobal(i), this.updateMembrane(i);
     this.recoverIfUnstable();
@@ -707,7 +707,7 @@ class ie {
     }
   }
 }
-const dt = new ie(), R = 8;
+const dt = new ie(), B = 8;
 function se(o, t) {
   if (o !== "start" && o !== "end")
     return o;
@@ -715,19 +715,19 @@ function se(o, t) {
   return o === "start" ? e ? "right" : "left" : e ? "left" : "right";
 }
 function U(o, t, e = "bottom", i = 8) {
-  const s = se(e, o), r = o.getBoundingClientRect(), n = t.getBoundingClientRect(), l = window.innerWidth, c = window.innerHeight;
+  const s = se(e, o), r = o.getBoundingClientRect(), n = t.getBoundingClientRect(), a = window.innerWidth, c = window.innerHeight;
   let h = s;
-  s === "top" && r.top - n.height - i < R && r.bottom + n.height + i < c ? h = "bottom" : s === "bottom" && r.bottom + n.height + i > c - R && r.top - n.height - i > 0 ? h = "top" : s === "left" && r.left - n.width - i < R && r.right + n.width + i < l ? h = "right" : s === "right" && r.right + n.width + i > l - R && r.left - n.width - i > 0 && (h = "left");
-  let a, d;
-  h === "top" ? a = r.top - n.height - i : h === "bottom" ? a = r.bottom + i : a = r.top + (r.height - n.height) / 2, h === "left" ? d = r.left - n.width - i : h === "right" ? d = r.right + i : d = r.left + (r.width - n.width) / 2, d = Math.max(
-    R,
-    Math.min(l - n.width - R, d)
-  ), a = Math.max(
-    R,
-    Math.min(c - n.height - R, a)
-  ), t.style.left = `${Math.round(d)}px`, t.style.top = `${Math.round(a)}px`;
-  const p = t.getBoundingClientRect(), u = d - p.left, f = a - p.top;
-  return (Math.abs(u) > 0.5 || Math.abs(f) > 0.5) && (t.style.left = `${Math.round(d + u)}px`, t.style.top = `${Math.round(a + f)}px`), h;
+  s === "top" && r.top - n.height - i < B && r.bottom + n.height + i < c ? h = "bottom" : s === "bottom" && r.bottom + n.height + i > c - B && r.top - n.height - i > 0 ? h = "top" : s === "left" && r.left - n.width - i < B && r.right + n.width + i < a ? h = "right" : s === "right" && r.right + n.width + i > a - B && r.left - n.width - i > 0 && (h = "left");
+  let l, d;
+  h === "top" ? l = r.top - n.height - i : h === "bottom" ? l = r.bottom + i : l = r.top + (r.height - n.height) / 2, h === "left" ? d = r.left - n.width - i : h === "right" ? d = r.right + i : d = r.left + (r.width - n.width) / 2, d = Math.max(
+    B,
+    Math.min(a - n.width - B, d)
+  ), l = Math.max(
+    B,
+    Math.min(c - n.height - B, l)
+  ), t.style.left = `${Math.round(d)}px`, t.style.top = `${Math.round(l)}px`;
+  const p = t.getBoundingClientRect(), u = d - p.left, f = l - p.top;
+  return (Math.abs(u) > 0.5 || Math.abs(f) > 0.5) && (t.style.left = `${Math.round(d + u)}px`, t.style.top = `${Math.round(l + f)}px`), h;
 }
 function vt(o, t, e = "bottom", i = 8, s = null) {
   const r = () => {
@@ -747,10 +747,10 @@ function Pt() {
   const o = window.innerWidth - document.documentElement.clientWidth;
   Ht = document.body.style.paddingInlineEnd, document.body.style.overflow = "hidden", o > 0 && (document.body.style.paddingInlineEnd = `${o}px`);
 }
-function Bt() {
+function Rt() {
   bt !== 0 && (--bt > 0 || (document.body.style.overflow = "", document.body.style.paddingInlineEnd = Ht));
 }
-function Rt(o) {
+function Bt(o) {
   const t = [];
   let e = o;
   for (; e && e.parentElement && e !== document.body; ) {
@@ -831,7 +831,7 @@ function oe(o, t) {
   );
   s.onfinish = t, s.oncancel = t;
 }
-const ne = "ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', sans-serif", le = "system-ui, -apple-system, 'Segoe UI', sans-serif", ae = "ui-monospace, 'SF Mono', Menlo, monospace", X = "oklch(1 0 0)", it = "oklch(0.2609 0.0238 267.11)", Dt = "oklch(0.5771 0.2152 27.33)", qt = "oklch(0.5779 0.1495 51.54)", st = "oklch(0.5601 0.1577 249.8)", $t = "oklch(0.5489 0.1374 151.7)", Lt = "oklch(0.7112 0.1559 250.96)", Xt = {
+const ne = "ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', sans-serif", ae = "system-ui, -apple-system, 'Segoe UI', sans-serif", le = "ui-monospace, 'SF Mono', Menlo, monospace", X = "oklch(1 0 0)", it = "oklch(0.2609 0.0238 267.11)", Dt = "oklch(0.5771 0.2152 27.33)", qt = "oklch(0.5779 0.1495 51.54)", st = "oklch(0.5601 0.1577 249.8)", $t = "oklch(0.5489 0.1374 151.7)", St = "oklch(0.7112 0.1559 250.96)", Xt = {
   background: {
     default: X,
     // page background
@@ -891,7 +891,7 @@ const ne = "ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', 
     amber: qt,
     azure: st,
     mint: $t,
-    accent: Lt
+    accent: St
   },
   foreground: {
     default: "oklch(0.9645 0.0054 274.97)",
@@ -909,7 +909,7 @@ const ne = "ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', 
   border: {
     default: "oklch(0.3674 0.0201 266.01)",
     // #3A3F4A  shares the neutral step
-    focus: Lt
+    focus: St
   },
   shadow: "0, 0, 0"
 }, ce = (o) => o.replace(/[A-Z]/g, (t) => "-" + t.toLowerCase());
@@ -936,7 +936,7 @@ const wt = Ot(Xt), gt = Ot(he), b = wt, V = {
     fill: "background-neutral-emphasis",
     on: "foreground-on-emphasis"
   }
-}, as = `
+}, ls = `
   :host {
     --jelly-fill:  var(--jelly-color-background-accent,    ${b["background-accent"]});
     --jelly-label: var(--jelly-color-foreground-on-accent, ${b["foreground-on-accent"]});
@@ -972,8 +972,8 @@ function de() {
   :root {
     color-scheme: light dark;
     --jelly-font-display: ${ne};
-    --jelly-font-text:    ${le};
-    --jelly-font-mono:    ${ae};
+    --jelly-font-text:    ${ae};
+    --jelly-font-mono:    ${le};
     --jelly-ring-width:     ${V.width}px;
     --jelly-ring-gap:       ${V.gap}px;
     --jelly-ring-color:     color-mix(in srgb, var(--jelly-ring, var(--jelly-color-border-focus)) ${V.alpha * 100}%, transparent);
@@ -1000,14 +1000,14 @@ ${ut(gt)}
 }
 `;
 }
-function L() {
+function S() {
   if (typeof document > "u" || document.querySelector("style[data-jelly-tokens]"))
     return;
   const o = document.createElement("style");
   o.setAttribute("data-jelly-tokens", ""), o.textContent = de(), document.head.appendChild(o);
 }
 function hs(o = "auto") {
-  L(), o === "light" || o === "dark" ? document.documentElement.setAttribute("data-jelly-mode", o) : document.documentElement.removeAttribute("data-jelly-mode"), ot();
+  S(), o === "light" || o === "dark" ? document.documentElement.setAttribute("data-jelly-mode", o) : document.documentElement.removeAttribute("data-jelly-mode"), ot();
 }
 function cs() {
   const o = document.documentElement.getAttribute("data-jelly-mode");
@@ -1027,26 +1027,24 @@ typeof matchMedia == "function" && matchMedia("(prefers-color-scheme: dark)").ad
   "change",
   () => ot()
 );
-L();
+S();
 const ue = ':host{display:inline-block;position:relative;box-sizing:border-box;vertical-align:middle;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}:host([hidden]){display:none}.jelly-canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0}.jelly-content{position:relative;z-index:1;width:100%;height:100%}:host([data-jelly-flat]){background:var(--jelly-flat-fill, var(--jelly-fill))}:host([data-jelly-flat]):after{content:"";position:absolute;inset:0;border:var( --jelly-flat-border, 1px solid var(--jelly-color-border-default, rgba(7, 7, 7, .08)) );pointer-events:none}';
-class z extends HTMLElement {
+class C extends HTMLElement {
   constructor() {
-    super(), this.body = null, this.built = !1, this.flat = !1, this.parked = !1, this.dpr = 1, this.cssW = 0, this.cssH = 0, this.config = void 0, this.resizeObserver = null, this.attributeObserver = null, this.focusVisible = !1, this.frameDt = 0, this.colorEasing = !1, this.eased = {}, this.pressPointerId = null, this.keyboardActive = !1, this.onThemeChange = () => {
+    super(), this.body = null, this.built = !1, this.flat = !1, this.parked = !1, this.dpr = 1, this.cssW = 0, this.cssH = 0, this.config = void 0, this.resizeObserver = null, this.attributeObserver = null, this.focusVisible = !1, this.frameDt = 0, this.colorEasing = !1, this.eased = {}, this.pressPointerId = null, this.keyboardActive = !1, this.hoverSeed = ++C.hoverSeedCounter, this._hoverWired = !1, this._hoverDisabled = () => this.hasAttribute("disabled"), this.onThemeChange = () => {
       this.built && (this.applyShape(), this.onShape()), this.requestFrame();
     }, this.onMotionChange = () => this.requestFrame(), this.onWindowResize = () => this.applyShape(), this._hoverRafId = 0, this._hoverPointerX = 0, this._hoverPointerY = 0, this._hoverElIndex = 0, this._hoverFrame = () => {
-      if (!this._hoverRafId) return;
-      if (this.parked || !this.body) {
-        this._hoverRafId = 0;
-        return;
+      if (this._hoverRafId) {
+        if (this.parked || !this.body) {
+          this._hoverRafId = 0;
+          return;
+        }
+        if (this._applyHoverForce(performance.now()), this.requestFrame(), !this._hoverInside() && this.body.isResting()) {
+          this.body.state.hoverForce = 0, this._hoverRafId = 0;
+          return;
+        }
+        this._hoverRafId = requestAnimationFrame(this._hoverFrame);
       }
-      const t = this.toLocal(this._hoverPointerX, this._hoverPointerY);
-      this.body.state.pointerLocalX = t.x, this.body.state.pointerLocalY = t.y;
-      const e = performance.now(), i = this._hoverElIndex, s = 5e-4, r = _(e * s, i * 101), l = 0.75 + (J(r, 6) + 1) / 2 * 0.25, c = _(e * s * 0.25, i * 307), a = 0.8 + (J(c, 5) + 1) / 2 * 0.4;
-      if (this.body.state.hoverForce = l * a, this.requestFrame(), !(Math.abs(t.x) <= this.body.width / 2 && Math.abs(t.y) <= this.body.height / 2) && this.body.isResting()) {
-        this.body.state.hoverForce = 0, this._hoverRafId = 0;
-        return;
-      }
-      this._hoverRafId = requestAnimationFrame(this._hoverFrame);
     }, this.attachShadow({ mode: "open", delegatesFocus: !0 });
   }
   static {
@@ -1057,6 +1055,12 @@ class z extends HTMLElement {
   }
   static {
     this.MAX_CANVAS_AREA = 16777216;
+  }
+  static {
+    this.HOVER_AREA_BUDGET = 4e6;
+  }
+  static {
+    this.hoverSeedCounter = 0;
   }
   /* ---- Subclass hooks ---------------------------------------------- */
   // Extra CSS (string) for the shadow root
@@ -1098,7 +1102,7 @@ class z extends HTMLElement {
   /* ---- Lifecycle --------------------------------------------------- */
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), this.built || this.build(), this.observeResize(), this.attributeObserver || (this.attributeObserver = new MutationObserver(
+    S(), j(this), this.built || this.build(), this.observeResize(), this.attributeObserver || (this.attributeObserver = new MutationObserver(
       () => this.requestFrame()
     ), this.attributeObserver.observe(this, { attributes: !0 })), window.addEventListener("jelly-theme-change", this.onThemeChange), window.addEventListener("jelly-motion-change", this.onMotionChange), window.addEventListener("resize", this.onWindowResize, {
       passive: !0
@@ -1118,7 +1122,11 @@ class z extends HTMLElement {
   }
   // Rebuild the shape whenever the host's layout size changes
   observeResize() {
-    this.resizeObserver || (this.resizeObserver = new ResizeObserver(() => this.applyShape()), this.resizeObserver.observe(this), this.applyShape());
+    if (this.resizeObserver)
+      return;
+    this.resizeObserver = new ResizeObserver(() => this.applyShape()), this.resizeObserver.observe(this);
+    const t = this.shadowRoot?.querySelector("[data-jelly-box]");
+    t && this.resizeObserver.observe(t), this.applyShape();
   }
   /*
    * The region the jelly shape occupies, in host-local pixels. Defaults to
@@ -1127,15 +1135,15 @@ class z extends HTMLElement {
    * (e.g. a checkbox next to its label).
    */
   jellyBox() {
-    const t = this.getBoundingClientRect(), e = this.offsetWidth > 0 ? t.width / this.offsetWidth : 1, i = this.offsetHeight > 0 ? t.height / this.offsetHeight : 1, s = e > 1e-3 ? 1 / e : 1, r = i > 1e-3 ? 1 / i : 1, n = this.shadowRoot.querySelector("[data-jelly-box]"), l = n ? n.getBoundingClientRect() : t;
+    const t = this.getBoundingClientRect(), e = this.offsetWidth > 0 ? t.width / this.offsetWidth : 1, i = this.offsetHeight > 0 ? t.height / this.offsetHeight : 1, s = e > 1e-3 ? 1 / e : 1, r = i > 1e-3 ? 1 / i : 1, n = this.shadowRoot.querySelector("[data-jelly-box]"), a = n ? n.getBoundingClientRect() : t;
     return {
-      width: l.width * s,
-      height: l.height * r,
-      offsetX: (l.left + l.width / 2 - t.left) * s,
-      offsetY: (l.top + l.height / 2 - t.top) * r,
+      width: a.width * s,
+      height: a.height * r,
+      offsetX: (a.left + a.width / 2 - t.left) * s,
+      offsetY: (a.top + a.height / 2 - t.top) * r,
       // Screen coords stay in screen space for pointer → local mapping
-      screenX: l.left + l.width / 2,
-      screenY: l.top + l.height / 2
+      screenX: a.left + a.width / 2,
+      screenY: a.top + a.height / 2
     };
   }
   /*
@@ -1144,11 +1152,41 @@ class z extends HTMLElement {
    * control the engine should be stepping, and `hidden` is not a DOM removal,
    * so `disconnectedCallback` never runs to drop it.
    *
+   * A park is only ever a consequence of a *measured* zero box - it is never
+   * set from an attribute, a timer or a guess. That matters because a park is
+   * invisible: the element keeps its canvas, its body and its place in the
+   * layout, so a park that outlives its measurement is a visible control the
+   * engine refuses to touch. Three things undo it: the next ResizeObserver
+   * measurement (the box is observed alongside the host), the next press, and
+   * the next pointer (`ensureMembrane`).
+   *
    * The physics body is kept - it is still the right body for this element -
    * so coming back is a resize and a repaint, not a rebuild.
    */
   park() {
     this.parked = !0, this.stopHoverLoop(), dt.drop(this);
+  }
+  /*
+   * The pointer is a measurement. A park is only ever the result of a zero
+   * box, so a pointer standing on this element proves the box came back -
+   * and for a park caused by an inner `data-jelly-box` collapsing, the host
+   * ResizeObserver may never fire again. Rebuild here, synchronously, on the
+   * same event, instead of waiting for a measurement that may not come.
+   *
+   * This is the same rebuild the press path performs; the pointer and the
+   * press are both evidence that the control is on screen and reachable.
+   *
+   * Returns true when a membrane exists and the element is not parked.
+   */
+  ensureMembrane() {
+    if (this.flat)
+      return !1;
+    if (this.parked || !this.body) {
+      if (!this.built)
+        return !1;
+      this.applyShape();
+    }
+    return !this.parked && this.body !== null && !this.flat;
   }
   // Size the canvas for the current shape and (re)build the physics body
   applyShape() {
@@ -1161,8 +1199,8 @@ class z extends HTMLElement {
     }
     const e = this.parked;
     this.parked = !1;
-    const i = this.shape(t.width, t.height), s = this.constructor.PAD, r = i.width + s * 2, n = i.height + s * 2, l = Math.min(window.devicePixelRatio || 1, 3), c = Math.round(r * l), h = Math.round(n * l), a = i.radius <= 0 && this.flatSurfaceAllowed(), d = c > z.MAX_CANVAS_EDGE || h > z.MAX_CANVAS_EDGE || c * h > z.MAX_CANVAS_AREA;
-    if (a || d) {
+    const i = this.shape(t.width, t.height), s = this.constructor.PAD, r = i.width + s * 2, n = i.height + s * 2, a = Math.min(window.devicePixelRatio || 1, 3), c = Math.round(r * a), h = Math.round(n * a), l = i.radius <= 0 && this.flatSurfaceAllowed(), d = c > C.MAX_CANVAS_EDGE || h > C.MAX_CANVAS_EDGE || c * h > C.MAX_CANVAS_AREA;
+    if (l || d) {
       this.useCssSurface(r, n);
       return;
     }
@@ -1170,7 +1208,7 @@ class z extends HTMLElement {
       e && this.requestFrame();
       return;
     }
-    this.dpr = l, this.cssW = r, this.cssH = n, this.canvas.style.width = `${r}px`, this.canvas.style.height = `${n}px`, this.canvas.width = c, this.canvas.height = h, this.ctx.setTransform(l, 0, 0, l, 0, 0), this.body ? this.body.resize(i.width, i.height, i.radius) : this.body = new $({
+    this.dpr = a, this.cssW = r, this.cssH = n, this.canvas.style.width = `${r}px`, this.canvas.style.height = `${n}px`, this.canvas.width = c, this.canvas.height = h, this.ctx.setTransform(a, 0, 0, a, 0, 0), this.body ? this.body.resize(i.width, i.height, i.radius) : this.body = new $({
       width: i.width,
       height: i.height,
       radius: i.radius,
@@ -1236,10 +1274,10 @@ class z extends HTMLElement {
       cx: s = 0,
       cy: r = 0,
       alpha: n = 1,
-      ctx: l = this.ctx,
+      ctx: a = this.ctx,
       cssW: c = this.cssW,
       cssH: h = this.cssH,
-      ring: a = null,
+      ring: l = null,
       scaleX: d = 1,
       scaleY: p = 1,
       border: u = null,
@@ -1252,13 +1290,13 @@ class z extends HTMLElement {
       // pass a distinct easeKey per body so their colours don't share a track.
       ease: w = !0,
       easeKey: m = "body"
-    } = e, x = w ? this.easeColor(m, i, this.frameDt || 0) : i, y = c / 2 + s, k = h / 2 + r, S = f ? (E) => f(t.projectPoint(E)) : (E) => t.projectPoint(E);
-    if (l.save(), l.globalAlpha = n, l.translate(y, k), l.rotate(t.state.rotateZ), (d !== 1 || p !== 1) && l.scale(d, p), a) {
-      const E = t.getSurfacePoints(a.gap + a.width / 2).map(S);
-      ct(l, E, void 0, t.radius <= 0), l.lineWidth = a.width, l.strokeStyle = a.color, l.lineJoin = t.radius <= 0 ? "miter" : "round", l.stroke();
+    } = e, x = w ? this.easeColor(m, i, this.frameDt || 0) : i, y = c / 2 + s, k = h / 2 + r, L = f ? (E) => f(t.projectPoint(E)) : (E) => t.projectPoint(E);
+    if (a.save(), a.globalAlpha = n, a.translate(y, k), a.rotate(t.state.rotateZ), (d !== 1 || p !== 1) && a.scale(d, p), l) {
+      const E = t.getSurfacePoints(l.gap + l.width / 2).map(L);
+      ct(a, E, void 0, t.radius <= 0), a.lineWidth = l.width, a.strokeStyle = l.color, a.lineJoin = t.radius <= 0 ? "miter" : "round", a.stroke();
     }
-    const M = t.getSurfacePoints().map(S);
-    ct(l, M, void 0, t.radius <= 0), l.fillStyle = x, l.fill(), u && (ct(l, M, void 0, t.radius <= 0), l.lineWidth = u.width, l.strokeStyle = u.color, l.lineJoin = "round", l.stroke()), l.restore();
+    const M = t.getSurfacePoints().map(L);
+    ct(a, M, void 0, t.radius <= 0), a.fillStyle = x, a.fill(), u && (ct(a, M, void 0, t.radius <= 0), a.lineWidth = u.width, a.strokeStyle = u.color, a.lineJoin = "round", a.stroke()), a.restore();
   }
   // The standard frame: advance physics, repaint, sleep when at rest
   defaultFrame(t) {
@@ -1311,9 +1349,9 @@ class z extends HTMLElement {
     if (Math.abs(s[0] - r[0]) <= 0.4 && Math.abs(s[1] - r[1]) <= 0.4 && Math.abs(s[2] - r[2]) <= 0.4 && Math.abs(s[3] - r[3]) <= 2e-3)
       return this.eased[t] = s, this.colorString(s);
     if (this.colorEasing = !0, i > 0) {
-      const l = 1 - Math.exp(-i * 10);
+      const a = 1 - Math.exp(-i * 10);
       for (let c = 0; c < 4; c++)
-        r[c] += (s[c] - r[c]) * l;
+        r[c] += (s[c] - r[c]) * a;
     }
     return this.colorString(r);
   }
@@ -1324,7 +1362,7 @@ class z extends HTMLElement {
     const e = this.resolveColor(String(t)), i = e.match(/[\d.]+/g);
     if (!i)
       return [0, 0, 0, 1];
-    const s = i.slice(0, 3).map(Number), r = Math.max(0, Math.min(1, Number(i[3] ?? 1))), n = e.startsWith("color(") ? s.map((l) => Math.round(l * 255)) : s;
+    const s = i.slice(0, 3).map(Number), r = Math.max(0, Math.min(1, Number(i[3] ?? 1))), n = e.startsWith("color(") ? s.map((a) => Math.round(a * 255)) : s;
     return [n[0], n[1], n[2], r];
   }
   // Backward-compatible RGB-only view for calculations that do not need alpha
@@ -1334,16 +1372,16 @@ class z extends HTMLElement {
   // Serialize a tuple to a canvas-safe legacy color. Keep opaque colors as
   // rgb() for compactness; rgba() is required whenever transparency matters.
   colorString([t, e, i, s = 1], { forceAlpha: r = !1 } = {}) {
-    const n = Math.round(t), l = Math.round(e), c = Math.round(i), h = Math.max(0, Math.min(1, s));
-    return !r && h >= 0.9995 ? `rgb(${n}, ${l}, ${c})` : `rgba(${n}, ${l}, ${c}, ${Number(h.toFixed(4))})`;
+    const n = Math.round(t), a = Math.round(e), c = Math.round(i), h = Math.max(0, Math.min(1, s));
+    return !r && h >= 0.9995 ? `rgb(${n}, ${a}, ${c})` : `rgba(${n}, ${a}, ${c}, ${Number(h.toFixed(4))})`;
   }
   // Blend two live CSS color expressions. Shared by controls that animate
   // between semantic off/on colors, including their alpha channels.
   mixColor(t, e, i) {
-    const s = this.rgbaTuple(t), r = this.rgbaTuple(e), n = Math.max(0, Math.min(1, i)), l = s.map(
+    const s = this.rgbaTuple(t), r = this.rgbaTuple(e), n = Math.max(0, Math.min(1, i)), a = s.map(
       (c, h) => c + (r[h] - c) * n
     );
-    return this.colorString(l);
+    return this.colorString(a);
   }
   // Resolve a CSS color expression (var(), color-mix(), …) to a concrete sRGB
   // color. The token values are oklch(), and getComputedStyle preserves oklch()
@@ -1378,12 +1416,12 @@ class z extends HTMLElement {
   }
   // Convert client coords into the body's local (shape-centered) frame
   toLocal(t, e, i = this.body) {
-    const s = this.jellyBox(), r = this.getBoundingClientRect(), n = this.offsetWidth > 0 ? r.width / this.offsetWidth : 1, l = this.offsetHeight > 0 ? r.height / this.offsetHeight : 1, c = (t - s.screenX) / (n > 1e-3 ? n : 1), h = (e - s.screenY) / (l > 1e-3 ? l : 1), a = -(i ? i.state.rotateZ : 0), d = Math.cos(a), p = Math.sin(a);
+    const s = this.jellyBox(), r = this.getBoundingClientRect(), n = this.offsetWidth > 0 ? r.width / this.offsetWidth : 1, a = this.offsetHeight > 0 ? r.height / this.offsetHeight : 1, c = (t - s.screenX) / (n > 1e-3 ? n : 1), h = (e - s.screenY) / (a > 1e-3 ? a : 1), l = -(i ? i.state.rotateZ : 0), d = Math.cos(l), p = Math.sin(l);
     return { x: c * d - h * p, y: c * p + h * d };
   }
   // Press the jelly at a screen coordinate
   pressAt(t, e, i = 1.12) {
-    if (this.reducedMotion || !this.body)
+    if (this.reducedMotion || !this.ensureMembrane())
       return;
     const s = this.toLocal(t, e);
     this.body.pressAtLocal(s.x, s.y, i), this.requestFrame();
@@ -1442,20 +1480,87 @@ class z extends HTMLElement {
     }));
   }
   /**
-   * Start the per-frame hover loop.  Called on pointerenter.
+   * Start the per-frame hover loop. Called on pointerenter, and again from
+   * pointermove / the scroll repair when a chain has retired itself.
    * `elIndex` gives each element a unique noise seed so they don't
    * pulse in lockstep.
    */
-  startHoverLoop(t) {
-    this._hoverRafId !== 0 || this.reducedMotion || !this.body || this.parked || this.offsetHeight > window.innerHeight || (this._hoverElIndex = t, this._hoverRafId = requestAnimationFrame(this._hoverFrame));
+  startHoverLoop(t = this.hoverSeed) {
+    this._hoverRafId !== 0 || this.reducedMotion || this.ensureMembrane() && (this.cssW * this.cssH > C.HOVER_AREA_BUDGET || (this._hoverElIndex = t, this._applyHoverForce(performance.now()), this.requestFrame(), this._hoverRafId = requestAnimationFrame(this._hoverFrame)));
   }
-  /** Stop the hover loop and let residual energy dissipate naturally. */
+  /**
+   * Stop the hover loop and let residual energy dissipate naturally.
+   */
   stopHoverLoop() {
-    this._hoverRafId !== 0 && (cancelAnimationFrame(this._hoverRafId), this._hoverRafId = 0, this.body && (this.body.state.hoverForce = 0, this.requestFrame()));
+    this._hoverRafId !== 0 && (cancelAnimationFrame(this._hoverRafId), this._hoverRafId = 0), this.body && this.body.state.hoverForce !== 0 && (this.body.state.hoverForce = 0, this.requestFrame());
+  }
+  /**
+   * Wire the pointer's half of the membrane onto this host. One helper for
+   * every surface that wobbles, so the response cannot differ between a
+   * button and a card:
+   *
+   * - `pointerenter` starts the loop and un-parks a control that a zero-box
+   *   measurement had dropped (see `startHoverLoop`);
+   * - `pointermove` keeps the pointer position fresh and restarts a loop that
+   *   retired itself - a surface that appears under a resting pointer, or one
+   *   whose loop parked at the edge, is picked up by the next movement
+   *   instead of needing a click on the parent;
+   * - `pointerleave` / `pointercancel` settle the membrane instead of
+   *   freezing it;
+   * - touch never starts a hover. A tap is a press, and the press dent is
+   *   what a finger should get; a noise loop started by a tap leaves the
+   *   surface vibrating after the finger is gone.
+   *
+   * No build-time reduced-motion branch: the preference is checked live in
+   * startHoverLoop.
+   */
+  wireHover({
+    disabled: t = () => this.hasAttribute("disabled")
+  } = {}) {
+    this._hoverWired = !0, this._hoverDisabled = t, this.addEventListener("pointerenter", (e) => {
+      e.pointerType === "touch" || t() || (this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop());
+    }), this.addEventListener("pointermove", (e) => {
+      e.pointerType !== "touch" && (this.updateHoverPointer(e.clientX, e.clientY), this._hoverRafId === 0 && !t() && this._hoverInside() && this.startHoverLoop());
+    }), this.addEventListener("pointerleave", () => this.stopHoverLoop()), this.addEventListener("pointercancel", () => this.stopHoverLoop());
+  }
+  /**
+   * Restart the hover chain for a pointer that is already on the control but
+   * never moved: a scroll can bring a surface under a resting cursor, and
+   * neither pointerenter nor pointermove fires for that. Called by the shared
+   * scroll repair below; a no-op unless `wireHover` wired this element.
+   */
+  resumeHover() {
+    !this._hoverWired || this._hoverDisabled() || this._hoverRafId !== 0 || this.startHoverLoop();
   }
   /** Update the pointer position for the hover membrane force. */
   updateHoverPointer(t, e) {
     this._hoverPointerX = t, this._hoverPointerY = e;
+  }
+  /**
+   * Write one frame of hover force into the membrane. Samples multi-channel
+   * simplex noise (matching the website's Staccato Phase/Color/Morph pattern)
+   * and applies the result through JellyState.hoverForce, which updateMembrane
+   * reads independently of the press/click hold state.
+   */
+  _applyHoverForce(t) {
+    const e = this.body;
+    if (!e)
+      return;
+    const i = this.toLocal(this._hoverPointerX, this._hoverPointerY);
+    e.state.pointerLocalX = i.x, e.state.pointerLocalY = i.y;
+    const s = this._hoverElIndex, r = 5e-4, n = Z(t * r, s * 101), c = 0.75 + (G(n, 6) + 1) / 2 * 0.25, h = Z(t * r * 0.25, s * 307), d = 0.8 + (G(h, 5) + 1) / 2 * 0.4;
+    e.state.hoverForce = c * d;
+  }
+  /**
+   * True while the pointer is over the measured jelly box. One pixel of
+   * grace on every edge: a pointer that enters exactly on the hairline is
+   * inside the control, and the old test compared against the physics body's
+   * size with no margin - so an edge entry could park the loop on its very
+   * first frame, which is the "it only registers sometimes" report.
+   */
+  _hoverInside() {
+    const t = this.toLocal(this._hoverPointerX, this._hoverPointerY), e = this.jellyBox();
+    return Math.abs(t.x) <= e.width / 2 + 1 && Math.abs(t.y) <= e.height / 2 + 1;
   }
 }
 if (typeof document < "u" && typeof MutationObserver == "function") {
@@ -1468,6 +1573,41 @@ if (typeof document < "u" && typeof MutationObserver == "function") {
     attributeFilter: ["dir"]
   });
 }
+if (typeof document < "u" && typeof document.elementFromPoint == "function") {
+  let o = 0, t = 0, e = !1;
+  window.addEventListener(
+    "pointermove",
+    (i) => {
+      e = i.pointerType !== "touch", o = i.clientX, t = i.clientY;
+    },
+    { passive: !0, capture: !0 }
+  ), window.addEventListener(
+    "pointerdown",
+    (i) => {
+      i.pointerType === "touch" && (e = !1);
+    },
+    { passive: !0, capture: !0 }
+  ), window.addEventListener(
+    "scroll",
+    () => {
+      if (!e)
+        return;
+      let i = document.elementFromPoint(
+        o,
+        t
+      );
+      for (; i; ) {
+        if (i instanceof C) {
+          i.resumeHover();
+          return;
+        }
+        const s = i.getRootNode();
+        i = i.parentElement ?? (s instanceof ShadowRoot ? s.host : null);
+      }
+    },
+    { passive: !0, capture: !0 }
+  );
+}
 const pe = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 8.5a.75.75 0 0 0-.75.75v5a.75.75 0 0 0 1.5 0v-5a.75.75 0 0 0-.75-.75ZM12 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
 `, be = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm3.22 6.97-4.47 4.47-1.97-1.97a.75.75 0 0 0-1.06 1.06l2.5 2.5c.3.3.77.3 1.06 0l5-5a.75.75 0 1 0-1.06-1.06Z"/></svg>
 `, ge = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9.14 3.7a3.25 3.25 0 0 1 5.72 0l6.74 12.5a3.25 3.25 0 0 1-2.86 4.8H5.25a3.25 3.25 0 0 1-2.86-4.8L9.14 3.7ZM12 15a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-7.5a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 12 7.5Z"/></svg>
@@ -1479,15 +1619,15 @@ const pe = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="cu
 `, je = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10.7878 3.10215C11.283 2.09877 12.7138 2.09876 13.209 3.10215L15.567 7.87987L20.8395 8.64601C21.9468 8.80691 22.3889 10.1677 21.5877 10.9487L17.7724 14.6676L18.6731 19.9189C18.8622 21.0217 17.7047 21.8627 16.7143 21.342L11.9984 18.8627L7.28252 21.342C6.29213 21.8627 5.13459 21.0217 5.32374 19.9189L6.2244 14.6676L2.40916 10.9487C1.60791 10.1677 2.05005 8.80691 3.15735 8.64601L8.42988 7.87987L10.7878 3.10215Z"/></svg>
 `, we = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8199 5.57912L11.9992 6.40163L11.1759 5.57838C9.07688 3.47931 5.67361 3.47931 3.57455 5.57838C1.47548 7.67744 1.47548 11.0807 3.57455 13.1798L11.4699 21.0751C11.7628 21.368 12.2377 21.368 12.5306 21.0751L20.432 13.1783C22.5264 11.0723 22.53 7.67857 20.4306 5.57912C18.3277 3.47623 14.9228 3.47623 12.8199 5.57912Z"/></svg>
 `, ke = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.0258 17.0014C17.2639 21.7851 11.1471 23.4241 6.3634 20.6622C5.06068 19.9101 3.964 18.8926 3.12872 17.6797C2.84945 17.2741 3.0301 16.7141 3.49369 16.5482C7.26112 15.1997 9.27892 13.6372 10.4498 11.4021C11.6825 9.04908 12.001 6.47162 11.1387 2.93862C11.0195 2.45008 11.4053 1.98492 11.9075 2.01186C13.4645 2.09539 14.9856 2.54263 16.3649 3.33903C21.1486 6.10088 22.7876 12.2177 20.0258 17.0014Z"/></svg>
-`, Ae = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12.4142 2 12.75 2.33579 12.75 2.75V4.25C12.75 4.66421 12.4142 5 12 5C11.5858 5 11.25 4.66421 11.25 4.25V2.75C11.25 2.33579 11.5858 2 12 2ZM17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12ZM21.25 12.75C21.6642 12.75 22 12.4142 22 12C22 11.5858 21.6642 11.25 21.25 11.25H19.75C19.3358 11.25 19 11.5858 19 12C19 12.4142 19.3358 12.75 19.75 12.75H21.25ZM12 19C12.4142 19 12.75 19.3358 12.75 19.75V21.25C12.75 21.6642 12.4142 22 12 22C11.5858 22 11.25 21.6642 11.25 21.25V19.75C11.25 19.3358 11.5858 19 12 19ZM4.25 12.75C4.66421 12.75 5 12.4142 5 12C5 11.5858 4.66421 11.25 4.25 11.25H2.75C2.33579 11.25 2 11.5858 2 12C2 12.4142 2.33579 12.75 2.75 12.75H4.25ZM4.21967 4.22004C4.51256 3.92715 4.98744 3.92715 5.28033 4.22004L6.78033 5.72004C7.07322 6.01294 7.07322 6.48781 6.78033 6.7807C6.48744 7.0736 6.01256 7.0736 5.71967 6.7807L4.21967 5.2807C3.92678 4.98781 3.92678 4.51294 4.21967 4.22004ZM5.28033 19.7807C4.98744 20.0736 4.51256 20.0736 4.21967 19.7807C3.92678 19.4878 3.92678 19.0129 4.21967 18.72L5.71967 17.22C6.01256 16.9271 6.48744 16.9271 6.78033 17.22C7.07322 17.5129 7.07322 17.9878 6.78033 18.2807L5.28033 19.7807ZM19.7803 4.22004C19.4874 3.92715 19.0126 3.92715 18.7197 4.22004L17.2197 5.72004C16.9268 6.01294 16.9268 6.48781 17.2197 6.7807C17.5126 7.0736 17.9874 7.0736 18.2803 6.7807L19.7803 5.2807C20.0732 4.98781 20.0732 4.51294 19.7803 4.22004ZM18.7197 19.7807C19.0126 20.0736 19.4874 20.0736 19.7803 19.7807C20.0732 19.4878 20.0732 19.0129 19.7803 18.72L18.2803 17.22C17.9874 16.9271 17.5126 16.9271 17.2197 17.22C16.9268 17.5129 16.9268 17.9878 17.2197 18.2807L18.7197 19.7807Z"/></svg>
-`, Ce = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 12.6 A5.25 5.25 0 0 1 17.25 12.6 Z"/><g fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.4"/><line x1="4.6" y1="4.6" x2="6.6" y2="6.6"/><line x1="19.4" y1="4.6" x2="17.4" y2="6.6"/><line x1="1.9" y1="13.7" x2="22.1" y2="13.7"/><line x1="6.1" y1="16.9" x2="18.2" y2="16.9"/><line x1="10" y1="20" x2="14.1" y2="20"/></g></svg>
+`, Ce = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12.4142 2 12.75 2.33579 12.75 2.75V4.25C12.75 4.66421 12.4142 5 12 5C11.5858 5 11.25 4.66421 11.25 4.25V2.75C11.25 2.33579 11.5858 2 12 2ZM17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12ZM21.25 12.75C21.6642 12.75 22 12.4142 22 12C22 11.5858 21.6642 11.25 21.25 11.25H19.75C19.3358 11.25 19 11.5858 19 12C19 12.4142 19.3358 12.75 19.75 12.75H21.25ZM12 19C12.4142 19 12.75 19.3358 12.75 19.75V21.25C12.75 21.6642 12.4142 22 12 22C11.5858 22 11.25 21.6642 11.25 21.25V19.75C11.25 19.3358 11.5858 19 12 19ZM4.25 12.75C4.66421 12.75 5 12.4142 5 12C5 11.5858 4.66421 11.25 4.25 11.25H2.75C2.33579 11.25 2 11.5858 2 12C2 12.4142 2.33579 12.75 2.75 12.75H4.25ZM4.21967 4.22004C4.51256 3.92715 4.98744 3.92715 5.28033 4.22004L6.78033 5.72004C7.07322 6.01294 7.07322 6.48781 6.78033 6.7807C6.48744 7.0736 6.01256 7.0736 5.71967 6.7807L4.21967 5.2807C3.92678 4.98781 3.92678 4.51294 4.21967 4.22004ZM5.28033 19.7807C4.98744 20.0736 4.51256 20.0736 4.21967 19.7807C3.92678 19.4878 3.92678 19.0129 4.21967 18.72L5.71967 17.22C6.01256 16.9271 6.48744 16.9271 6.78033 17.22C7.07322 17.5129 7.07322 17.9878 6.78033 18.2807L5.28033 19.7807ZM19.7803 4.22004C19.4874 3.92715 19.0126 3.92715 18.7197 4.22004L17.2197 5.72004C16.9268 6.01294 16.9268 6.48781 17.2197 6.7807C17.5126 7.0736 17.9874 7.0736 18.2803 6.7807L19.7803 5.2807C20.0732 4.98781 20.0732 4.51294 19.7803 4.22004ZM18.7197 19.7807C19.0126 20.0736 19.4874 20.0736 19.7803 19.7807C20.0732 19.4878 20.0732 19.0129 19.7803 18.72L18.2803 17.22C17.9874 16.9271 17.5126 16.9271 17.2197 17.22C16.9268 17.5129 16.9268 17.9878 17.2197 18.2807L18.7197 19.7807Z"/></svg>
+`, Ae = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.75 12.6 A5.25 5.25 0 0 1 17.25 12.6 Z"/><g fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4.4"/><line x1="4.6" y1="4.6" x2="6.6" y2="6.6"/><line x1="19.4" y1="4.6" x2="17.4" y2="6.6"/><line x1="1.9" y1="13.7" x2="22.1" y2="13.7"/><line x1="6.1" y1="16.9" x2="18.2" y2="16.9"/><line x1="10" y1="20" x2="14.1" y2="20"/></g></svg>
 `, ze = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M16.3368 4.9174C17.5191 3.69448 19.4803 3.69717 20.6593 4.92332L27.8322 12.3831C29.155 13.4822 30 15.1428 30 17C30 20.2785 27.3704 22.9429 24.1053 22.9991V23.0004C24.1053 25.2096 22.3144 27.0004 20.1053 27.0004H18C18 27.0004 18 27.0004 18 27.0004V24.5004C18 22.0151 15.9853 20.0004 13.5 20.0004H12C11.4477 20.0004 11 20.4481 11 21.0004C11 21.5527 11.4477 22.0004 12 22.0004H13.5C14.8807 22.0004 16 23.1197 16 24.5004V27.0004C16 27.0004 16 27.0004 16 27.0004L11 27.0004C8.23858 27.0004 6 24.7618 6 22.0004V19.9004C3.71776 19.4371 2 17.4193 2 15.0004C2 12.2389 4.23858 10.0004 7 10.0004C8.63694 10.0004 10.0891 10.7874 11.0003 12.0004H17.5995C17.7351 11.7351 17.8914 11.4823 18.0664 11.2443L16.1624 8.89416C15.2071 7.71502 15.2819 6.00841 16.3368 4.9174Z" fill="currentColor"/>
 </svg>
-`, Le = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+`, Se = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M23.5758 24.99L28.2927 29.7068C28.6832 30.0973 29.3164 30.0973 29.7069 29.7068C30.0975 29.3163 30.0974 28.6831 29.7069 28.2926L3.70661 2.29288C3.31608 1.90237 2.68292 1.90237 2.2924 2.2929C1.90188 2.68343 1.90188 3.3166 2.29241 3.70712L9.00318 10.4177C8.39 10.1492 7.71241 10.0001 6.99982 10.0001C4.23839 10.0001 1.99982 12.2386 1.99982 15.0001C1.99982 17.419 3.71758 19.4368 5.99982 19.9001V22.0001C5.99982 24.7615 8.2384 27.0001 10.9998 27.0001H15.9998V24.4997C15.9998 23.119 14.8805 21.9997 13.4998 21.9997H11.9998C11.4475 21.9997 10.9998 21.552 10.9998 20.9997C10.9998 20.4474 11.4475 19.9997 11.9998 19.9997H13.4998C15.9851 19.9997 17.9998 22.0144 17.9998 24.4997V26.9997L20.1051 27.0001C21.5898 27.0001 22.8856 26.1912 23.5758 24.99ZM29.9998 16.9997C29.9998 19.5582 28.3984 21.7427 26.1433 22.6055L15.5377 12.0001H17.5993C17.7349 11.7348 17.8913 11.482 18.0663 11.244L16.1622 8.89386C15.2069 7.71472 15.2818 6.00811 16.3366 4.91709C17.5189 3.69417 19.4801 3.69686 20.6591 4.92302L27.8321 12.3828C29.1549 13.4819 29.9998 15.1425 29.9998 16.9997Z" fill="currentColor"/>
 </svg>
-`, Se = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+`, Le = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M11.0003 12.0004H11.8436C11.8956 11.9991 11.9477 11.9984 12 11.9984V12.0004H17.5995C17.7351 11.7351 17.8914 11.4823 18.0664 11.2443L16.1624 8.89416C15.2071 7.71502 15.2819 6.00841 16.3368 4.9174C17.5191 3.69448 19.4803 3.69717 20.6593 4.92332L27.8322 12.3831C29.155 13.4822 30 15.1428 30 17C30 20.2785 27.3704 22.9429 24.1053 22.9991V23.0004C24.1053 25.2096 22.3144 27.0004 20.1053 27.0004H11C8.23858 27.0004 6 24.7618 6 22.0004V19.9004C3.71776 19.4371 2 17.4193 2 15.0004C2 12.2389 4.23858 10.0004 7 10.0004C8.63694 10.0004 10.0891 10.7874 11.0003 12.0004ZM19.2177 6.30954C18.8241 5.9002 18.1693 5.89931 17.7746 6.30756C17.4225 6.67178 17.3975 7.24152 17.7164 7.63516L20.7241 11.3476L20.0662 11.9843C19.6801 12.358 19.3805 12.8187 19.1987 13.3335L18.9631 14.0004H11.8723C9.72227 14.0678 8 15.832 8 17.9984V22.0004C8 23.6573 9.34315 25.0004 11 25.0004H16C16 25.0004 16 25.0004 16 25.0004V24.5004C16 23.1197 14.8807 22.0004 13.5 22.0004H12C11.4477 22.0004 11 21.5527 11 21.0004C11 20.4481 11.4477 20.0004 12 20.0004H13.5C15.9853 20.0004 18 22.0151 18 24.5004V25.0004C18 25.0004 18 25.0004 18 25.0004L20.1053 25.0004C21.2098 25.0004 22.1053 24.105 22.1053 23.0004V20.7233L23.283 20.9361C23.5149 20.978 23.7545 21 24 21C26.2091 21 28 19.2091 28 17C28 15.7472 27.4252 14.6293 26.5211 13.8943L26.4736 13.8557L19.2177 6.30954ZM6.00231 17.8305C6.06168 15.6698 7.26332 13.7945 9.02502 12.7867C8.49077 12.2976 7.77981 12.0004 7 12.0004C5.34315 12.0004 4 13.3435 4 15.0004C4 16.3075 4.83591 17.4193 6.00231 17.8305Z" fill="currentColor"/>
 </svg>
 `, Me = {
@@ -1502,11 +1642,11 @@ const pe = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="cu
   star: je,
   heart: we,
   "weather-moon": ke,
-  "weather-sunny": Ae,
-  "theme-auto": Ce,
+  "weather-sunny": Ce,
+  "theme-auto": Ae,
   "animal-rabbit-filled": ze,
-  "animal-rabbit-off-filled": Le,
-  "animal-rabbit-regular": Se
+  "animal-rabbit-off-filled": Se,
+  "animal-rabbit-regular": Le
 };
 function ft(o, { size: t = 20, label: e = null } = {}) {
   const i = Me[o];
@@ -1518,7 +1658,7 @@ function ft(o, { size: t = 20, label: e = null } = {}) {
     `<svg width="${t}" height="${t}" ${s} `
   );
 }
-const Ee = ':host{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));inset-inline-end:calc(18px + env(safe-area-inset-right,0px));z-index:10002;pointer-events:none;--jelly-toast-radius: 999px;--jelly-toast-font-size: 14px}.rail{display:flex;flex-direction:column;gap:10px;align-items:flex-end}:host([position="bottom"]){top:auto;bottom:calc(18px + env(safe-area-inset-bottom,0px))}:host([position="bottom"]) .rail{flex-direction:column-reverse}:host(:dir(rtl)) .rail{align-items:flex-start}.toast{pointer-events:auto;display:flex;align-items:center;gap:11px;cursor:pointer;touch-action:manipulation;background:var(--jelly-color-background-surface);border:1px solid var(--jelly-color-border-default);border-radius:var(--jelly-toast-radius);box-shadow:var(--jelly-shadow-overlay);padding-block:11px;padding-inline-start:14px;padding-inline-end:14px;font:600 var(--jelly-toast-font-size)/1.3 var(--jelly-font-display);color:var(--jelly-color-foreground-default);max-width:min(320px,calc(100vw - 48px))}.dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}.toast-text{flex:1}.close{flex:0 0 auto;appearance:none;border:0;margin:0;padding:0;width:22px;height:22px;border-radius:50%;background:transparent;color:var(--jelly-color-foreground-muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}.close:hover{background:var(--jelly-color-border-default)}.close:focus-visible{outline:2px solid var(--jelly-ring-color);outline-offset:1px}.sr-tone{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}@media(forced-colors:active){.toast{border-color:CanvasText}.dot{border:3px solid CanvasText}}', St = {
+const Ee = ':host{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));inset-inline-end:calc(18px + env(safe-area-inset-right,0px));z-index:10002;pointer-events:none;--jelly-toast-radius: 999px;--jelly-toast-font-size: 14px}.rail{display:flex;flex-direction:column;gap:10px;align-items:flex-end}:host([position="bottom"]){top:auto;bottom:calc(18px + env(safe-area-inset-bottom,0px))}:host([position="bottom"]) .rail{flex-direction:column-reverse}:host(:dir(rtl)) .rail{align-items:flex-start}.toast{pointer-events:auto;display:flex;align-items:center;gap:11px;cursor:pointer;touch-action:manipulation;background:var(--jelly-color-background-surface);border:1px solid var(--jelly-color-border-default);border-radius:var(--jelly-toast-radius);box-shadow:var(--jelly-shadow-overlay);padding-block:11px;padding-inline-start:14px;padding-inline-end:14px;font:600 var(--jelly-toast-font-size)/1.3 var(--jelly-font-display);color:var(--jelly-color-foreground-default);max-width:min(320px,calc(100vw - 48px))}.dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}.toast-text{flex:1}.close{flex:0 0 auto;appearance:none;border:0;margin:0;padding:0;width:22px;height:22px;border-radius:50%;background:transparent;color:var(--jelly-color-foreground-muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center}.close:hover{background:var(--jelly-color-border-default)}.close:focus-visible{outline:2px solid var(--jelly-ring-color);outline-offset:1px}.sr-tone{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}@media(forced-colors:active){.toast{border-color:CanvasText}.dot{border:3px solid CanvasText}}', Lt = {
   info: {
     color: `var(--jelly-color-background-azure, ${b["background-azure"]})`,
     spoken: "Info"
@@ -1542,7 +1682,7 @@ class Te extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), !this.built && (this.built = !0, this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
+    S(), !this.built && (this.built = !0, this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
       <style>${Ee}</style>
 
       <div class="rail" aria-live="polite"></div>
@@ -1550,19 +1690,19 @@ class Te extends HTMLElement {
   }
   // Add one toast; returns its element (click or timeout removes it)
   push(t, { tone: e = "info", duration: i = 3500 } = {}) {
-    const s = St[e] || St.info, r = document.createElement("div");
+    const s = Lt[e] || Lt.info, r = document.createElement("div");
     r.className = "toast", r.setAttribute("part", "toast"), r.setAttribute("role", "status");
     const n = document.createElement("span");
     n.className = "dot", n.setAttribute("part", "dot"), n.style.background = s.color, n.setAttribute("aria-hidden", "true");
-    const l = document.createElement("span");
-    l.className = "sr-tone", l.textContent = `${s.spoken}:`;
+    const a = document.createElement("span");
+    a.className = "sr-tone", a.textContent = `${s.spoken}:`;
     const c = document.createElement("span");
     c.className = "toast-text", c.textContent = String(t);
     const h = document.createElement("button");
-    h.className = "close", h.setAttribute("part", "close"), h.setAttribute("aria-label", "Dismiss"), h.innerHTML = ft("dismiss", { size: 13 }), r.append(n, l, c, h), this.shadowRoot.querySelector(".rail").appendChild(r), re(r);
-    const a = () => oe(r, () => r.remove());
-    return i > 0 && setTimeout(a, i), r.addEventListener("click", a), h.addEventListener("click", (d) => {
-      d.stopPropagation(), a();
+    h.className = "close", h.setAttribute("part", "close"), h.setAttribute("aria-label", "Dismiss"), h.innerHTML = ft("dismiss", { size: 13 }), r.append(n, a, c, h), this.shadowRoot.querySelector(".rail").appendChild(r), re(r);
+    const l = () => oe(r, () => r.remove());
+    return i > 0 && setTimeout(l, i), r.addEventListener("click", l), h.addEventListener("click", (d) => {
+      d.stopPropagation(), l();
     }), r;
   }
 }
@@ -1583,8 +1723,8 @@ function Mt(o) {
   return 0.2126 * t[0] + 0.7152 * t[1] + 0.0722 * t[2];
 }
 function Ie(o, t) {
-  const e = pt(o), i = pt(t), s = e[3], r = e.slice(0, 3).map((a, d) => a * s + i[d] * (1 - s)), n = Mt(r), l = Mt(pt("rgb(30, 34, 42)")), c = 1, h = (a, d) => (Math.max(a, d) + 0.05) / (Math.min(a, d) + 0.05);
-  return h(n, l) >= h(n, c) ? "#1E222A" : "#FFFFFF";
+  const e = pt(o), i = pt(t), s = e[3], r = e.slice(0, 3).map((l, d) => l * s + i[d] * (1 - s)), n = Mt(r), a = Mt(pt("rgb(30, 34, 42)")), c = 1, h = (l, d) => (Math.max(l, d) + 0.05) / (Math.min(l, d) + 0.05);
+  return h(n, a) >= h(n, c) ? "#1E222A" : "#FFFFFF";
 }
 class He extends HTMLElement {
   constructor() {
@@ -1596,7 +1736,7 @@ class He extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), this.shadowRoot || (this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
+    S(), this.shadowRoot || (this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
         <style data-jelly-theme-tokens>:host { display: contents; }</style>
 
         <slot></slot>
@@ -1653,11 +1793,11 @@ class He extends HTMLElement {
     if (i) {
       const s = t["background-" + i], r = s || i;
       if (!!s || CSS.supports("color", r)) {
-        const l = s ? t["foreground-on-emphasis"] : Ie(
+        const a = s ? t["foreground-on-emphasis"] : Ie(
           this.resolveColor(r),
           this.resolveColor(t["background-surface"])
         );
-        e.push(`--jelly-color-background-accent: ${r};`), e.push(`--jelly-color-foreground-on-accent: ${l};`);
+        e.push(`--jelly-color-background-accent: ${r};`), e.push(`--jelly-color-foreground-on-accent: ${a};`);
       }
     }
     this.tokenStyle.textContent = `:host { display: contents; color-scheme: ${this.resolvedMode}; ${e.join(" ")} }`, ot();
@@ -1665,7 +1805,7 @@ class He extends HTMLElement {
 }
 customElements.define("jelly-theme", He);
 const Pe = ':host{--jelly-button-height: 62px;--jelly-button-min-width: 168px;--jelly-button-padding-inline: 30px;--jelly-button-font-size: 16px;--jelly-button-gap: 9px;--jelly-button-radius: 999px;--jelly-ring: var(--jelly-fill, var(--jelly-color-border-focus));font:640 var(--jelly-button-font-size)/1 var(--jelly-font-display)}:host([shape="square"]){--jelly-button-radius: calc(var(--jelly-button-height) * .32)}:host([disabled]){opacity:.55;pointer-events:none}:host([block]){display:block;width:100%}:host([block]) button{width:100%}:host([size="small"]),:host([size="sm"]){--jelly-button-height: 42px;--jelly-button-min-width: 42px;--jelly-button-padding-inline: 16px;--jelly-button-font-size: 14px}:host([size="medium"]),:host([size="md"]){--jelly-button-height: 62px;--jelly-button-min-width: 168px;--jelly-button-padding-inline: 30px;--jelly-button-font-size: 16px}:host([size="large"]),:host([size="lg"]){--jelly-button-height: 72px;--jelly-button-min-width: 200px;--jelly-button-padding-inline: 38px;--jelly-button-font-size: 18px}button{appearance:none;-webkit-appearance:none;border:0;margin:0;background:transparent;color:var(--jelly-label);font:inherit;height:var(--jelly-button-height);min-width:var(--jelly-button-min-width);padding-block:0;padding-inline:var(--jelly-button-padding-inline);display:inline-flex;align-items:center;justify-content:center;gap:var(--jelly-button-gap);position:relative;cursor:pointer;border-radius:var(--jelly-button-radius);touch-action:manipulation;transition:height .42s cubic-bezier(.4,0,.2,1),min-width .42s cubic-bezier(.4,0,.2,1),padding-inline .42s cubic-bezier(.4,0,.2,1),border-radius .42s cubic-bezier(.4,0,.2,1)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) button{transition:none}}:host-context([data-jelly-motion="reduce"]) button{transition:none}button:focus-visible{outline:none}button:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:calc(var(--jelly-button-radius) + 2px);pointer-events:none}::slotted(svg),::slotted(img){pointer-events:none}@media(forced-colors:active){button{color:ButtonText}button:focus-visible:after{border-color:Highlight}}', nt = ':host{--jelly-fill: var(--jelly-color-background-accent);--jelly-label: var(--jelly-color-foreground-on-accent)}:host([variant="white"]){--jelly-fill: var(--jelly-color-background-white);--jelly-label: var(--jelly-color-foreground-on-white)}:host([variant="rose"]){--jelly-fill: var(--jelly-color-background-rose);--jelly-label: var(--jelly-color-foreground-on-emphasis)}:host([variant="amber"]){--jelly-fill: var(--jelly-color-background-amber);--jelly-label: var(--jelly-color-foreground-on-emphasis)}:host([variant="azure"]){--jelly-fill: var(--jelly-color-background-azure);--jelly-label: var(--jelly-color-foreground-on-emphasis)}:host([variant="mint"]){--jelly-fill: var(--jelly-color-background-mint);--jelly-label: var(--jelly-color-foreground-on-emphasis)}:host([variant="platinum"]){--jelly-fill: var(--jelly-color-background-neutral);--jelly-label: var(--jelly-color-foreground-on-neutral)}:host([variant="graphite"]){--jelly-fill: var(--jelly-color-background-neutral-emphasis);--jelly-label: var(--jelly-color-foreground-on-emphasis)}';
-class Be extends z {
+class Re extends C {
   constructor() {
     super(...arguments), this.activationPointerId = null, this.cancelPointerClick = !1;
   }
@@ -1698,27 +1838,15 @@ class Be extends z {
   shape(t, e) {
     const i = t - 8, s = e - 8, r = this.getAttribute("shape") === "square", n = parseFloat(
       getComputedStyle(this).getPropertyValue("--jelly-button-radius")
-    ), l = Number.isFinite(n) ? Math.min(n, s / 2) : r ? s * 0.32 : s / 2;
-    return { width: i, height: s, radius: l };
+    ), a = Number.isFinite(n) ? Math.min(n, s / 2) : r ? s * 0.32 : s / 2;
+    return { width: i, height: s, radius: a };
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
     this.button = this.shadowRoot.querySelector("button"), this.sync("type"), this.sync("disabled"), this.sync("label");
     for (const t of this.getAttributeNames())
       t.startsWith("aria-") && this.sync(t);
-    if (this.useHostFocusTarget(this.button), this.trackFocus(this.button), this.preventReleaseOutsideActivation(), this.wirePress(this.button), !this.reducedMotion) {
-      const t = [
-        ...document.querySelectorAll("jelly-button")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (e) => {
-        this.hasAttribute("disabled") || (this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t));
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
-    this.button.addEventListener("click", () => this.driveForm());
+    this.useHostFocusTarget(this.button), this.trackFocus(this.button), this.preventReleaseOutsideActivation(), this.wirePress(this.button), this.wireHover(), this.button.addEventListener("click", () => this.driveForm());
   }
   // Pointer capture keeps a drag routed to the button after the pointer leaves
   // it. Only let the resulting native click through when it is released back
@@ -1782,9 +1910,9 @@ class Be extends z {
     this.button?.focus(t);
   }
 }
-customElements.define("jelly-button", Be);
-const Re = ':host{--jelly-icon-button-size: 48px;--jelly-icon-button-radius: 16px;--jelly-icon-button-font-size: 18px;--jelly-icon-button-icon-size: 20px;--jelly-ring: var(--jelly-fill, var(--jelly-color-border-focus))}:host([disabled]){opacity:.55;pointer-events:none}:host([size="small"]),:host([size="sm"]){--jelly-icon-button-size: 40px;--jelly-icon-button-radius: 13px;--jelly-icon-button-font-size: 16px;--jelly-icon-button-icon-size: 18px}:host([size="medium"]),:host([size="md"]){--jelly-icon-button-size: 48px;--jelly-icon-button-radius: 16px;--jelly-icon-button-font-size: 18px;--jelly-icon-button-icon-size: 20px}:host([size="large"]),:host([size="lg"]){--jelly-icon-button-size: 56px;--jelly-icon-button-radius: 18px;--jelly-icon-button-font-size: 20px;--jelly-icon-button-icon-size: 23px}button{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:transparent;color:var(--jelly-label);width:var(--jelly-icon-button-size);height:var(--jelly-icon-button-size);display:inline-flex;align-items:center;justify-content:center;font:600 var(--jelly-icon-button-font-size)/1 var(--jelly-font-display);position:relative;cursor:pointer;border-radius:var(--jelly-icon-button-radius);touch-action:manipulation;transition:width .42s cubic-bezier(.4,0,.2,1),height .42s cubic-bezier(.4,0,.2,1)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) button{transition:none}}:host-context([data-jelly-motion="reduce"]) button{transition:none}button:focus-visible{outline:none}button:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:calc(var(--jelly-icon-button-radius) + 2px);pointer-events:none}::slotted(svg){width:var(--jelly-icon-button-icon-size);height:var(--jelly-icon-button-icon-size)}@media(forced-colors:active){button{color:ButtonText}button:focus-visible:after{border-color:Highlight}}';
-class Ve extends z {
+customElements.define("jelly-button", Re);
+const Be = ':host{--jelly-icon-button-size: 48px;--jelly-icon-button-radius: 16px;--jelly-icon-button-font-size: 18px;--jelly-icon-button-icon-size: 20px;--jelly-ring: var(--jelly-fill, var(--jelly-color-border-focus))}:host([disabled]){opacity:.55;pointer-events:none}:host([size="small"]),:host([size="sm"]){--jelly-icon-button-size: 40px;--jelly-icon-button-radius: 13px;--jelly-icon-button-font-size: 16px;--jelly-icon-button-icon-size: 18px}:host([size="medium"]),:host([size="md"]){--jelly-icon-button-size: 48px;--jelly-icon-button-radius: 16px;--jelly-icon-button-font-size: 18px;--jelly-icon-button-icon-size: 20px}:host([size="large"]),:host([size="lg"]){--jelly-icon-button-size: 56px;--jelly-icon-button-radius: 18px;--jelly-icon-button-font-size: 20px;--jelly-icon-button-icon-size: 23px}button{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:transparent;color:var(--jelly-label);width:var(--jelly-icon-button-size);height:var(--jelly-icon-button-size);display:inline-flex;align-items:center;justify-content:center;font:600 var(--jelly-icon-button-font-size)/1 var(--jelly-font-display);position:relative;cursor:pointer;border-radius:var(--jelly-icon-button-radius);touch-action:manipulation;transition:width .42s cubic-bezier(.4,0,.2,1),height .42s cubic-bezier(.4,0,.2,1)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) button{transition:none}}:host-context([data-jelly-motion="reduce"]) button{transition:none}button:focus-visible{outline:none}button:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:calc(var(--jelly-icon-button-radius) + 2px);pointer-events:none}::slotted(svg){width:var(--jelly-icon-button-icon-size);height:var(--jelly-icon-button-icon-size)}@media(forced-colors:active){button{color:ButtonText}button:focus-visible:after{border-color:Highlight}}';
+class Ve extends C {
   constructor() {
     super(...arguments), this.activationPointerId = null, this.cancelPointerClick = !1;
   }
@@ -1794,7 +1922,7 @@ class Ve extends z {
   }
   // Component styles layered over the shared jelly base styles
   styles() {
-    return nt + Re;
+    return nt + Be;
   }
   // The interactive markup that sits above the canvas
   content() {
@@ -1812,18 +1940,7 @@ class Ve extends z {
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
-    if (this.button = this.shadowRoot.querySelector("button"), this.sync("disabled"), this.sync("label"), this.useHostFocusTarget(this.button), this.trackFocus(this.button), this.preventReleaseOutsideActivation(), this.wirePress(this.button), !this.reducedMotion) {
-      const t = [
-        ...document.querySelectorAll("jelly-icon-button")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (e) => {
-        this.hasAttribute("disabled") || (this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t));
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    this.button = this.shadowRoot.querySelector("button"), this.sync("disabled"), this.sync("label"), this.useHostFocusTarget(this.button), this.trackFocus(this.button), this.preventReleaseOutsideActivation(), this.wirePress(this.button), this.wireHover();
   }
   // Pointer capture keeps a drag routed to the button after the pointer leaves
   // it. Cancel the resulting native click unless the release is back inside
@@ -1871,7 +1988,7 @@ class Ve extends z {
 }
 customElements.define("jelly-icon-button", Ve);
 const De = ':host{--jelly-input-padding-inline: 20px;--jelly-input-font-size: 16px;--jelly-input-radius: 16px;--jelly-fill: var(--jelly-color-background-muted);--jelly-label: var(--jelly-color-foreground-default);--jelly-accent: var(--jelly-color-background-accent);--jelly-ring: var(--jelly-accent, var(--jelly-color-border-focus));display:inline-block;width:280px;height:56px;font:500 var(--jelly-input-font-size)/1.2 var(--jelly-font-text)}:host([size="small"]),:host([size="sm"]){--jelly-input-padding-inline: 16px;--jelly-input-font-size: 14.5px;--jelly-input-radius: 14px;width:220px;height:46px}:host([size="medium"]),:host([size="md"]){--jelly-input-padding-inline: 20px;--jelly-input-font-size: 16px;--jelly-input-radius: 16px;width:280px;height:56px}:host([size="large"]),:host([size="lg"]){--jelly-input-padding-inline: 24px;--jelly-input-font-size: 17px;--jelly-input-radius: 18px;width:340px;height:64px}:host([disabled]){--jelly-fill: var(--jelly-color-background-neutral);opacity:.55;pointer-events:none}input{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;border:0;outline:none;background:transparent;padding-block:0;padding-inline:var(--jelly-input-padding-inline);font:inherit;color:var(--jelly-label);text-align:start;touch-action:manipulation}input::placeholder{color:var(--jelly-color-foreground-muted)}.ring{position:absolute;inset:4px;border:var(--jelly-ring-width) solid transparent;border-radius:var(--jelly-input-radius);pointer-events:none}@media(forced-colors:active){.ring{border-color:FieldText}:host(:focus-within) .ring{border-color:Highlight}}';
-class qe extends z {
+class qe extends C {
   constructor() {
     super(), this.focused = !1, this.measure = null, this.internals = this.attachInternals();
   }
@@ -1991,9 +2108,9 @@ class qe extends z {
     this.measure || (this.measure = document.createElement("canvas").getContext("2d"));
     const s = this.measure;
     s.font = i.font || `${i.fontWeight} ${i.fontSize} ${i.fontFamily}`;
-    const r = t.type === "password" ? "•".repeat(e) : t.value.slice(0, e), n = s.measureText(r).width, l = A(this), c = parseFloat(
-      i.paddingInlineStart || (l ? i.paddingRight : i.paddingLeft)
-    ) || 0, h = l ? -t.scrollLeft : t.scrollLeft, a = c + n - h, d = l ? t.clientWidth / 2 - a : a - t.clientWidth / 2, p = this.body.width / 2;
+    const r = t.type === "password" ? "•".repeat(e) : t.value.slice(0, e), n = s.measureText(r).width, a = A(this), c = parseFloat(
+      i.paddingInlineStart || (a ? i.paddingRight : i.paddingLeft)
+    ) || 0, h = a ? -t.scrollLeft : t.scrollLeft, l = c + n - h, d = a ? t.clientWidth / 2 - l : l - t.clientWidth / 2, p = this.body.width / 2;
     return v(d, -p + 6, p - 6);
   }
   // Lifecycle method: Fires when observed HTML attributes change dynamically
@@ -2066,7 +2183,7 @@ const $e = ':host{--jelly-textarea-font-size: 15.5px;--jelly-textarea-padding-bl
   "textAlign",
   "wordBreak"
 ];
-class Oe extends z {
+class Oe extends C {
   constructor() {
     super(), this.focused = !1, this.textareaResizeObserver = null, this.mirror = null, this.internals = this.attachInternals();
   }
@@ -2199,16 +2316,16 @@ class Oe extends z {
     e == null && (e = t.value.length);
     const i = getComputedStyle(t), s = this.mirror || (this.mirror = document.createElement("div")), r = s.style;
     r.position = "absolute", r.top = "0", r.left = "-9999px", r.visibility = "hidden", r.whiteSpace = "pre-wrap", r.overflowWrap = "break-word", r.boxSizing = "content-box";
-    const n = parseFloat(i.paddingLeft) || 0, l = parseFloat(i.paddingRight) || 0;
-    r.width = `${t.clientWidth - n - l}px`;
+    const n = parseFloat(i.paddingLeft) || 0, a = parseFloat(i.paddingRight) || 0;
+    r.width = `${t.clientWidth - n - a}px`;
     const c = i, h = r;
     for (const k of Xe)
       h[k] = c[k];
     s.textContent = t.value.slice(0, e);
-    const a = document.createElement("span");
-    a.textContent = t.value.slice(e) || ".", s.appendChild(a), this.shadowRoot.appendChild(s);
-    const d = t.scrollWidth - t.clientWidth, p = A(this) ? t.scrollLeft + d : t.scrollLeft, u = a.offsetLeft - p, f = a.offsetTop - t.scrollTop;
-    this.shadowRoot.removeChild(s), s.removeChild(a);
+    const l = document.createElement("span");
+    l.textContent = t.value.slice(e) || ".", s.appendChild(l), this.shadowRoot.appendChild(s);
+    const d = t.scrollWidth - t.clientWidth, p = A(this) ? t.scrollLeft + d : t.scrollLeft, u = l.offsetLeft - p, f = l.offsetTop - t.scrollTop;
+    this.shadowRoot.removeChild(s), s.removeChild(l);
     const w = u - t.offsetWidth / 2, m = f - t.offsetHeight / 2, x = this.body.width / 2 - 6, y = this.body.height / 2 - 6;
     return {
       x: v(w, -x, x),
@@ -2268,7 +2385,7 @@ class Oe extends z {
 }
 customElements.define("jelly-textarea", Oe);
 const We = ':host{display:inline-flex;--jelly-checkbox-size: 32px;--jelly-checkbox-gap: 11px;--jelly-checkbox-font-size: 15.5px;--jelly-checkbox-radius: 13px;--jelly-checkbox-stroke-width: 3.4;--jelly-checkbox-mark: var(--jelly-color-background-white);--jelly-fill: var(--jelly-color-background-neutral);--jelly-on: var(--jelly-color-background-accent);--jelly-ring: var(--jelly-on, var(--jelly-color-border-focus));--jelly-label: var(--jelly-color-foreground-muted);font:600 var(--jelly-checkbox-font-size)/1.2 var(--jelly-font-display)}:host([size="small"]),:host([size="sm"]){--jelly-checkbox-size: 28px;--jelly-checkbox-gap: 9px;--jelly-checkbox-font-size: 14px;--jelly-checkbox-radius: 11px;--jelly-checkbox-stroke-width: 3.1}:host([size="medium"]),:host([size="md"]){--jelly-checkbox-size: 32px;--jelly-checkbox-gap: 11px;--jelly-checkbox-font-size: 15.5px;--jelly-checkbox-radius: 13px;--jelly-checkbox-stroke-width: 3.4}:host([size="large"]),:host([size="lg"]){--jelly-checkbox-size: 38px;--jelly-checkbox-gap: 13px;--jelly-checkbox-font-size: 16.5px;--jelly-checkbox-radius: 15px;--jelly-checkbox-stroke-width: 3.7}:host([disabled]){opacity:.5;pointer-events:none}.wrap{display:inline-flex;align-items:center;gap:var(--jelly-checkbox-gap);cursor:pointer;position:relative;touch-action:manipulation}input{position:absolute;inset-inline-start:0;top:50%;width:var(--jelly-checkbox-size);height:var(--jelly-checkbox-size);margin:0;transform:translateY(-50%);opacity:0;cursor:pointer}.box{position:relative;width:var(--jelly-checkbox-size);height:var(--jelly-checkbox-size);flex:0 0 auto}.box:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:var(--jelly-checkbox-radius);pointer-events:none}.mark{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--jelly-checkbox-mark);stroke-width:var(--jelly-checkbox-stroke-width);stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;transform:scale(.7);transform-origin:center;opacity:0;transition:stroke-dashoffset .26s cubic-bezier(.65,0,.35,1) .03s,transform .34s cubic-bezier(.3,1.7,.5,1),opacity .12s ease}:host([checked]:not([indeterminate])) .check,:host([indeterminate]) .dash{stroke-dashoffset:0;transform:scale(1);opacity:1}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .mark{transition:opacity .12s ease;stroke-dashoffset:0}}:host-context([data-jelly-motion="reduce"]) .mark{transition:opacity .12s ease;stroke-dashoffset:0}.label{color:var(--jelly-label)}.label:empty{display:none}@media(forced-colors:active){.box{border:1px solid ButtonBorder;border-radius:var(--jelly-checkbox-radius)}.mark{stroke:CanvasText}input:focus-visible+.box:after{border-color:Highlight}}';
-class Ne extends z {
+class Ne extends C {
   constructor() {
     super(), this.scale = 1, this.scaleVelocity = 0, this.internals = this.attachInternals();
   }
@@ -2317,20 +2434,9 @@ class Ne extends z {
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
-    if (this.input = this.shadowRoot.querySelector("input"), this.sync("checked"), this.sync("indeterminate"), this.sync("disabled"), this.sync("label"), this.useHostFocusTarget(this.input), this.trackFocus(this.input), this.input.addEventListener("change", () => {
+    this.input = this.shadowRoot.querySelector("input"), this.sync("checked"), this.sync("indeterminate"), this.sync("disabled"), this.sync("label"), this.useHostFocusTarget(this.input), this.trackFocus(this.input), this.input.addEventListener("change", () => {
       this.indeterminate = !1, this.toggleAttribute("checked", this.input.checked), this.syncFormValue(), this.pop(this.input.checked ? 4 : -3), F(), g(this, "change");
-    }), !this.reducedMotion) {
-      const t = [
-        ...document.querySelectorAll("jelly-checkbox")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (e) => {
-        this.hasAttribute("disabled") || (this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t));
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    }), this.wireHover();
   }
   // Kick the scale spring: +v expands (check), -v collapses (uncheck)
   pop(t) {
@@ -2414,7 +2520,7 @@ class Ne extends z {
 }
 customElements.define("jelly-checkbox", Ne);
 const Ye = ':host{display:inline-flex;--jelly-radio-size: 32px;--jelly-radio-dot-size: 12px;--jelly-radio-gap: 11px;--jelly-radio-font-size: 15.5px;--jelly-radio-dot-color: var(--jelly-color-background-white);--jelly-fill: var(--jelly-color-background-neutral);--jelly-on: var(--jelly-color-background-accent);--jelly-ring: var(--jelly-on, var(--jelly-color-border-focus));--jelly-label: var(--jelly-color-foreground-muted);font:600 var(--jelly-radio-font-size)/1.2 var(--jelly-font-display)}:host([size="small"]),:host([size="sm"]){--jelly-radio-size: 28px;--jelly-radio-dot-size: 10px;--jelly-radio-gap: 9px;--jelly-radio-font-size: 14px}:host([size="medium"]),:host([size="md"]){--jelly-radio-size: 32px;--jelly-radio-dot-size: 12px;--jelly-radio-gap: 11px;--jelly-radio-font-size: 15.5px}:host([size="large"]),:host([size="lg"]){--jelly-radio-size: 38px;--jelly-radio-dot-size: 14px;--jelly-radio-gap: 13px;--jelly-radio-font-size: 16.5px}:host([disabled]){opacity:.5;pointer-events:none}.wrap{display:inline-flex;align-items:center;gap:var(--jelly-radio-gap);cursor:pointer;position:relative;touch-action:manipulation}.control{position:relative;width:var(--jelly-radio-size);height:var(--jelly-radio-size);flex:0 0 auto;outline:none}.control:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:50%;pointer-events:none}.dot{position:absolute;left:50%;top:50%;width:var(--jelly-radio-dot-size);height:var(--jelly-radio-dot-size);border-radius:50%;background:var(--jelly-radio-dot-color);transform:translate(-50%,-50%) scale(.15);opacity:0;transition:transform .36s cubic-bezier(.3,1.8,.45,1),opacity .13s}:host([checked]) .dot{transform:translate(-50%,-50%) scale(1);opacity:1}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .dot{transition:opacity .13s}}:host-context([data-jelly-motion="reduce"]) .dot{transition:opacity .13s}.label{color:var(--jelly-label)}.label:empty{display:none}@media(forced-colors:active){.control{border:1px solid ButtonBorder;border-radius:50%}.dot{background:CanvasText}.control:focus-visible:after{border-color:Highlight}}';
-class Ke extends z {
+class Ke extends C {
   constructor() {
     super(), this.scale = 1, this.scaleVelocity = 0, this.internals = this.attachInternals();
   }
@@ -2459,21 +2565,10 @@ class Ke extends z {
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
-    if (this.control = this.shadowRoot.querySelector(".control"), this.wrap = this.shadowRoot.querySelector(".wrap"), this.reflect(), this.sync("label"), this.trackFocus(this.control), this.wrap.addEventListener("click", () => this.select(!0)), this.control.addEventListener(
+    this.control = this.shadowRoot.querySelector(".control"), this.wrap = this.shadowRoot.querySelector(".wrap"), this.reflect(), this.sync("label"), this.trackFocus(this.control), this.wrap.addEventListener("click", () => this.select(!0)), this.control.addEventListener(
       "keydown",
       (t) => this.onKeydown(t)
-    ), queueMicrotask(() => this.ensureTabbable()), !this.reducedMotion) {
-      const t = [
-        ...document.querySelectorAll("jelly-radio")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (e) => {
-        this.hasAttribute("disabled") || (this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t));
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    ), queueMicrotask(() => this.ensureTabbable()), this.wireHover();
   }
   // Kick the scale spring: +v expands (select), -v collapses (deselect)
   pop(t) {
@@ -2592,8 +2687,8 @@ class Ke extends z {
   }
 }
 customElements.define("jelly-radio", Ke);
-const Ze = ':host{display:block;--jelly-radio-group-font-size: 13.5px;--jelly-radio-group-column-gap: 20px;--jelly-radio-group-row-gap: 14px;--jelly-radio-group-legend-gap: 10px;--jelly-radio-group-legend-color: var(--jelly-color-foreground-muted)}:host([size="small"]),:host([size="sm"]){--jelly-radio-group-font-size: 12px;--jelly-radio-group-column-gap: 16px;--jelly-radio-group-row-gap: 10px;--jelly-radio-group-legend-gap: 8px}:host([size="medium"]),:host([size="md"]){--jelly-radio-group-font-size: 13.5px;--jelly-radio-group-column-gap: 20px;--jelly-radio-group-row-gap: 14px;--jelly-radio-group-legend-gap: 10px}:host([size="large"]),:host([size="lg"]){--jelly-radio-group-font-size: 15px;--jelly-radio-group-column-gap: 24px;--jelly-radio-group-row-gap: 16px;--jelly-radio-group-legend-gap: 12px}.legend{font:650 var(--jelly-radio-group-font-size)/1.3 var(--jelly-font-display);color:var(--jelly-radio-group-legend-color);margin-block-end:var(--jelly-radio-group-legend-gap)}.legend:empty{display:none}.items{display:flex;gap:var(--jelly-radio-group-row-gap) var(--jelly-radio-group-column-gap);flex-wrap:wrap}:host([direction="vertical"]) .items{flex-direction:column}';
-class _e extends HTMLElement {
+const _e = ':host{display:block;--jelly-radio-group-font-size: 13.5px;--jelly-radio-group-column-gap: 20px;--jelly-radio-group-row-gap: 14px;--jelly-radio-group-legend-gap: 10px;--jelly-radio-group-legend-color: var(--jelly-color-foreground-muted)}:host([size="small"]),:host([size="sm"]){--jelly-radio-group-font-size: 12px;--jelly-radio-group-column-gap: 16px;--jelly-radio-group-row-gap: 10px;--jelly-radio-group-legend-gap: 8px}:host([size="medium"]),:host([size="md"]){--jelly-radio-group-font-size: 13.5px;--jelly-radio-group-column-gap: 20px;--jelly-radio-group-row-gap: 14px;--jelly-radio-group-legend-gap: 10px}:host([size="large"]),:host([size="lg"]){--jelly-radio-group-font-size: 15px;--jelly-radio-group-column-gap: 24px;--jelly-radio-group-row-gap: 16px;--jelly-radio-group-legend-gap: 12px}.legend{font:650 var(--jelly-radio-group-font-size)/1.3 var(--jelly-font-display);color:var(--jelly-radio-group-legend-color);margin-block-end:var(--jelly-radio-group-legend-gap)}.legend:empty{display:none}.items{display:flex;gap:var(--jelly-radio-group-row-gap) var(--jelly-radio-group-column-gap);flex-wrap:wrap}:host([direction="vertical"]) .items{flex-direction:column}';
+class Ze extends HTMLElement {
   constructor() {
     super(...arguments), this.built = !1, this.legendId = "";
   }
@@ -2603,12 +2698,12 @@ class _e extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), this.built || this.build(), this.syncLabel(), O(this, "jelly-radio");
+    S(), j(this), this.built || this.build(), this.syncLabel(), O(this, "jelly-radio");
   }
   // Render the shadow DOM once
   build() {
     this.built = !0, this.legendId = W("jelly-radio-group-legend"), this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
-      <style>${Ze}</style>
+      <style>${_e}</style>
       <div class="legend" part="legend" id="${this.legendId}"></div>
       <div class="items" part="items" role="radiogroup"><slot></slot></div>`, this.legend = this.shadowRoot.querySelector(".legend"), this.items = this.shadowRoot.querySelector(".items"), this.slotEl = this.shadowRoot.querySelector("slot"), this.slotEl.addEventListener(
       "slotchange",
@@ -2625,13 +2720,13 @@ class _e extends HTMLElement {
     this.legend.textContent = t, t ? this.items.setAttribute("aria-labelledby", this.legendId) : this.items.removeAttribute("aria-labelledby");
   }
 }
-customElements.define("jelly-radio-group", _e);
-const Je = ':host{display:inline-flex;--jelly-switch-width: 62px;--jelly-switch-height: 34px;--jelly-switch-gap: 12px;--jelly-switch-font-size: 15.5px;--jelly-off: var(--jelly-color-background-neutral);--jelly-on: var(--jelly-color-background-accent);--jelly-switch-thumb-off: var(--jelly-color-background-white);--jelly-switch-thumb-on: var(--jelly-color-background-white);--jelly-ring: var(--jelly-on, var(--jelly-color-border-focus));--jelly-label: var(--jelly-color-foreground-muted);font:600 var(--jelly-switch-font-size)/1.2 var(--jelly-font-display)}:host([size="small"]),:host([size="sm"]){--jelly-switch-width: 50px;--jelly-switch-height: 28px;--jelly-switch-gap: 10px;--jelly-switch-font-size: 14px}:host([size="medium"]),:host([size="md"]){--jelly-switch-width: 62px;--jelly-switch-height: 34px;--jelly-switch-gap: 12px;--jelly-switch-font-size: 15.5px}:host([size="large"]),:host([size="lg"]){--jelly-switch-width: 74px;--jelly-switch-height: 40px;--jelly-switch-gap: 14px;--jelly-switch-font-size: 16.5px}:host([disabled]){opacity:.5;pointer-events:none}.wrap{display:inline-flex;align-items:center;gap:var(--jelly-switch-gap);cursor:pointer;position:relative;touch-action:manipulation}input{position:absolute;inset-inline-start:0;top:50%;width:var(--jelly-switch-width);height:var(--jelly-switch-height);transform:translateY(-50%);margin:0;opacity:0;pointer-events:none}.track{position:relative;width:var(--jelly-switch-width);height:var(--jelly-switch-height);flex:0 0 auto;touch-action:none;transition:width .42s cubic-bezier(.4,0,.2,1),height .42s cubic-bezier(.4,0,.2,1)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .track{transition:none}}:host-context([data-jelly-motion="reduce"]) .track{transition:none}.track:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:999px;pointer-events:none}.label{color:var(--jelly-label)}.label:empty{display:none}@media(forced-colors:active){.track{border:1px solid ButtonBorder;border-radius:999px}input:focus-visible+.track:after{border-color:Highlight}}', Ge = {
+customElements.define("jelly-radio-group", Ze);
+const Ge = ':host{display:inline-flex;--jelly-switch-width: 62px;--jelly-switch-height: 34px;--jelly-switch-gap: 12px;--jelly-switch-font-size: 15.5px;--jelly-off: var(--jelly-color-background-neutral);--jelly-on: var(--jelly-color-background-accent);--jelly-switch-thumb-off: var(--jelly-color-background-white);--jelly-switch-thumb-on: var(--jelly-color-background-white);--jelly-ring: var(--jelly-on, var(--jelly-color-border-focus));--jelly-label: var(--jelly-color-foreground-muted);font:600 var(--jelly-switch-font-size)/1.2 var(--jelly-font-display)}:host([size="small"]),:host([size="sm"]){--jelly-switch-width: 50px;--jelly-switch-height: 28px;--jelly-switch-gap: 10px;--jelly-switch-font-size: 14px}:host([size="medium"]),:host([size="md"]){--jelly-switch-width: 62px;--jelly-switch-height: 34px;--jelly-switch-gap: 12px;--jelly-switch-font-size: 15.5px}:host([size="large"]),:host([size="lg"]){--jelly-switch-width: 74px;--jelly-switch-height: 40px;--jelly-switch-gap: 14px;--jelly-switch-font-size: 16.5px}:host([disabled]){opacity:.5;pointer-events:none}.wrap{display:inline-flex;align-items:center;gap:var(--jelly-switch-gap);cursor:pointer;position:relative;touch-action:manipulation}input{position:absolute;inset-inline-start:0;top:50%;width:var(--jelly-switch-width);height:var(--jelly-switch-height);transform:translateY(-50%);margin:0;opacity:0;pointer-events:none}.track{position:relative;width:var(--jelly-switch-width);height:var(--jelly-switch-height);flex:0 0 auto;touch-action:none;transition:width .42s cubic-bezier(.4,0,.2,1),height .42s cubic-bezier(.4,0,.2,1)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .track{transition:none}}:host-context([data-jelly-motion="reduce"]) .track{transition:none}.track:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:999px;pointer-events:none}.label{color:var(--jelly-label)}.label:empty{display:none}@media(forced-colors:active){.track{border:1px solid ButtonBorder;border-radius:999px}input:focus-visible+.track:after{border-color:Highlight}}', Je = {
   small: { width: 50, height: 28, inset: 4, gap: 10, font: "14px" },
   medium: { width: 62, height: 34, inset: 5, gap: 12, font: "15.5px" },
   large: { width: 74, height: 40, inset: 6, gap: 14, font: "16.5px" }
 };
-class Ue extends z {
+class Ue extends C {
   constructor() {
     super(), this.thumbBody = null, this.thumbX = 0, this.thumbXVelocity = 0, this.thumbTarget = 0, this.dragging = !1, this.pointerId = null, this.downX = 0, this.internals = this.attachInternals();
   }
@@ -2644,7 +2739,7 @@ class Ue extends z {
   }
   // Component styles layered over the shared jelly base styles
   styles() {
-    return Je + P({
+    return Ge + P({
       color: "--jelly-on",
       on: "--jelly-switch-thumb-on"
     });
@@ -2668,7 +2763,7 @@ class Ue extends z {
   }
   // The geometry row for the current size
   get sizeConfig() {
-    return Ge[this.sizeKey];
+    return Je[this.sizeKey];
   }
   // The live track dimensions (physics body if built, size table otherwise)
   get trackSize() {
@@ -2737,7 +2832,7 @@ class Ue extends z {
     ), this.track.addEventListener(
       "lostpointercapture",
       (t) => this.onUp(t)
-    );
+    ), this.wireHover();
   }
   // Called whenever the shape (re)builds: size the thumb and seat it in place
   onShape() {
@@ -2882,7 +2977,7 @@ const Qe = ':host{--jelly-slider-track-height: 12px;--jelly-track: var(--jelly-c
   insideLocalBulgeImpulse: 330,
   rippleWidth: 10
 };
-class ii extends z {
+class ii extends C {
   constructor() {
     super(), this.thumbBody = null, this.thumbX = 0, this.thumbXVelocity = 0, this.thumbTarget = 0, this.dragging = !1, this.pointerId = null, this.pressScale = 1, this.pressScaleVelocity = 0, this.trackW = 0, this.trackH = 0, this.internals = this.attachInternals();
   }
@@ -2994,12 +3089,12 @@ class ii extends z {
   }
   // Step the value by direction × step (× the Shift multiplier), clamped
   setFromStep(t, e = 1) {
-    const i = +this.input.min || 0, s = +this.input.max || 100, r = s - i || 1, n = parseFloat(this.input.step), l = Number.isFinite(n) && n > 0 ? n : r / 100, c = Number.isFinite(this.input.valueAsNumber) ? this.input.valueAsNumber : i, h = v(c + t * l * e, i, s);
+    const i = +this.input.min || 0, s = +this.input.max || 100, r = s - i || 1, n = parseFloat(this.input.step), a = Number.isFinite(n) && n > 0 ? n : r / 100, c = Number.isFinite(this.input.valueAsNumber) ? this.input.valueAsNumber : i, h = v(c + t * a * e, i, s);
     this.input.value = String(Number(h.toFixed(10))), this.updateFromInput(), g(this, "input");
   }
   // Keyboard stepping: arrows follow reading direction, Shift ×10, Home / End jump
   onKey(t) {
-    let e = G(t.key, A(this));
+    let e = J(t.key, A(this));
     if (e === 0 && t.key === "ArrowUp" && (e = 1), e === 0 && t.key === "ArrowDown" && (e = -1), e !== 0) {
       t.preventDefault(), this.setFromStep(e, t.shiftKey ? 10 : 1), g(this, "change");
       return;
@@ -3051,27 +3146,27 @@ class ii extends z {
     e.leanAmount = this.reducedMotion ? 0 : Math.min(e.height * 0.12, i * 45e-4);
     const n = ((this.dragging && !this.reducedMotion ? 1.12 : 1) - this.pressScale) * 420 - this.pressScaleVelocity * 28;
     this.pressScaleVelocity += n * t, this.pressScale += this.pressScaleVelocity * t;
-    const l = (1 + s * 0.32) * this.pressScale, c = 1 / Math.sqrt(1 + s * 0.32) * this.pressScale;
+    const a = (1 + s * 0.32) * this.pressScale, c = 1 / Math.sqrt(1 + s * 0.32) * this.pressScale;
     e.update(t);
-    const h = this.ctx, a = this.cssW / 2, d = this.cssH / 2, p = this.trackW, u = this.trackH || this.sizeConfig.track, f = this.resolveColor(
+    const h = this.ctx, l = this.cssW / 2, d = this.cssH / 2, p = this.trackW, u = this.trackH || this.sizeConfig.track, f = this.resolveColor(
       `var(--jelly-track, ${b["background-neutral"]})`
     ), w = this.resolveColor(
       `var(--jelly-accent, ${b["background-accent"]})`
     );
-    return this.clearCanvas(), h.save(), h.beginPath(), h.roundRect(a - p / 2, d - u / 2, p, u, u / 2), h.fillStyle = f, h.fill(), h.clip(), h.fillStyle = w, A(this) ? h.fillRect(
-      a + this.thumbX,
+    return this.clearCanvas(), h.save(), h.beginPath(), h.roundRect(l - p / 2, d - u / 2, p, u, u / 2), h.fillStyle = f, h.fill(), h.clip(), h.fillStyle = w, A(this) ? h.fillRect(
+      l + this.thumbX,
       d - u / 2,
       p / 2 - this.thumbX,
       u
     ) : h.fillRect(
-      a - p / 2,
+      l - p / 2,
       d - u / 2,
       this.thumbX + p / 2,
       u
     ), h.restore(), this.paintBody(e, {
       fill: w,
       cx: this.thumbX,
-      scaleX: l,
+      scaleX: a,
       scaleY: c,
       ring: this.focusRing()
     }), !(e.isResting() && Math.abs(this.thumbTarget - this.thumbX) < 0.2 && Math.abs(this.thumbXVelocity) < 0.5 && Math.abs(this.pressScale - 1) < 1e-3 && Math.abs(this.pressScaleVelocity) < 1e-3) || this.dragging;
@@ -3134,7 +3229,7 @@ const si = ':host{--jelly-range-track-height: 12px;--jelly-range-thumb-size: 28p
   insideLocalBulgeImpulse: 330,
   rippleWidth: 10
 };
-class ni extends z {
+class ni extends C {
   constructor() {
     super(), this.thumbs = null, this.val = [], this.x = [0, 0], this.xVelocity = [0, 0], this.target = [0, 0], this.pressScale = [1, 1], this.pressScaleVelocity = [0, 0], this.active = 1, this.drag = null, this.pointerId = null, this.windowBound = !1, this.trackW = 0, this.trackH = 0, this.internals = this.attachInternals();
   }
@@ -3357,7 +3452,7 @@ class ni extends z {
     if (e == null)
       return;
     const i = this.step * (t.shiftKey ? 10 : 1);
-    let s = G(t.key, A(this)) * i;
+    let s = J(t.key, A(this)) * i;
     s === 0 && t.key === "ArrowUp" && (s = i), s === 0 && t.key === "ArrowDown" && (s = -i), t.key === "PageUp" && (s = this.step * 10), t.key === "PageDown" && (s = -this.step * 10);
     let r;
     if (s !== 0)
@@ -3384,12 +3479,12 @@ class ni extends z {
     const e = this.thumbs;
     if (!e)
       return !1;
-    const i = this.ctx, s = this.cssW / 2, r = this.cssH / 2, n = this.trackW, l = this.trackH || this.sizeConfig.track, c = this.resolveColor(
+    const i = this.ctx, s = this.cssW / 2, r = this.cssH / 2, n = this.trackW, a = this.trackH || this.sizeConfig.track, c = this.resolveColor(
       `var(--jelly-track, ${b["background-neutral"]})`
     ), h = this.resolveColor(
       `var(--jelly-accent, ${b["background-accent"]})`
     );
-    let a = !0;
+    let l = !0;
     for (let u = 0; u < 2; u++) {
       this.reducedMotion ? (this.x[u] = this.target[u], this.xVelocity[u] = 0) : [this.x[u], this.xVelocity[u]] = T(
         this.x[u],
@@ -3400,30 +3495,30 @@ class ni extends z {
         t
       );
       const f = Math.abs(this.xVelocity[u]);
-      f > 6 && (e[u].lean = Math.sign(this.xVelocity[u])), e[u].leanAmount = this.reducedMotion ? 0 : Math.min(e[u].height * 0.12, f * 45e-4), e[u].update(t), (Math.abs(this.target[u] - this.x[u]) > 0.2 || Math.abs(this.xVelocity[u]) > 0.5 || !e[u].isResting()) && (a = !1);
+      f > 6 && (e[u].lean = Math.sign(this.xVelocity[u])), e[u].leanAmount = this.reducedMotion ? 0 : Math.min(e[u].height * 0.12, f * 45e-4), e[u].update(t), (Math.abs(this.target[u] - this.x[u]) > 0.2 || Math.abs(this.xVelocity[u]) > 0.5 || !e[u].isResting()) && (l = !1);
     }
-    this.clearCanvas(), i.save(), i.beginPath(), i.roundRect(s - n / 2, r - l / 2, n, l, l / 2), i.fillStyle = c, i.fill(), i.clip();
+    this.clearCanvas(), i.save(), i.beginPath(), i.roundRect(s - n / 2, r - a / 2, n, a, a / 2), i.fillStyle = c, i.fill(), i.clip();
     const d = s + this.x[0], p = s + this.x[1];
     i.fillStyle = h, i.fillRect(
       Math.min(d, p),
-      r - l / 2,
+      r - a / 2,
       Math.abs(p - d),
-      l
+      a
     ), i.restore();
     for (let u = 0; u < 2; u++) {
       const f = Math.abs(this.xVelocity[u]), w = this.reducedMotion ? 0 : Math.min(1, f / 550), x = ((this.drag === u && !this.reducedMotion ? 1.12 : 1) - this.pressScale[u]) * 420 - this.pressScaleVelocity[u] * 28;
       this.pressScaleVelocity[u] += x * t, this.pressScale[u] += this.pressScaleVelocity[u] * t;
-      const y = 1 + w * 0.32, k = y * this.pressScale[u], S = 1 / Math.sqrt(y) * this.pressScale[u];
+      const y = 1 + w * 0.32, k = y * this.pressScale[u], L = 1 / Math.sqrt(y) * this.pressScale[u];
       this.paintBody(e[u], {
         fill: h,
         cx: this.x[u],
         scaleX: k,
-        scaleY: S,
+        scaleY: L,
         easeKey: `thumb${u}`,
         ring: this.active === u ? this.focusRing() : null
-      }), (Math.abs(this.pressScale[u] - 1) > 1e-3 || Math.abs(this.pressScaleVelocity[u]) > 1e-3) && (a = !1);
+      }), (Math.abs(this.pressScale[u] - 1) > 1e-3 || Math.abs(this.pressScaleVelocity[u]) > 1e-3) && (l = !1);
     }
-    return !a || this.drag != null;
+    return !l || this.drag != null;
   }
   // Lifecycle method: Fires when observed HTML attributes change dynamically
   attributeChangedCallback(t) {
@@ -3462,7 +3557,7 @@ class ni extends z {
   }
 }
 customElements.define("jelly-range", ni);
-class li extends HTMLElement {
+class ai extends HTMLElement {
   // Tells the browser to trigger attributeChangedCallback when these attributes change
   static get observedAttributes() {
     return ["value", "selected", "disabled"];
@@ -3488,9 +3583,9 @@ class li extends HTMLElement {
     this.style.display = "none", this.closest("jelly-select")?.syncOptions?.();
   }
 }
-customElements.define("jelly-option", li);
-const ai = ':host{--jelly-select-padding-inline: 18px;--jelly-select-font-size: 15.5px;--jelly-select-radius: 16px;--jelly-select-gap: 10px;--jelly-select-chevron-size: 16px;--jelly-select-row-height: 44px;--jelly-select-row-padding-inline: 14px;--jelly-select-row-radius: 11px;--jelly-fill: var(--jelly-color-background-muted);--jelly-label: var(--jelly-color-foreground-default);--jelly-accent: var(--jelly-color-background-accent);--jelly-ring: var(--jelly-accent, var(--jelly-color-border-focus));display:inline-block;width:240px;height:54px;font:600 var(--jelly-select-font-size)/1.2 var(--jelly-font-text)}:host([size="small"]){--jelly-select-padding-inline: 15px;--jelly-select-font-size: 14px;--jelly-select-radius: 14px;--jelly-select-gap: 8px;--jelly-select-chevron-size: 14px;--jelly-select-row-height: 38px;--jelly-select-row-padding-inline: 12px;--jelly-select-row-radius: 9px;width:210px;height:46px}:host([size="medium"]){--jelly-select-padding-inline: 18px;--jelly-select-font-size: 15.5px;--jelly-select-radius: 16px;--jelly-select-gap: 10px;--jelly-select-chevron-size: 16px;--jelly-select-row-height: 44px;--jelly-select-row-padding-inline: 14px;--jelly-select-row-radius: 11px;width:240px;height:54px}:host([size="large"]){--jelly-select-padding-inline: 22px;--jelly-select-font-size: 16.5px;--jelly-select-radius: 18px;--jelly-select-gap: 11px;--jelly-select-chevron-size: 18px;--jelly-select-row-height: 50px;--jelly-select-row-padding-inline: 16px;--jelly-select-row-radius: 13px;width:280px;height:62px}:host([open]){z-index:var(--jelly-dropdown-z-index, 9999)}:host([disabled]){--jelly-fill: var(--jelly-color-background-neutral);opacity:.55;pointer-events:none}.trigger{appearance:none;border:0;margin:0;background:transparent;color:var(--jelly-label);font:inherit;width:100%;height:100%;padding-block:0;padding-inline:var(--jelly-select-padding-inline);display:flex;align-items:center;gap:var(--jelly-select-gap);cursor:pointer;position:relative;border-radius:var(--jelly-select-radius);text-align:start;touch-action:manipulation}.trigger:after{content:"";position:absolute;inset:4px;border:var(--jelly-ring-width) solid transparent;border-radius:var(--jelly-select-radius);pointer-events:none}.trigger:focus-visible{outline:none}.value{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.value.placeholder{color:var(--jelly-color-foreground-muted)}.chevron{width:var(--jelly-select-chevron-size);height:var(--jelly-select-chevron-size);flex:0 0 auto;transition:transform .22s ease}:host([open]) .chevron{transform:rotate(180deg)}.panel{position:absolute;inset-inline-start:0;top:calc(100% + 10px);z-index:9999;opacity:0;visibility:hidden;pointer-events:none;will-change:opacity}.panel[data-side=top]{top:auto;bottom:calc(100% + 10px)}:host([open]) .panel{pointer-events:auto}.panel-canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}.panel-mask{position:relative;z-index:1;width:100%;height:100%;border-radius:20px;overflow:hidden;clip-path:inset(0 0 100% 0 round 20px);transition:none;will-change:clip-path}.list{margin:0;padding:8px;box-sizing:border-box;list-style:none;width:100%;height:100%;overflow-y:auto}.row{height:var(--jelly-select-row-height);display:flex;align-items:center;gap:10px;padding-block:0;padding-inline:var(--jelly-select-row-padding-inline);border-radius:var(--jelly-select-row-radius);cursor:pointer;color:var(--jelly-label);white-space:nowrap;touch-action:manipulation;will-change:transform,opacity}.row[aria-selected=true]{font-weight:800}.row.active{background:color-mix(in srgb,var(--jelly-accent, var(--jelly-color-background-accent)) 15%,transparent)}.row .tick{margin-inline-start:auto;width:15px;height:15px;color:var(--jelly-accent);opacity:0}.row[aria-selected=true] .tick{opacity:1}.row[aria-disabled=true]{opacity:.4;cursor:not-allowed}@media(forced-colors:active){.trigger:after{border-color:ButtonText}.trigger:focus-visible:after{border-color:Highlight}.panel-mask{border:1px solid CanvasText;background:Canvas}.row.active{background:Highlight;color:HighlightText}}', hi = 8, Et = 10, et = 20, ci = 8;
-class di extends z {
+customElements.define("jelly-option", ai);
+const li = ':host{--jelly-select-padding-inline: 18px;--jelly-select-font-size: 15.5px;--jelly-select-radius: 16px;--jelly-select-gap: 10px;--jelly-select-chevron-size: 16px;--jelly-select-row-height: 44px;--jelly-select-row-padding-inline: 14px;--jelly-select-row-radius: 11px;--jelly-fill: var(--jelly-color-background-muted);--jelly-label: var(--jelly-color-foreground-default);--jelly-accent: var(--jelly-color-background-accent);--jelly-ring: var(--jelly-accent, var(--jelly-color-border-focus));display:inline-block;width:240px;height:54px;font:600 var(--jelly-select-font-size)/1.2 var(--jelly-font-text)}:host([size="small"]){--jelly-select-padding-inline: 15px;--jelly-select-font-size: 14px;--jelly-select-radius: 14px;--jelly-select-gap: 8px;--jelly-select-chevron-size: 14px;--jelly-select-row-height: 38px;--jelly-select-row-padding-inline: 12px;--jelly-select-row-radius: 9px;width:210px;height:46px}:host([size="medium"]){--jelly-select-padding-inline: 18px;--jelly-select-font-size: 15.5px;--jelly-select-radius: 16px;--jelly-select-gap: 10px;--jelly-select-chevron-size: 16px;--jelly-select-row-height: 44px;--jelly-select-row-padding-inline: 14px;--jelly-select-row-radius: 11px;width:240px;height:54px}:host([size="large"]){--jelly-select-padding-inline: 22px;--jelly-select-font-size: 16.5px;--jelly-select-radius: 18px;--jelly-select-gap: 11px;--jelly-select-chevron-size: 18px;--jelly-select-row-height: 50px;--jelly-select-row-padding-inline: 16px;--jelly-select-row-radius: 13px;width:280px;height:62px}:host([open]){z-index:var(--jelly-dropdown-z-index, 9999)}:host([disabled]){--jelly-fill: var(--jelly-color-background-neutral);opacity:.55;pointer-events:none}.trigger{appearance:none;border:0;margin:0;background:transparent;color:var(--jelly-label);font:inherit;width:100%;height:100%;padding-block:0;padding-inline:var(--jelly-select-padding-inline);display:flex;align-items:center;gap:var(--jelly-select-gap);cursor:pointer;position:relative;border-radius:var(--jelly-select-radius);text-align:start;touch-action:manipulation}.trigger:after{content:"";position:absolute;inset:4px;border:var(--jelly-ring-width) solid transparent;border-radius:var(--jelly-select-radius);pointer-events:none}.trigger:focus-visible{outline:none}.value{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.value.placeholder{color:var(--jelly-color-foreground-muted)}.chevron{width:var(--jelly-select-chevron-size);height:var(--jelly-select-chevron-size);flex:0 0 auto;transition:transform .22s ease}:host([open]) .chevron{transform:rotate(180deg)}.panel{position:absolute;inset-inline-start:0;top:calc(100% + 10px);z-index:9999;opacity:0;visibility:hidden;pointer-events:none;will-change:opacity}.panel[data-side=top]{top:auto;bottom:calc(100% + 10px)}:host([open]) .panel{pointer-events:auto}.panel-canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}.panel-mask{position:relative;z-index:1;width:100%;height:100%;border-radius:20px;overflow:hidden;clip-path:inset(0 0 100% 0 round 20px);transition:none;will-change:clip-path}.list{margin:0;padding:8px;box-sizing:border-box;list-style:none;width:100%;height:100%;overflow-y:auto}.row{height:var(--jelly-select-row-height);display:flex;align-items:center;gap:10px;padding-block:0;padding-inline:var(--jelly-select-row-padding-inline);border-radius:var(--jelly-select-row-radius);cursor:pointer;color:var(--jelly-label);white-space:nowrap;touch-action:manipulation;will-change:transform,opacity}.row[aria-selected=true]{font-weight:800}.row.active{background:color-mix(in srgb,var(--jelly-accent, var(--jelly-color-background-accent)) 15%,transparent)}.row .tick{margin-inline-start:auto;width:15px;height:15px;color:var(--jelly-accent);opacity:0}.row[aria-selected=true] .tick{opacity:1}.row[aria-disabled=true]{opacity:.4;cursor:not-allowed}@media(forced-colors:active){.trigger:after{border-color:ButtonText}.trigger:focus-visible:after{border-color:Highlight}.panel-mask{border:1px solid CanvasText;background:Canvas}.row.active{background:Highlight;color:HighlightText}}', hi = 8, Et = 10, et = 20, ci = 8;
+class di extends C {
   constructor() {
     super(), this.isOpen = !1, this.focused = !1, this.activeIndex = -1, this.selectedIndex = -1, this.options = [], this.panelSide = "bottom", this.openT = 0, this.openTargetVelocity = 0, this.openTarget = 0, this.panelBody = null, this.panelCssW = 0, this.panelCssH = 0, this.mutationObserver = null, this.reflectingValue = !1, this.typeaheadBuffer = "", this.internals = this.attachInternals(), this.instanceId = W("jelly-select");
   }
@@ -3503,7 +3598,7 @@ class di extends z {
   }
   // Component styles layered over the shared jelly base styles
   styles() {
-    return ai + P({ color: "--jelly-accent" });
+    return li + P({ color: "--jelly-accent" });
   }
   // The interactive markup that sits above the canvas
   content() {
@@ -3625,8 +3720,8 @@ class di extends z {
   sizePanel() {
     const e = this.getBoundingClientRect().width || 240, i = Math.min(this.options.length, 6), s = this.rowHeight, r = i * s + hi * 2;
     this.panel.style.width = `${e}px`, this.panel.style.height = `${r}px`;
-    const n = 16, l = e + n * 2, c = r + n * 2, h = Math.min(window.devicePixelRatio || 1, 3);
-    this.panelCssW = l, this.panelCssH = c, this.panelCanvas.style.width = `${l}px`, this.panelCanvas.style.height = `${c}px`, this.panelCanvas.style.left = `${e / 2}px`, this.panelCanvas.style.top = `${r / 2}px`, this.panelCanvas.width = Math.round(l * h), this.panelCanvas.height = Math.round(c * h), this.panelCtx.setTransform(h, 0, 0, h, 0, 0), this.panelBody ? this.panelBody.resize(e, r, et) : this.panelBody = new $({
+    const n = 16, a = e + n * 2, c = r + n * 2, h = Math.min(window.devicePixelRatio || 1, 3);
+    this.panelCssW = a, this.panelCssH = c, this.panelCanvas.style.width = `${a}px`, this.panelCanvas.style.height = `${c}px`, this.panelCanvas.style.left = `${e / 2}px`, this.panelCanvas.style.top = `${r / 2}px`, this.panelCanvas.width = Math.round(a * h), this.panelCanvas.height = Math.round(c * h), this.panelCtx.setTransform(h, 0, 0, h, 0, 0), this.panelBody ? this.panelBody.resize(e, r, et) : this.panelBody = new $({
       width: e,
       height: r,
       radius: et
@@ -3766,8 +3861,8 @@ class di extends z {
       return;
     const s = ((this.typeaheadBuffer.length === 1 ? this.activeIndex + 1 : this.activeIndex) % e + e) % e;
     for (let r = 0; r < e; r++) {
-      const n = (s + r) % e, l = this.options[n];
-      if (!l.disabled && l.label.toLowerCase().startsWith(this.typeaheadBuffer)) {
+      const n = (s + r) % e, a = this.options[n];
+      if (!a.disabled && a.label.toLowerCase().startsWith(this.typeaheadBuffer)) {
         this.activeIndex = n, this.renderActive();
         return;
       }
@@ -3839,20 +3934,20 @@ class di extends z {
       const h = (this.openTarget - this.openT) * 210 - this.openTargetVelocity * 16;
       this.openTargetVelocity += h * t, this.openT += this.openTargetVelocity * t;
     }
-    const s = this.openT, r = v(s, 0, 1), n = this.openTarget === 1 || s > 0.02, l = this.panelSide === "top";
+    const s = this.openT, r = v(s, 0, 1), n = this.openTarget === 1 || s > 0.02, a = this.panelSide === "top";
     if (this.panel) {
       this.panel.style.visibility = n ? "visible" : "hidden", this.panel.style.opacity = String(v(s * 2, 0, 1));
       const h = (1 - r) * 100;
-      this.panelMask.style.clipPath = l ? `inset(${h}% 0 0 0 round ${et}px)` : `inset(0 0 ${h}% 0 round ${et}px)`;
-      const a = this.list.children;
-      for (let d = 0; d < a.length; d++) {
-        const p = l ? a.length - 1 - d : d, u = v((s - 0.12) * 1.7 - p * 0.05, 0, 1);
-        a[d].style.opacity = String(u), a[d].style.transform = `translateY(${(l ? -7 : 7) * (1 - u)}px)`;
+      this.panelMask.style.clipPath = a ? `inset(${h}% 0 0 0 round ${et}px)` : `inset(0 0 ${h}% 0 round ${et}px)`;
+      const l = this.list.children;
+      for (let d = 0; d < l.length; d++) {
+        const p = a ? l.length - 1 - d : d, u = v((s - 0.12) * 1.7 - p * 0.05, 0, 1);
+        l[d].style.opacity = String(u), l[d].style.transform = `translateY(${(a ? -7 : 7) * (1 - u)}px)`;
       }
     }
     if (this.panelBody && n) {
       this.panelBody.update(t), this.panelCtx.clearRect(0, 0, this.panelCssW, this.panelCssH);
-      const h = this.panelBody.height, a = Math.max(0.02, s), d = (1 - a) * h / 2;
+      const h = this.panelBody.height, l = Math.max(0.02, s), d = (1 - l) * h / 2;
       this.paintBody(this.panelBody, {
         fill: this.resolveColor(
           `var(--jelly-color-background-surface, ${b["background-surface"]})`
@@ -3866,9 +3961,9 @@ class di extends z {
         ctx: this.panelCtx,
         cssW: this.panelCssW,
         cssH: this.panelCssH,
-        cy: l ? d : -d,
+        cy: a ? d : -d,
         scaleX: 1 + (1 - r) * 0.05,
-        scaleY: a,
+        scaleY: l,
         easeKey: "panel"
       });
     }
@@ -3951,7 +4046,7 @@ class ui extends HTMLElement {
 }
 customElements.define("jelly-segment", ui);
 const pi = ':host{display:inline-flex;height:44px;--jelly-segmented-padding: 4px;--jelly-segmented-min-width: 60px;--jelly-segmented-gap: 7px;--jelly-segmented-padding-inline: 18px;--jelly-segmented-font-size: 14.5px;--jelly-track: color-mix( in srgb, var(--jelly-color-background-neutral) 88%, var(--jelly-color-background-surface) );--jelly-pill: var(--jelly-color-background-accent);--jelly-label: var(--jelly-color-foreground-default);--jelly-label-on: var(--jelly-color-foreground-on-accent);font:600 var(--jelly-segmented-font-size)/1 var(--jelly-font-display)}:host([size="small"]),:host([size="sm"]){height:36px;--jelly-segmented-padding: 3px;--jelly-segmented-min-width: 50px;--jelly-segmented-gap: 5px;--jelly-segmented-padding-inline: 14px;--jelly-segmented-font-size: 13px}:host([size="medium"]),:host([size="md"]){height:44px;--jelly-segmented-padding: 4px;--jelly-segmented-min-width: 60px;--jelly-segmented-gap: 7px;--jelly-segmented-padding-inline: 18px;--jelly-segmented-font-size: 14.5px}:host([size="large"]),:host([size="lg"]){height:52px;--jelly-segmented-padding: 5px;--jelly-segmented-min-width: 74px;--jelly-segmented-gap: 8px;--jelly-segmented-padding-inline: 22px;--jelly-segmented-font-size: 16px}:host([disabled]){opacity:.55;pointer-events:none}.wrap{display:flex;width:100%;height:100%;box-sizing:border-box;padding:var(--jelly-segmented-padding);position:relative}.segment{flex:1 1 0;min-width:var(--jelly-segmented-min-width);display:inline-flex;align-items:center;justify-content:center;gap:var(--jelly-segmented-gap);padding-block:0;padding-inline:var(--jelly-segmented-padding-inline);margin:0;border:0;background:transparent;color:var(--jelly-label);font:inherit;white-space:nowrap;cursor:pointer;position:relative;border-radius:999px;transition:color .18s ease;outline:none;touch-action:manipulation}.segment[aria-checked=true],.segment[aria-selected=true]{color:var(--jelly-label-on)}.segment[aria-checked=true]{font-weight:750}.segment:disabled{cursor:default;opacity:.45}.segment-top{display:inline-grid;place-items:center}.segment-top>span{grid-area:1 / 1;white-space:nowrap}.segment-bottom{font-weight:750;visibility:hidden}:host([roles="tablist"]) .segment-bottom{display:none}.segment:after{content:"";position:absolute;inset:2px;border:var(--jelly-ring-width) solid transparent;border-radius:999px;pointer-events:none}@media(forced-colors:active){.wrap{border:1px solid ButtonBorder;border-radius:999px}.segment[aria-checked=true],.segment[aria-selected=true]{forced-color-adjust:none;background:SelectedItem;color:SelectedItemText}.segment:focus-visible:after{border-color:Highlight}}';
-class bi extends z {
+class bi extends C {
   constructor() {
     super(), this.pill = null, this.mutationObserver = null, this.segments = [], this.index = 0, this.pillX = 0, this.pillXVelocity = 0, this.pillTarget = 0, this.trackW = 0, this.trackH = 0, this.segW = 0, this.placed = !1, this.reflecting = !1, this.internals = this.attachInternals();
   }
@@ -3981,7 +4076,7 @@ class bi extends z {
       childList: !0,
       subtree: !0,
       characterData: !0
-    }), this.sync();
+    }), this.sync(), this.wireHover();
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
@@ -4033,12 +4128,12 @@ class bi extends z {
     const t = this.getAttribute("value"), e = this.segments.findIndex((n) => n.value === t);
     this.index = e >= 0 ? e : this.segments.findIndex((n) => n.hasAttribute("selected")), this.index < 0 && (this.index = 0);
     const i = this.isTablist, s = this.stateAttribute, r = this.hasAttribute("disabled");
-    this.wrap.setAttribute("role", i ? "tablist" : "radiogroup"), this.wrap.innerHTML = this.segments.map((n, l) => {
+    this.wrap.setAttribute("role", i ? "tablist" : "radiogroup"), this.wrap.innerHTML = this.segments.map((n, a) => {
       const c = H(n.label);
       return `
-        <button class="segment" type="button" role="${i ? "tab" : "radio"}" data-index="${l}"
-                ${s}="${l === this.index}"
-                tabindex="${l === this.index ? 0 : -1}"
+        <button class="segment" type="button" role="${i ? "tab" : "radio"}" data-index="${a}"
+                ${s}="${a === this.index}"
+                tabindex="${a === this.index ? 0 : -1}"
                 ${n.disabled || r ? "disabled" : ""}><span class="segment-top"><span>${c}</span><span class="segment-bottom" aria-hidden="true">${c}</span></span></button>`;
     }).join(""), this.syncLabel(), this.syncValue(), this.removeAttribute("tabindex"), this.onShape();
   }
@@ -4090,8 +4185,8 @@ class bi extends z {
     }
     this.index = t, this.pillTarget = this.segX(t);
     const s = Math.sign(this.pillTarget - this.pillX) || 1, r = this.stateAttribute;
-    [...this.wrap.children].forEach((n, l) => {
-      n.setAttribute(r, String(l === t)), n.tabIndex = l === t ? 0 : -1;
+    [...this.wrap.children].forEach((n, a) => {
+      n.setAttribute(r, String(a === t)), n.tabIndex = a === t ? 0 : -1;
     }), this.syncValue(), this.reflecting = !0, this.setAttribute("value", i.value), this.reflecting = !1, e && (!this.reducedMotion && this.pill && this.pill.stretchAlong(s, 0, 0.75), F(), this.focusSeg(t), g(this, "change", { value: i.value })), this.requestFrame();
   }
   // Move focus onto a segment's button
@@ -4156,14 +4251,14 @@ class bi extends z {
       `var(--jelly-track, ${b["background-neutral"]})`
     ), n = this.resolveColor(
       `var(--jelly-pill, ${b["background-accent"]})`
-    ), l = this.ctx, c = this.cssW / 2, h = this.cssH / 2;
-    return this.clearCanvas(), l.beginPath(), l.roundRect(
+    ), a = this.ctx, c = this.cssW / 2, h = this.cssH / 2;
+    return this.clearCanvas(), a.beginPath(), a.roundRect(
       c - this.trackW / 2,
       h - this.trackH / 2,
       this.trackW,
       this.trackH,
       this.trackH / 2
-    ), l.fillStyle = r, l.fill(), this.paintBody(e, {
+    ), a.fillStyle = r, a.fill(), this.paintBody(e, {
       fill: n,
       cx: this.pillX,
       ring: this.focusRing()
@@ -4224,7 +4319,7 @@ class yi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), this.shadowRoot || (this.internals = this.attachInternals?.(), this.attachShadow({ mode: "open", delegatesFocus: !0 })), this.render();
+    S(), j(this), this.shadowRoot || (this.internals = this.attachInternals?.(), this.attachShadow({ mode: "open", delegatesFocus: !0 })), this.render();
   }
   // Lifecycle method: Fires when observed HTML attributes change dynamically
   attributeChangedCallback(t) {
@@ -4348,7 +4443,7 @@ class mi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
+    S(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
       <style>${fi}</style>
 
       <label part="label">
@@ -4393,7 +4488,7 @@ const vi = ':host{display:inline-block;width:240px;height:14px;--jelly-track: va
   medium: { width: 240, track: 14 },
   large: { width: 300, track: 18 }
 };
-class xi extends z {
+class xi extends C {
   constructor() {
     super(...arguments), this.fraction = 0, this.shownFrac = 0, this.phase = 0, this.trackW = 0, this.trackH = 0, this.blob = null, this.blobW = 0, this.blobH = 0, this.wall = !1, this.rip = 0;
   }
@@ -4455,25 +4550,25 @@ class xi extends z {
     const e = this.body;
     if (!e)
       return !1;
-    const i = this.ctx, s = this.cssH / 2, r = this.trackW, n = this.cssW / 2 - r / 2, l = A(this), c = getComputedStyle(this).getPropertyValue("--jelly-track").trim() || b["background-neutral"], h = getComputedStyle(this).getPropertyValue("--jelly-accent").trim() || b["background-accent"];
+    const i = this.ctx, s = this.cssH / 2, r = this.trackW, n = this.cssW / 2 - r / 2, a = A(this), c = getComputedStyle(this).getPropertyValue("--jelly-track").trim() || b["background-neutral"], h = getComputedStyle(this).getPropertyValue("--jelly-accent").trim() || b["background-accent"];
     e.update(t), this.clearCanvas();
-    const a = this.trackH || this.sizeConfig.track;
-    i.beginPath(), i.roundRect(n, s - a / 2, r, a, a / 2), i.fillStyle = c, i.fill();
+    const l = this.trackH || this.sizeConfig.track;
+    i.beginPath(), i.roundRect(n, s - l / 2, r, l, l / 2), i.fillStyle = c, i.fill();
     let d = !1;
     if (this.indeterminate) {
-      const p = Math.max(a * 1.8, r * 0.24);
-      this.blob ? (this.blobW !== p || this.blobH !== a) && this.blob.resize(p, a, a / 2) : this.blob = new $({
+      const p = Math.max(l * 1.8, r * 0.24);
+      this.blob ? (this.blobW !== p || this.blobH !== l) && this.blob.resize(p, l, l / 2) : this.blob = new $({
         width: p,
-        height: a,
-        radius: a / 2
-      }), this.blobW = p, this.blobH = a;
+        height: l,
+        radius: l / 2
+      }), this.blobW = p, this.blobH = l;
       const u = this.blob;
       if (this.reducedMotion)
         return u.leanAmount = 0, u.update(t), this.paintBody(u, { fill: h, cx: 0 }), !1;
       const f = Math.max(0, r - p);
       this.phase += t * 2;
       const w = Math.sin(this.phase), m = w * (f / 2), x = Math.cos(this.phase), y = Math.abs(x), k = y * 0.34;
-      y > 0.06 && (u.lean = Math.sign(x)), u.leanAmount = y * (a / 2) * 0.4, Math.abs(w) > 0.985 ? this.wall || (this.wall = !0, u.stretchAlong(Math.sign(m) || 1, 0, 0.6)) : Math.abs(w) < 0.9 && (this.wall = !1), u.update(t), this.paintBody(u, {
+      y > 0.06 && (u.lean = Math.sign(x)), u.leanAmount = y * (l / 2) * 0.4, Math.abs(w) > 0.985 ? this.wall || (this.wall = !0, u.stretchAlong(Math.sign(m) || 1, 0, 0.6)) : Math.abs(w) < 0.9 && (this.wall = !1), u.update(t), this.paintBody(u, {
         fill: h,
         cx: m,
         scaleX: 1 + k,
@@ -4483,16 +4578,16 @@ class xi extends z {
       this.shownFrac += (this.fraction - this.shownFrac) * Math.min(1, t * 9);
       const p = Math.abs(this.fraction - this.shownFrac);
       p < 4e-4 && (this.shownFrac = this.fraction);
-      const u = v(l ? r / 2 - this.shownFrac * r : -r / 2 + this.shownFrac * r, -r / 2, r / 2);
-      this.rip += t, !this.reducedMotion && p > 3e-3 && this.rip > 0.13 && (this.rip = 0, e.pulseAt(u, -a / 2, 0.28), e.pulseAt(u, a / 2, 0.28));
-      const f = this.shownFrac * r, w = l ? n + r - f : n;
+      const u = v(a ? r / 2 - this.shownFrac * r : -r / 2 + this.shownFrac * r, -r / 2, r / 2);
+      this.rip += t, !this.reducedMotion && p > 3e-3 && this.rip > 0.13 && (this.rip = 0, e.pulseAt(u, -l / 2, 0.28), e.pulseAt(u, l / 2, 0.28));
+      const f = this.shownFrac * r, w = a ? n + r - f : n;
       i.save(), this.roundedClip(
         i,
         w,
-        s - a / 2,
+        s - l / 2,
         f,
-        a,
-        a / 2
+        l,
+        l / 2
       ), this.paintBody(e, { fill: h }), i.restore(), d = p > 4e-4 || !e.isResting();
     }
     return d;
@@ -4513,7 +4608,7 @@ class xi extends z {
 }
 customElements.define("jelly-progress", xi);
 const ji = ':host{display:inline-block;width:42px;height:18px}:host([type="blob"]){width:44px;height:44px}:host([size="small"]){width:34px;height:14px}:host([size="large"]){width:54px;height:22px}:host([type="blob"][size="small"]){width:32px;height:32px}:host([type="blob"][size="large"]){width:56px;height:56px}.dots{display:block;width:100%;height:100%;overflow:visible}.dots g{fill:var(--jelly-fill)}.rover{animation:sp-rove 1.5s cubic-bezier(.55,0,.45,1) infinite}@keyframes sp-rove{0%,to{transform:translate(0)}25%{transform:translate(12px)}50%{transform:translate(24px)}75%{transform:translate(12px)}}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .rover{animation:none}}:host-context([data-jelly-motion="reduce"]) .rover{animation:none}@media(forced-colors:active){.dots g{fill:CanvasText}}';
-class wi extends z {
+class wi extends C {
   constructor() {
     super(...arguments), this.timeAccumulator = 0, this.idx = 0, this.angle = 0, this.instanceId = W("jelly-spinner-goo");
   }
@@ -4593,8 +4688,8 @@ class wi extends z {
       return this.clearCanvas(), this.paintBody(e, { fill: this.fill() }), !1;
     if (this.timeAccumulator += t, this.timeAccumulator > 0.13) {
       this.timeAccumulator = 0;
-      const l = e.membrane.length;
-      this.idx = (this.idx + Math.round(l * 0.37)) % l, e.addMembraneImpulse(
+      const a = e.membrane.length;
+      this.idx = (this.idx + Math.round(a * 0.37)) % a, e.addMembraneImpulse(
         this.idx,
         e.config.insideLocalBulgeImpulse * 0.24,
         e.config.rippleWidth * 2.4
@@ -4607,7 +4702,7 @@ class wi extends z {
 }
 customElements.define("jelly-spinner", wi);
 const ki = ':host{display:inline-block;width:200px;height:16px;--jelly-fill: var(--jelly-color-background-neutral)}:host([shape="line"]){width:220px;height:16px}:host([shape="rect"]),:host([shape="square"]){width:220px;height:88px}:host([shape="circle"]){width:52px;height:52px}';
-class Ai extends z {
+class Ci extends C {
   constructor() {
     super(...arguments), this.phase = Math.random() * 1.5, this.timeAccumulator = Math.random() * 0.08, this.breath = Math.random() * 1.2, this.sweepSpeed = 0.7 + Math.random() * 0.35, this.breathEvery = 1 + Math.random() * 0.7;
   }
@@ -4659,9 +4754,9 @@ class Ai extends z {
     return this.breath += t, this.breath > this.breathEvery && (this.breath = 0, this.breathEvery = 1 + Math.random() * 0.7, e.centerPop(0.16)), e.update(t), this.clearCanvas(), this.paintBody(e, { fill: this.fill(), alpha: 0.82 }), !0;
   }
 }
-customElements.define("jelly-skeleton", Ai);
-const Ci = ':host{display:inline-flex;height:24px;--jelly-badge-radius: 999px;font-family:var(--jelly-font-display);font-weight:640;font-size:var(--jelly-badge-font-size, 12.5px);line-height:1}:host([size="small"]){height:20px;font-size:11px}:host([size="large"]){height:30px;font-size:14px}:host([shape="square"]){--jelly-badge-radius: 8px}:host([shape="square"][size="small"]){--jelly-badge-radius: 6px}:host([shape="square"][size="large"]){--jelly-badge-radius: 10px}.badge{display:inline-flex;align-items:center;justify-content:center;height:100%;min-width:12px;padding-inline:9px;color:var(--jelly-label);position:relative;border-radius:var(--jelly-badge-radius);white-space:nowrap}:host([size="small"]) .badge{min-width:10px;padding-inline:7px}:host([size="large"]) .badge{min-width:16px;padding-inline:12px}:host([outline]) .badge{color:var(--jelly-color-foreground-default)}@media(forced-colors:active){.badge{border:1px solid CanvasText}}';
-class zi extends z {
+customElements.define("jelly-skeleton", Ci);
+const Ai = ':host{display:inline-flex;height:24px;--jelly-badge-radius: 999px;font-family:var(--jelly-font-display);font-weight:640;font-size:var(--jelly-badge-font-size, 12.5px);line-height:1}:host([size="small"]){height:20px;font-size:11px}:host([size="large"]){height:30px;font-size:14px}:host([shape="square"]){--jelly-badge-radius: 8px}:host([shape="square"][size="small"]){--jelly-badge-radius: 6px}:host([shape="square"][size="large"]){--jelly-badge-radius: 10px}.badge{display:inline-flex;align-items:center;justify-content:center;height:100%;min-width:12px;padding-inline:9px;color:var(--jelly-label);position:relative;border-radius:var(--jelly-badge-radius);white-space:nowrap}:host([size="small"]) .badge{min-width:10px;padding-inline:7px}:host([size="large"]) .badge{min-width:16px;padding-inline:12px}:host([outline]) .badge{color:var(--jelly-color-foreground-default)}@media(forced-colors:active){.badge{border:1px solid CanvasText}}';
+class zi extends C {
   constructor() {
     super(...arguments), this.mutationObserver = null;
   }
@@ -4671,7 +4766,7 @@ class zi extends z {
   }
   // Component styles layered over the shared jelly base styles
   styles() {
-    return nt + Ci;
+    return nt + Ai;
   }
   // The interactive markup that sits above the canvas
   content() {
@@ -4716,22 +4811,11 @@ class zi extends z {
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
-    if (this.sync(), this.mutationObserver = new MutationObserver(() => this.centerPop(0.7)), this.mutationObserver.observe(this, {
+    this.sync(), this.mutationObserver = new MutationObserver(() => this.centerPop(0.7)), this.mutationObserver.observe(this, {
       childList: !0,
       characterData: !0,
       subtree: !0
-    }), !this.reducedMotion) {
-      const t = [
-        ...document.querySelectorAll("jelly-badge")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t);
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    }), this.wireHover();
   }
   // Lifecycle method: Called automatically when the element is appended to the
   // DOM. Re-arm the content observer - disconnectedCallback dropped it and a
@@ -4763,13 +4847,13 @@ class zi extends z {
   }
 }
 customElements.define("jelly-badge", zi);
-const Li = ':host{display:block;position:relative;--jelly-alert-padding-block: 15px;--jelly-alert-padding-inline: 16px;--jelly-alert-gap: 12px;--jelly-alert-font-size: 14.5px;--jelly-alert-icon: 22px;--jelly-alert-close: 24px;--jelly-alert-radius: 16px;--tone: var(--jelly-color-background-azure);--jelly-fill: color-mix( in srgb, var(--tone) 15%, var(--jelly-color-background-surface) );--jelly-alert-border: color-mix( in srgb, var(--tone) 34%, var(--jelly-color-background-surface) );font:500 var(--jelly-alert-font-size)/1.5 var(--jelly-font-text);color:var(--jelly-color-foreground-default)}:host([size="small"]){--jelly-alert-padding-block: 12px;--jelly-alert-padding-inline: 13px;--jelly-alert-gap: 9px;--jelly-alert-font-size: 13px;--jelly-alert-icon: 19px;--jelly-alert-close: 22px;--jelly-alert-radius: 14px}:host([size="large"]){--jelly-alert-padding-block: 18px;--jelly-alert-padding-inline: 20px;--jelly-alert-gap: 14px;--jelly-alert-font-size: 16px;--jelly-alert-icon: 26px;--jelly-alert-close: 28px;--jelly-alert-radius: 18px}:host([tone="success"]){--tone: var(--jelly-color-background-mint)}:host([tone="warning"]){--tone: var(--jelly-color-background-amber)}:host([tone="danger"]){--tone: var(--jelly-color-background-rose)}.box{position:relative;box-sizing:border-box;display:flex;gap:var(--jelly-alert-gap);align-items:flex-start;padding-block:var(--jelly-alert-padding-block);padding-inline:var(--jelly-alert-padding-inline)}.icon{flex:0 0 auto;width:var(--jelly-alert-icon);height:var(--jelly-alert-icon);color:var(--tone);display:inline-flex;align-items:center;justify-content:center;margin-top:1px}.icon svg{width:100%;height:100%;fill:currentColor}.body{flex:1;min-width:0}.body ::slotted(strong){font-weight:750}.close{flex:0 0 auto;appearance:none;border:0;background:transparent;cursor:pointer;touch-action:manipulation;color:var(--jelly-color-foreground-muted);width:var(--jelly-alert-close);height:var(--jelly-alert-close);min-width:24px;min-height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:background-color .12s ease,color .12s ease}.close svg{fill:currentColor}.close:hover{background:var(--jelly-alert-border)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .close{transition:none}}:host-context([data-jelly-motion="reduce"]) .close{transition:none}.close:focus-visible{outline:2px solid var(--jelly-ring-color);outline-offset:1px}:host(:not([dismissible])) .close{display:none}@media(forced-colors:active){.box{border:1px solid CanvasText;border-radius:var(--jelly-alert-radius)}.close:focus-visible{outline-color:Highlight}}', Ft = {
+const Si = ':host{display:block;position:relative;--jelly-alert-padding-block: 15px;--jelly-alert-padding-inline: 16px;--jelly-alert-gap: 12px;--jelly-alert-font-size: 14.5px;--jelly-alert-icon: 22px;--jelly-alert-close: 24px;--jelly-alert-radius: 16px;--tone: var(--jelly-color-background-azure);--jelly-fill: color-mix( in srgb, var(--tone) 15%, var(--jelly-color-background-surface) );--jelly-alert-border: color-mix( in srgb, var(--tone) 34%, var(--jelly-color-background-surface) );font:500 var(--jelly-alert-font-size)/1.5 var(--jelly-font-text);color:var(--jelly-color-foreground-default)}:host([size="small"]){--jelly-alert-padding-block: 12px;--jelly-alert-padding-inline: 13px;--jelly-alert-gap: 9px;--jelly-alert-font-size: 13px;--jelly-alert-icon: 19px;--jelly-alert-close: 22px;--jelly-alert-radius: 14px}:host([size="large"]){--jelly-alert-padding-block: 18px;--jelly-alert-padding-inline: 20px;--jelly-alert-gap: 14px;--jelly-alert-font-size: 16px;--jelly-alert-icon: 26px;--jelly-alert-close: 28px;--jelly-alert-radius: 18px}:host([tone="success"]){--tone: var(--jelly-color-background-mint)}:host([tone="warning"]){--tone: var(--jelly-color-background-amber)}:host([tone="danger"]){--tone: var(--jelly-color-background-rose)}.box{position:relative;box-sizing:border-box;display:flex;gap:var(--jelly-alert-gap);align-items:flex-start;padding-block:var(--jelly-alert-padding-block);padding-inline:var(--jelly-alert-padding-inline)}.icon{flex:0 0 auto;width:var(--jelly-alert-icon);height:var(--jelly-alert-icon);color:var(--tone);display:inline-flex;align-items:center;justify-content:center;margin-top:1px}.icon svg{width:100%;height:100%;fill:currentColor}.body{flex:1;min-width:0}.body ::slotted(strong){font-weight:750}.close{flex:0 0 auto;appearance:none;border:0;background:transparent;cursor:pointer;touch-action:manipulation;color:var(--jelly-color-foreground-muted);width:var(--jelly-alert-close);height:var(--jelly-alert-close);min-width:24px;min-height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:background-color .12s ease,color .12s ease}.close svg{fill:currentColor}.close:hover{background:var(--jelly-alert-border)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .close{transition:none}}:host-context([data-jelly-motion="reduce"]) .close{transition:none}.close:focus-visible{outline:2px solid var(--jelly-ring-color);outline-offset:1px}:host(:not([dismissible])) .close{display:none}@media(forced-colors:active){.box{border:1px solid CanvasText;border-radius:var(--jelly-alert-radius)}.close:focus-visible{outline-color:Highlight}}', Ft = {
   info: "info",
   success: "checkmark-circle",
   warning: "warning",
   danger: "error-circle"
 };
-class Si extends z {
+class Li extends C {
   constructor() {
     super(...arguments), this.shakeT = 0, this.shaking = 0, this.shakeDir = -1;
   }
@@ -4794,7 +4878,7 @@ class Si extends z {
   }
   // Component styles layered over the shared jelly base styles
   styles() {
-    return Li;
+    return Si;
   }
   // The interactive markup that sits above the canvas
   content() {
@@ -4850,9 +4934,9 @@ class Si extends z {
     }), this.shaking > 0 || !e.isResting()) : !1;
   }
 }
-customElements.define("jelly-alert", Si);
+customElements.define("jelly-alert", Li);
 const Mi = ':host{display:block;position:relative;--jelly-fill: var(--jelly-color-background-surface);--jelly-radius: 0;--jelly-card-padding-block: 22px;--jelly-card-padding-inline: 24px;--jelly-card-font-size: 15px;color:var(--jelly-card-color, var(--jelly-color-foreground-default));font-family:var(--jelly-card-font-family, var(--jelly-font-text));font-size:var(--jelly-card-font-size, 15px);font-weight:var(--jelly-card-font-weight, 400);line-height:var(--jelly-card-line-height, 1.55)}:host([size="small"]){--jelly-radius: 0;--jelly-card-padding-block: 16px;--jelly-card-padding-inline: 18px;--jelly-card-font-size: 13.5px}:host([size="large"]){--jelly-radius: 0;--jelly-card-padding-block: 28px;--jelly-card-padding-inline: 30px;--jelly-card-font-size: 16.5px}:host([squish]){cursor:pointer}.card{position:relative;box-sizing:border-box;padding-block:var(--jelly-card-padding-block);padding-inline:var(--jelly-card-padding-inline);outline:none;touch-action:manipulation;border-radius:0}.card:after{content:"";position:absolute;inset:-2px;border:var(--jelly-ring-width) solid transparent;border-radius:0;pointer-events:none}:host([data-jelly-flat]) .card:focus-visible{outline:var(--jelly-ring-width) solid var( --jelly-ring-color, var(--jelly-ring, var(--jelly-color-border-focus)) );outline-offset:var(--jelly-ring-gap)}@media(forced-colors:active){.card{border:1px solid CanvasText;border-radius:var(--jelly-radius)}.card:focus-visible:after{border-color:Highlight}}::slotted(:first-child){margin-top:0}::slotted(:last-child){margin-bottom:0}';
-class Ei extends z {
+class Ei extends C {
   constructor() {
     super(...arguments), this.pressing = !1, this.squishWired = !1, this.kb = !1;
   }
@@ -4873,7 +4957,7 @@ class Ei extends z {
   // identity pins every radius to 0, so the old fast path flattened every
   // card on it. The two guards that fast path existed for still hold: the
   // oversized cap in `applyShape` flattens a document-sized host, and the
-  // hover loop's `offsetHeight > window.innerHeight` check refuses one.
+  // hover loop's HOVER_AREA_BUDGET refuses to repaint one at 60fps.
   // The rounded surface the physics body takes (radius follows the token)
   shape(t, e) {
     const i = parseFloat(
@@ -4904,18 +4988,7 @@ class Ei extends z {
     const t = parseFloat(
       getComputedStyle(this).getPropertyValue("--jelly-radius")
     ) || 0;
-    if (!this.reducedMotion && t > 0 && requestAnimationFrame(() => this.centerPop(0.7)), this.syncSquish(), !this.reducedMotion) {
-      const e = [
-        ...document.querySelectorAll("jelly-card")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (i) => {
-        this.updateHoverPointer(i.clientX, i.clientY), this.startHoverLoop(e);
-      }), this.addEventListener("pointermove", (i) => {
-        this.updateHoverPointer(i.clientX, i.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    !this.reducedMotion && t > 0 && requestAnimationFrame(() => this.centerPop(0.7)), this.syncSquish(), this.wireHover();
   }
   /*
    * Wire (or unwire) button behavior for squish mode. The card is a div
@@ -4959,7 +5032,7 @@ class Ei extends z {
 }
 customElements.define("jelly-card", Ei);
 const Ti = ':host{display:inline-flex;height:36px;--jelly-fill: var(--jelly-color-background-neutral);--jelly-on: var(--jelly-color-background-accent);--jelly-label: var(--jelly-color-foreground-on-neutral);--jelly-label-on: var(--jelly-color-foreground-on-accent);--jelly-ring: var(--jelly-fill, var(--jelly-color-border-focus));--jelly-chip-radius: 999px;font:600 14px/1 var(--jelly-font-display)}:host([size="small"]){height:30px;font-size:12.5px}:host([size="large"]){height:42px;font-size:15.5px}:host([shape="square"]){--jelly-chip-radius: 11px}:host([shape="square"][size="small"]){--jelly-chip-radius: 9px}:host([shape="square"][size="large"]){--jelly-chip-radius: 13px}:host([selected]){--jelly-ring: var(--jelly-on, var(--jelly-color-border-focus))}:host([disabled]){opacity:.5;pointer-events:none}:host{transition:transform .28s cubic-bezier(.4,0,.2,1),opacity .24s ease,width .34s cubic-bezier(.5,0,.15,1),margin .34s cubic-bezier(.5,0,.15,1)}:host(.removing){transform:scale(.74);opacity:0;overflow:hidden}.chip{display:inline-flex;align-items:center;height:100%;position:relative;white-space:nowrap}.main{appearance:none;border:0;background:transparent;font:inherit;color:var(--jelly-label);height:100%;padding-inline:17px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:var(--jelly-chip-radius);position:relative;outline:none;touch-action:manipulation;transition:color .24s ease}:host([size="small"]) .main{padding-inline:13px;gap:5px}:host([size="large"]) .main{padding-inline:21px;gap:8px}span.main{cursor:default}:host([removable]) .main{padding-inline-end:4px}:host([selected]) .main{color:var(--jelly-label-on)}.remove{appearance:none;border:0;background:transparent;color:var(--jelly-label);cursor:pointer;touch-action:manipulation;position:relative;width:24px;height:24px;margin-inline-end:6px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;opacity:.65;outline:none;transition:color .24s ease,opacity .15s ease}.remove:hover{opacity:1;background:color-mix(in srgb,currentColor 10%,transparent)}:host([shape="square"]) .remove{border-radius:7px}.remove:focus-visible{outline:var(--jelly-ring-width) solid var(--jelly-ring-color);outline-offset:var(--jelly-ring-gap)}:host([selected]) .remove{color:var(--jelly-label-on)}.remove svg{width:13px;height:13px}:host([size="small"]) .remove{width:20px;height:20px;margin-inline-end:5px}:host([size="small"]) .remove svg{width:11px;height:11px}:host([size="small"]) .remove:before{content:"";position:absolute;inset:-2px}:host([size="large"]) .remove{width:28px;height:28px;margin-inline-end:8px}:host([size="large"]) .remove svg{width:15px;height:15px}@media(forced-colors:active){.chip{border:1px solid CanvasText;border-radius:999px}:host([selected]) .chip{border-width:3px}.main:focus-visible,.remove:focus-visible{outline:2px solid Highlight}}';
-class Fi extends z {
+class Fi extends C {
   constructor() {
     super(...arguments), this.onThemeFlip = () => {
       this.requestFrame();
@@ -5002,8 +5075,8 @@ class Fi extends z {
   shape(t, e) {
     const i = t - 6, s = e - 6, r = this.getAttribute("shape") === "square", n = parseFloat(
       getComputedStyle(this).getPropertyValue("--jelly-chip-radius")
-    ), l = Number.isFinite(n) && n < 900 ? Math.min(n, s / 2) : r ? s * 0.32 : s / 2;
-    return { width: i, height: s, radius: l };
+    ), a = Number.isFinite(n) && n < 900 ? Math.min(n, s / 2) : r ? s * 0.32 : s / 2;
+    return { width: i, height: s, radius: a };
   }
   // The current fill along the off → on crossfade
   fill() {
@@ -5044,22 +5117,11 @@ class Fi extends z {
       this.hasAttribute("disabled") || this.pressAt(s.clientX, s.clientY, t ? 1 : 0.7);
     });
     const i = () => this.releaseBody();
-    if (e.addEventListener("pointerup", i), e.addEventListener("pointercancel", i), e.addEventListener("pointerleave", i), this.hasAttribute("selectable") && (this.trackFocus(this.main), this.main.addEventListener("click", () => this.toggleSelected()), this.main.addEventListener("keydown", (s) => {
+    e.addEventListener("pointerup", i), e.addEventListener("pointercancel", i), e.addEventListener("pointerleave", i), this.hasAttribute("selectable") && (this.trackFocus(this.main), this.main.addEventListener("click", () => this.toggleSelected()), this.main.addEventListener("keydown", (s) => {
       s.key !== "Enter" && s.key !== " " || (s.preventDefault(), !(s.repeat || this.hasAttribute("disabled")) && this.main.click());
     })), this.removeButton && this.removeButton.addEventListener("click", (s) => {
       s.stopPropagation(), this.removeChip();
-    }), !this.reducedMotion) {
-      const s = [
-        ...document.querySelectorAll("jelly-chip")
-      ].indexOf(this);
-      this.addEventListener("pointerenter", (r) => {
-        this.hasAttribute("disabled") || (this.updateHoverPointer(r.clientX, r.clientY), this.startHoverLoop(s));
-      }), this.addEventListener("pointermove", (r) => {
-        this.updateHoverPointer(r.clientX, r.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    }), this.wireHover();
   }
   // Flip the selection, pop the jelly and notify listeners
   toggleSelected() {
@@ -5130,7 +5192,7 @@ class Fi extends z {
 }
 customElements.define("jelly-chip", Fi);
 const Ii = ':host{display:inline-flex;height:28px;--jelly-fill: var(--jelly-color-background-neutral);--jelly-label: var(--jelly-color-foreground-on-neutral);font:640 12px/1 var(--jelly-font-mono);cursor:pointer;outline:none}:host([size="small"]){height:24px;font-size:11px}:host([size="large"]){height:34px;font-size:13px}.cap{display:inline-flex;align-items:center;justify-content:center;height:100%;min-width:16px;padding-inline:8px;position:relative;color:var(--jelly-label);transition:transform .09s ease;touch-action:manipulation}:host([size="small"]) .cap{min-width:14px;padding-inline:7px}:host([size="large"]) .cap{min-width:20px;padding-inline:10px}:host(.pressed) .cap{transform:translateY(2px)}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) .cap{transition:none}}:host-context([data-jelly-motion="reduce"]) .cap{transition:none}@media(forced-colors:active){.cap{border:1px solid ButtonText;border-radius:6px}:host(:focus-visible) .cap{outline:2px solid Highlight}}';
-class Hi extends z {
+class Hi extends C {
   constructor() {
     super(...arguments), this.onDocumentKeyDown = null, this.onDocumentKeyUp = null;
   }
@@ -5156,18 +5218,7 @@ class Hi extends z {
   }
   // Called once after the shadow DOM and canvas exist. Wire events here.
   onBuilt() {
-    if (this.tabIndex = 0, this.setAttribute("role", "button"), this.trackFocus(this), this.addEventListener("pointerdown", this), this.addEventListener("pointerup", this), this.addEventListener("pointercancel", this), this.addEventListener("pointerleave", this), this.addEventListener("keydown", this), this.addEventListener("keyup", this), this.addEventListener("blur", this), this.armKeyMirror(), !this.reducedMotion) {
-      const t = [...document.querySelectorAll("jelly-kbd")].indexOf(
-        this
-      );
-      this.addEventListener("pointerenter", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY), this.startHoverLoop(t);
-      }), this.addEventListener("pointermove", (e) => {
-        this.updateHoverPointer(e.clientX, e.clientY);
-      }), this.addEventListener("pointerleave", () => {
-        this.stopHoverLoop();
-      });
-    }
+    this.tabIndex = 0, this.setAttribute("role", "button"), this.trackFocus(this), this.addEventListener("pointerdown", this), this.addEventListener("pointerup", this), this.addEventListener("pointercancel", this), this.addEventListener("pointerleave", this), this.addEventListener("keydown", this), this.addEventListener("keyup", this), this.addEventListener("blur", this), this.armKeyMirror(), this.wireHover();
   }
   // Lifecycle method: Fires when observed HTML attributes change dynamically
   attributeChangedCallback() {
@@ -5248,7 +5299,7 @@ class Hi extends z {
 }
 customElements.define("jelly-kbd", Hi);
 const Pi = ':host{display:block;flex:1 1 100%;align-self:center;--jelly-divider: var(--jelly-color-border-default);--jelly-divider-font-size: 12px;--jelly-divider-gap: 14px}:host([size="small"]){--jelly-divider-font-size: 11px;--jelly-divider-gap: 10px}:host([size="large"]){--jelly-divider-font-size: 13.5px;--jelly-divider-gap: 18px}:host([direction="vertical"]){display:inline-block;flex:0 0 auto;align-self:stretch;width:auto;min-height:1em}:host([direction="vertical"]:not(:empty)),:host([direction="vertical"][content]){min-width:calc(var(--jelly-divider-font-size) + 2px)}.line{height:1px;background:var(--jelly-divider)}:host([direction="vertical"]) .line{width:1px;height:100%}.labelled{display:flex;align-items:center;gap:var(--jelly-divider-gap);color:var(--jelly-color-foreground-muted);font:600 var(--jelly-divider-font-size)/1 var(--jelly-font-display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}.labelled:before,.labelled:after{content:"";flex:1;height:1px;background:var(--jelly-divider)}.labelled.vertical{height:100%;flex-direction:column;justify-content:center}.labelled.vertical:before,.labelled.vertical:after{width:1px;height:auto}.labelled.vertical .label{writing-mode:vertical-rl;text-orientation:mixed}';
-class Bi extends HTMLElement {
+class Ri extends HTMLElement {
   constructor() {
     super(...arguments), this.built = !1;
   }
@@ -5258,7 +5309,7 @@ class Bi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), !this.built && (this.built = !0, this.setAttribute("role", "separator"), this.attachShadow({ mode: "open" }), this.render());
+    S(), j(this), !this.built && (this.built = !0, this.setAttribute("role", "separator"), this.attachShadow({ mode: "open" }), this.render());
   }
   // Lifecycle method: Fires when observed HTML attributes change dynamically
   attributeChangedCallback(t) {
@@ -5283,8 +5334,8 @@ class Bi extends HTMLElement {
     `;
   }
 }
-customElements.define("jelly-divider", Bi);
-const Ri = ':host{display:block;--jelly-collapsible-padding-block: 13px;--jelly-collapsible-padding-inline: 14px;--jelly-collapsible-gap: 10px;--jelly-collapsible-header-font: 15px;--jelly-collapsible-body-font: 14.5px;--jelly-collapsible-chevron: 16px;--jelly-collapsible-radius: 12px}:host([size="small"]){--jelly-collapsible-padding-block: 10px;--jelly-collapsible-padding-inline: 12px;--jelly-collapsible-gap: 8px;--jelly-collapsible-header-font: 13.5px;--jelly-collapsible-body-font: 13px;--jelly-collapsible-chevron: 14px;--jelly-collapsible-radius: 10px}:host([size="large"]){--jelly-collapsible-padding-block: 16px;--jelly-collapsible-padding-inline: 18px;--jelly-collapsible-gap: 12px;--jelly-collapsible-header-font: 16.5px;--jelly-collapsible-body-font: 15.5px;--jelly-collapsible-chevron: 18px;--jelly-collapsible-radius: 14px}.head{appearance:none;width:100%;box-sizing:border-box;border:0;margin:0;background:transparent;cursor:pointer;touch-action:manipulation;text-align:start;display:flex;align-items:center;gap:var(--jelly-collapsible-gap);padding-block:var(--jelly-collapsible-padding-block);padding-inline:var(--jelly-collapsible-padding-inline);font:650 var(--jelly-collapsible-header-font)/1.3 var(--jelly-font-display);color:var(--jelly-color-foreground-default);border-radius:var(--jelly-collapsible-radius)}.head:hover{background:color-mix(in srgb,var(--jelly-color-background-accent) 7%,transparent)}.head:focus-visible{outline:var(--jelly-ring-width) solid var(--jelly-ring-color);outline-offset:var(--jelly-ring-gap)}.label{flex:1}.chevron{width:var(--jelly-collapsible-chevron);height:var(--jelly-collapsible-chevron);flex:0 0 auto;transition:transform .32s cubic-bezier(.34,1.5,.5,1)}:host(:dir(rtl)) .chevron{transform:scaleX(-1)}:host([open]) .chevron{transform:rotate(90deg)}.wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.28,1.35,.5,1)}:host([open]) .wrap{grid-template-rows:1fr}.content{overflow:hidden;visibility:hidden;transition:visibility 0s linear .36s}:host([open]) .content{visibility:visible;transition:visibility 0s}.inner{padding-block-start:2px;padding-block-end:var(--jelly-collapsible-padding-inline);padding-inline:var(--jelly-collapsible-padding-inline);color:var(--jelly-color-foreground-default);font:400 var(--jelly-collapsible-body-font)/1.6 var(--jelly-font-text);transform-origin:top}:host([open]) .inner{animation:pop .42s cubic-bezier(.34,1.56,.64,1)}@keyframes pop{0%{transform:translateY(-6px) scale(.99)}to{transform:none}}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) :is(.wrap,.chevron,.content){transition:none}:host([open]):host-context(html:not([data-jelly-motion="no-preference"])) .inner{animation:none}:host(:dir(rtl)):host-context(html:not([data-jelly-motion="no-preference"])) .chevron{transform:scaleX(-1)}}:host-context([data-jelly-motion="reduce"]) :is(.wrap,.chevron,.content){transition:none}:host([open]):host-context([data-jelly-motion="reduce"]) .inner{animation:none}:host(:dir(rtl)):host-context([data-jelly-motion="reduce"]) .chevron{transform:scaleX(-1)}@media(forced-colors:active){.head:focus-visible{outline:2px solid Highlight}}';
+customElements.define("jelly-divider", Ri);
+const Bi = ':host{display:block;--jelly-collapsible-padding-block: 13px;--jelly-collapsible-padding-inline: 14px;--jelly-collapsible-gap: 10px;--jelly-collapsible-header-font: 15px;--jelly-collapsible-body-font: 14.5px;--jelly-collapsible-chevron: 16px;--jelly-collapsible-radius: 12px}:host([size="small"]){--jelly-collapsible-padding-block: 10px;--jelly-collapsible-padding-inline: 12px;--jelly-collapsible-gap: 8px;--jelly-collapsible-header-font: 13.5px;--jelly-collapsible-body-font: 13px;--jelly-collapsible-chevron: 14px;--jelly-collapsible-radius: 10px}:host([size="large"]){--jelly-collapsible-padding-block: 16px;--jelly-collapsible-padding-inline: 18px;--jelly-collapsible-gap: 12px;--jelly-collapsible-header-font: 16.5px;--jelly-collapsible-body-font: 15.5px;--jelly-collapsible-chevron: 18px;--jelly-collapsible-radius: 14px}.head{appearance:none;width:100%;box-sizing:border-box;border:0;margin:0;background:transparent;cursor:pointer;touch-action:manipulation;text-align:start;display:flex;align-items:center;gap:var(--jelly-collapsible-gap);padding-block:var(--jelly-collapsible-padding-block);padding-inline:var(--jelly-collapsible-padding-inline);font:650 var(--jelly-collapsible-header-font)/1.3 var(--jelly-font-display);color:var(--jelly-color-foreground-default);border-radius:var(--jelly-collapsible-radius)}.head:hover{background:color-mix(in srgb,var(--jelly-color-background-accent) 7%,transparent)}.head:focus-visible{outline:var(--jelly-ring-width) solid var(--jelly-ring-color);outline-offset:var(--jelly-ring-gap)}.label{flex:1}.chevron{width:var(--jelly-collapsible-chevron);height:var(--jelly-collapsible-chevron);flex:0 0 auto;transition:transform .32s cubic-bezier(.34,1.5,.5,1)}:host(:dir(rtl)) .chevron{transform:scaleX(-1)}:host([open]) .chevron{transform:rotate(90deg)}.wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.28,1.35,.5,1)}:host([open]) .wrap{grid-template-rows:1fr}.content{overflow:hidden;visibility:hidden;transition:visibility 0s linear .36s}:host([open]) .content{visibility:visible;transition:visibility 0s}.inner{padding-block-start:2px;padding-block-end:var(--jelly-collapsible-padding-inline);padding-inline:var(--jelly-collapsible-padding-inline);color:var(--jelly-color-foreground-default);font:400 var(--jelly-collapsible-body-font)/1.6 var(--jelly-font-text);transform-origin:top}:host([open]) .inner{animation:pop .42s cubic-bezier(.34,1.56,.64,1)}@keyframes pop{0%{transform:translateY(-6px) scale(.99)}to{transform:none}}@media(prefers-reduced-motion:reduce){:host-context(html:not([data-jelly-motion="no-preference"])) :is(.wrap,.chevron,.content){transition:none}:host([open]):host-context(html:not([data-jelly-motion="no-preference"])) .inner{animation:none}:host(:dir(rtl)):host-context(html:not([data-jelly-motion="no-preference"])) .chevron{transform:scaleX(-1)}}:host-context([data-jelly-motion="reduce"]) :is(.wrap,.chevron,.content){transition:none}:host([open]):host-context([data-jelly-motion="reduce"]) .inner{animation:none}:host(:dir(rtl)):host-context([data-jelly-motion="reduce"]) .chevron{transform:scaleX(-1)}@media(forced-colors:active){.head:focus-visible{outline:2px solid Highlight}}';
 class Vi extends HTMLElement {
   constructor() {
     super(...arguments), this.built = !1;
@@ -5295,12 +5346,12 @@ class Vi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    if (L(), j(this), this.built)
+    if (S(), j(this), this.built)
       return;
     this.built = !0;
     const t = W("jelly-collapsible");
     this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
-      <style>${Ri}</style>
+      <style>${Bi}</style>
 
       <button class="head" part="header" id="${t}-header" aria-expanded="${this.hasAttribute("open")}" aria-controls="${t}-panel">
         <span class="label"><slot name="header">Details</slot></span>
@@ -5354,7 +5405,7 @@ class qi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
+    S(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${Di}</style>
 
       <slot></slot>
@@ -5390,7 +5441,7 @@ const $i = ":host{display:block}.bar{display:flex}.panels{padding-block-start:16
 class Xi extends HTMLElement {
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), this.setAttribute("role", "tabpanel");
+    S(), this.setAttribute("role", "tabpanel");
     const t = this.getAttribute("label");
     !this.hasAttribute("aria-label") && t && this.setAttribute("aria-label", t), this.hasAttribute("active") || (this.hidden = !0);
   }
@@ -5409,7 +5460,7 @@ class Oi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    if (L(), this.built)
+    if (S(), this.built)
       return;
     this.built = !0;
     const t = [...this.querySelectorAll("jelly-tab-panel")], e = Math.max(
@@ -5467,8 +5518,8 @@ class Oi extends HTMLElement {
   // Show the panel for `value`, hide the rest and announce real changes
   activate(t, e) {
     [...this.querySelectorAll("jelly-tab-panel")].forEach((r, n) => {
-      const l = this.panelValue(r, n) === String(t);
-      r.hidden = !l, r.toggleAttribute("active", l), r.tabIndex = l ? 0 : -1, l && e && !I() && r.animate?.(
+      const a = this.panelValue(r, n) === String(t);
+      r.hidden = !a, r.toggleAttribute("active", a), r.tabIndex = a ? 0 : -1, a && e && !I() && r.animate?.(
         [
           {
             opacity: 0,
@@ -5507,7 +5558,7 @@ class Ni extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.render(), this.mutationObserver = new MutationObserver(() => this.render()), this.mutationObserver.observe(this, {
+    S(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.render(), this.mutationObserver = new MutationObserver(() => this.render()), this.mutationObserver.observe(this, {
       childList: !0,
       characterData: !0,
       subtree: !0,
@@ -5557,7 +5608,7 @@ class Ki extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
+    S(), j(this), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${Yi}</style>
 
       <div class="row" role="navigation" aria-label="Pagination"></div>
@@ -5605,13 +5656,13 @@ class Ki extends HTMLElement {
   }
   // Rebuild the row of page buttons for the current state
   render() {
-    const t = this.page, e = A(this), i = (n, l, {
+    const t = this.page, e = A(this), i = (n, a, {
       current: c = !1,
       disabled: h = !1,
-      name: a = null
+      name: l = null
     } = {}) => {
       const d = document.createElement("jelly-button");
-      return d.setAttribute("size", this.buttonSize), d.textContent = n, c && d.setAttribute("aria-current", "page"), h && d.setAttribute("disabled", ""), a && d.setAttribute("label", a), d.addEventListener("click", () => this.go(l)), d;
+      return d.setAttribute("size", this.buttonSize), d.textContent = n, c && d.setAttribute("aria-current", "page"), h && d.setAttribute("disabled", ""), l && d.setAttribute("label", l), d.addEventListener("click", () => this.go(a)), d;
     }, s = e ? "›" : "‹", r = e ? "‹" : "›";
     this.row.textContent = "", this.row.appendChild(
       i(s, t - 1, {
@@ -5621,8 +5672,8 @@ class Ki extends HTMLElement {
     );
     for (const n of this.pagesToShow())
       if (n === "…") {
-        const l = document.createElement("span");
-        l.className = "gap", l.textContent = "…", l.setAttribute("aria-hidden", "true"), this.row.appendChild(l);
+        const a = document.createElement("span");
+        a.className = "gap", a.textContent = "…", a.setAttribute("aria-hidden", "true"), this.row.appendChild(a);
       } else
         this.row.appendChild(
           i(String(n), n, { current: n === t })
@@ -5645,8 +5696,8 @@ class Ki extends HTMLElement {
   }
 }
 customElements.define("jelly-pagination", Ki);
-const Zi = ':host{display:block;--jelly-resizable-line: var(--jelly-color-border-default);--jelly-resizable-handle: var(--jelly-color-background-neutral);--jelly-resizable-handle-active: var(--jelly-color-background-accent)}.container{display:flex;flex-direction:row;width:100%;height:100%}:host([direction="vertical"]) .container{flex-direction:column}:host([direction="both"]) .container{display:grid;grid-template-columns:minmax(0,var(--jelly-resizable-col-a, 1fr)) 14px minmax(0,var(--jelly-resizable-col-b, 1fr));grid-template-rows:minmax(0,var(--jelly-resizable-row-a, 1fr)) 14px minmax(0,var(--jelly-resizable-row-b, 1fr))}:host([direction="both"]) slot{display:flex;min-width:0;min-height:0;overflow:hidden}:host([direction="both"]) slot[name=p0]{grid-area:1 / 1}:host([direction="both"]) slot[name=p1]{grid-area:1 / 3}:host([direction="both"]) slot[name=p2]{grid-area:3 / 1}:host([direction="both"]) slot[name=p3]{grid-area:3 / 3}:host([direction="both"]) slot:nth-of-type(n+5){display:none}.divider{position:relative;flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:14px;cursor:col-resize;touch-action:none;outline:none;border-radius:999px}.divider:before{content:"";position:absolute;background:var(--jelly-resizable-line);inset:0 50%;width:1px;transform:translate(-50%)}:host([direction="vertical"]) .divider:before,:host([direction="both"]) .divider-y:before{inset:50% 0;width:auto;height:1px;transform:translateY(-50%)}:host([direction="vertical"]) .divider{width:auto;height:14px;cursor:row-resize}:host([direction="both"]) .divider{width:auto;height:auto}:host([direction="both"]) .divider-x{grid-area:1 / 2 / 4 / 3;cursor:col-resize}:host([direction="both"]) .divider-y{grid-area:2 / 1 / 3 / 4;cursor:row-resize}.divider b{display:block;background:var(--jelly-resizable-handle);border-radius:999px;transition:width .18s cubic-bezier(.34,1.7,.5,1),height .18s cubic-bezier(.34,1.7,.5,1),background .15s;width:5px;height:42px}:host([direction="vertical"]) .divider b,:host([direction="both"]) .divider-y b{width:42px;height:5px}:host([direction="both"]) .divider-x b{width:5px;height:42px}.divider:hover b,.divider:focus-visible b{background:var(--jelly-resizable-handle-active);width:10px}:host([direction="vertical"]) .divider:hover b,:host([direction="vertical"]) .divider:focus-visible b,:host([direction="both"]) .divider-y:hover b,:host([direction="both"]) .divider-y:focus-visible b{width:42px;height:10px}:host([direction="both"]) .divider-x:hover b,:host([direction="both"]) .divider-x:focus-visible b{width:10px;height:42px}.divider.drag b{background:var(--jelly-resizable-handle-active);width:12px}:host([direction="vertical"]) .divider.drag b,:host([direction="both"]) .divider-y.drag b{width:42px;height:12px}:host([direction="both"]) .divider-x.drag b{width:12px;height:42px}@media(forced-colors:active){.divider b{background:ButtonText}.divider:focus-visible{outline:2px solid Highlight}}';
-class _i extends HTMLElement {
+const _i = ':host{display:block;--jelly-resizable-line: var(--jelly-color-border-default);--jelly-resizable-handle: var(--jelly-color-background-neutral);--jelly-resizable-handle-active: var(--jelly-color-background-accent)}.container{display:flex;flex-direction:row;width:100%;height:100%}:host([direction="vertical"]) .container{flex-direction:column}:host([direction="both"]) .container{display:grid;grid-template-columns:minmax(0,var(--jelly-resizable-col-a, 1fr)) 14px minmax(0,var(--jelly-resizable-col-b, 1fr));grid-template-rows:minmax(0,var(--jelly-resizable-row-a, 1fr)) 14px minmax(0,var(--jelly-resizable-row-b, 1fr))}:host([direction="both"]) slot{display:flex;min-width:0;min-height:0;overflow:hidden}:host([direction="both"]) slot[name=p0]{grid-area:1 / 1}:host([direction="both"]) slot[name=p1]{grid-area:1 / 3}:host([direction="both"]) slot[name=p2]{grid-area:3 / 1}:host([direction="both"]) slot[name=p3]{grid-area:3 / 3}:host([direction="both"]) slot:nth-of-type(n+5){display:none}.divider{position:relative;flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:14px;cursor:col-resize;touch-action:none;outline:none;border-radius:999px}.divider:before{content:"";position:absolute;background:var(--jelly-resizable-line);inset:0 50%;width:1px;transform:translate(-50%)}:host([direction="vertical"]) .divider:before,:host([direction="both"]) .divider-y:before{inset:50% 0;width:auto;height:1px;transform:translateY(-50%)}:host([direction="vertical"]) .divider{width:auto;height:14px;cursor:row-resize}:host([direction="both"]) .divider{width:auto;height:auto}:host([direction="both"]) .divider-x{grid-area:1 / 2 / 4 / 3;cursor:col-resize}:host([direction="both"]) .divider-y{grid-area:2 / 1 / 3 / 4;cursor:row-resize}.divider b{display:block;background:var(--jelly-resizable-handle);border-radius:999px;transition:width .18s cubic-bezier(.34,1.7,.5,1),height .18s cubic-bezier(.34,1.7,.5,1),background .15s;width:5px;height:42px}:host([direction="vertical"]) .divider b,:host([direction="both"]) .divider-y b{width:42px;height:5px}:host([direction="both"]) .divider-x b{width:5px;height:42px}.divider:hover b,.divider:focus-visible b{background:var(--jelly-resizable-handle-active);width:10px}:host([direction="vertical"]) .divider:hover b,:host([direction="vertical"]) .divider:focus-visible b,:host([direction="both"]) .divider-y:hover b,:host([direction="both"]) .divider-y:focus-visible b{width:42px;height:10px}:host([direction="both"]) .divider-x:hover b,:host([direction="both"]) .divider-x:focus-visible b{width:10px;height:42px}.divider.drag b{background:var(--jelly-resizable-handle-active);width:12px}:host([direction="vertical"]) .divider.drag b,:host([direction="both"]) .divider-y.drag b{width:42px;height:12px}:host([direction="both"]) .divider-x.drag b{width:12px;height:42px}@media(forced-colors:active){.divider b{background:ButtonText}.divider:focus-visible{outline:2px solid Highlight}}';
+class Zi extends HTMLElement {
   constructor() {
     super(...arguments), this.built = !1, this.grow = [], this.colGrow = [1, 1], this.rowGrow = [1, 1], this.endDrag = null;
   }
@@ -5656,7 +5707,7 @@ class _i extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.render());
+    S(), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.render());
   }
   // Lifecycle method: Called automatically when the element leaves the DOM
   disconnectedCallback() {
@@ -5707,7 +5758,7 @@ class _i extends HTMLElement {
                       aria-label="Resize panels ${s + 1} and ${s + 2}"><b></b></span>`);
       });
     this.shadowRoot.innerHTML = `
-      <style>${Zi}</style>
+      <style>${_i}</style>
 
       <div class="container" part="container">${e}</div>
     `, this.container = this.shadowRoot.querySelector(".container"), this.shadowRoot.querySelectorAll(".divider").forEach(
@@ -5762,9 +5813,9 @@ class _i extends HTMLElement {
     }
     const i = Number(e.dataset.i);
     e.setPointerCapture(t.pointerId), e.classList.add("drag");
-    const s = this.container.getBoundingClientRect(), r = this.vertical ? s.height : s.width, n = this.vertical ? t.clientY : t.clientX, l = !this.vertical && A(this) ? -1 : 1, c = this.grow[i], h = this.grow[i + 1], a = c + h, d = (u) => {
-      const m = ((this.vertical ? u.clientY : u.clientX) - n) * l / r * this.grow.reduce((S, M) => S + M, 0), x = Math.max(0.08, c + m), y = Math.max(0.08, h - m), k = x + y;
-      this.grow[i] = x / k * a, this.grow[i + 1] = y / k * a, this.apply();
+    const s = this.container.getBoundingClientRect(), r = this.vertical ? s.height : s.width, n = this.vertical ? t.clientY : t.clientX, a = !this.vertical && A(this) ? -1 : 1, c = this.grow[i], h = this.grow[i + 1], l = c + h, d = (u) => {
+      const m = ((this.vertical ? u.clientY : u.clientX) - n) * a / r * this.grow.reduce((L, M) => L + M, 0), x = Math.max(0.08, c + m), y = Math.max(0.08, h - m), k = x + y;
+      this.grow[i] = x / k * l, this.grow[i + 1] = y / k * l, this.apply();
     }, p = (u) => {
       e.classList.remove("drag"), e.releasePointerCapture(u.pointerId), this.endDrag?.(), g(this, "change", { sizes: this.sizes });
     };
@@ -5778,8 +5829,8 @@ class _i extends HTMLElement {
     if (i !== "x" && i !== "y")
       return;
     e.setPointerCapture(t.pointerId), e.classList.add("drag");
-    const s = this.container.getBoundingClientRect(), r = i === "x" ? s.width : s.height, n = i === "x" ? t.clientX : t.clientY, l = i === "x" && A(this) ? -1 : 1, c = i === "x" ? this.colGrow : this.rowGrow, h = c[0], a = c[1], d = h + a, p = (f) => {
-      const m = ((i === "x" ? f.clientX : f.clientY) - n) * l / r * d, x = Math.max(0.12, h + m), y = Math.max(0.12, a - m), k = x + y;
+    const s = this.container.getBoundingClientRect(), r = i === "x" ? s.width : s.height, n = i === "x" ? t.clientX : t.clientY, a = i === "x" && A(this) ? -1 : 1, c = i === "x" ? this.colGrow : this.rowGrow, h = c[0], l = c[1], d = h + l, p = (f) => {
+      const m = ((i === "x" ? f.clientX : f.clientY) - n) * a / r * d, x = Math.max(0.12, h + m), y = Math.max(0.12, l - m), k = x + y;
       c[0] = x / k * d, c[1] = y / k * d, this.applyBoth();
     }, u = (f) => {
       e.classList.remove("drag"), e.releasePointerCapture(f.pointerId), this.endDrag?.(), g(this, "change", { sizes: this.sizes });
@@ -5799,7 +5850,7 @@ class _i extends HTMLElement {
     }
     if (this.isBothAxes) {
       if (s === "x") {
-        const n = G(t.key, A(this));
+        const n = J(t.key, A(this));
         n !== 0 && (this.nudgeBoth("x", n * 0.12), t.preventDefault());
       } else s === "y" && (t.key === "ArrowUp" || t.key === "ArrowDown") && (this.nudgeBoth("y", t.key === "ArrowDown" ? 0.12 : -0.12), t.preventDefault());
       return;
@@ -5808,7 +5859,7 @@ class _i extends HTMLElement {
       (t.key === "ArrowUp" || t.key === "ArrowDown") && (this.nudge(e, t.key === "ArrowDown" ? 0.12 : -0.12), t.preventDefault());
       return;
     }
-    const r = G(t.key, A(this));
+    const r = J(t.key, A(this));
     r !== 0 && (this.nudge(e, r * 0.12), t.preventDefault());
   }
   // Grow one pane of a pair by d (single-axis layouts)
@@ -5849,9 +5900,9 @@ class _i extends HTMLElement {
     this.shadowRoot?.querySelector(".divider")?.focus(t);
   }
 }
-customElements.define("jelly-resizable", _i);
-const Ji = ':host{display:inline-flex;--jelly-tooltip-font-size: 12.5px;--jelly-tooltip-padding-block: 7px;--jelly-tooltip-padding-inline: 11px;--jelly-tooltip-radius: 11px;--jelly-tooltip-max-width: 240px;--jelly-tooltip-background: var(--jelly-color-foreground-default);--jelly-tooltip-color: var(--jelly-color-background-default)}:host([size="small"]){--jelly-tooltip-font-size: 11.5px;--jelly-tooltip-padding-block: 6px;--jelly-tooltip-padding-inline: 9px;--jelly-tooltip-radius: 9px;--jelly-tooltip-max-width: 200px}:host([size="large"]){--jelly-tooltip-font-size: 14px;--jelly-tooltip-padding-block: 9px;--jelly-tooltip-padding-inline: 13px;--jelly-tooltip-radius: 13px;--jelly-tooltip-max-width: 280px}.bubble{position:fixed;left:0;top:0;z-index:10000;pointer-events:none;background:var(--jelly-tooltip-background);color:var(--jelly-tooltip-color);font:600 var(--jelly-tooltip-font-size)/1.35 var(--jelly-font-display);padding-block:var(--jelly-tooltip-padding-block);padding-inline:var(--jelly-tooltip-padding-inline);border-radius:var(--jelly-tooltip-radius);width:max-content;max-width:var(--jelly-tooltip-max-width);opacity:0;visibility:hidden}.bubble[data-show]{opacity:1;visibility:visible}@media(forced-colors:active){.bubble{border:1px solid CanvasText}}';
-class Gi extends HTMLElement {
+customElements.define("jelly-resizable", Zi);
+const Gi = ':host{display:inline-flex;--jelly-tooltip-font-size: 12.5px;--jelly-tooltip-padding-block: 7px;--jelly-tooltip-padding-inline: 11px;--jelly-tooltip-radius: 11px;--jelly-tooltip-max-width: 240px;--jelly-tooltip-background: var(--jelly-color-foreground-default);--jelly-tooltip-color: var(--jelly-color-background-default)}:host([size="small"]){--jelly-tooltip-font-size: 11.5px;--jelly-tooltip-padding-block: 6px;--jelly-tooltip-padding-inline: 9px;--jelly-tooltip-radius: 9px;--jelly-tooltip-max-width: 200px}:host([size="large"]){--jelly-tooltip-font-size: 14px;--jelly-tooltip-padding-block: 9px;--jelly-tooltip-padding-inline: 13px;--jelly-tooltip-radius: 13px;--jelly-tooltip-max-width: 280px}.bubble{position:fixed;left:0;top:0;z-index:10000;pointer-events:none;background:var(--jelly-tooltip-background);color:var(--jelly-tooltip-color);font:600 var(--jelly-tooltip-font-size)/1.35 var(--jelly-font-display);padding-block:var(--jelly-tooltip-padding-block);padding-inline:var(--jelly-tooltip-padding-inline);border-radius:var(--jelly-tooltip-radius);width:max-content;max-width:var(--jelly-tooltip-max-width);opacity:0;visibility:hidden}.bubble[data-show]{opacity:1;visibility:visible}@media(forced-colors:active){.bubble{border:1px solid CanvasText}}';
+class Ji extends HTMLElement {
   constructor() {
     super(...arguments), this.built = !1, this.untrack = null, this.onDocumentKey = (t) => {
       t.key === "Escape" && this.hide();
@@ -5863,12 +5914,12 @@ class Gi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    if (L(), j(this), this.built)
+    if (S(), j(this), this.built)
       return;
     this.built = !0;
     const t = W("jelly-tooltip");
     this.attachShadow({ mode: "open" }), this.shadowRoot.innerHTML = `
-      <style>${Ji}</style>
+      <style>${Gi}</style>
 
       <slot></slot>
 
@@ -5945,7 +5996,7 @@ class Gi extends HTMLElement {
     }
   }
 }
-customElements.define("jelly-tooltip", Gi);
+customElements.define("jelly-tooltip", Ji);
 const Ui = ':host{display:inline-flex;position:relative;--jelly-popover-min-width: 180px;--jelly-popover-padding-block: 12px;--jelly-popover-padding-inline: 14px;--jelly-popover-radius: 16px;--jelly-popover-font-size: 14.5px}:host([size="small"]){--jelly-popover-min-width: 150px;--jelly-popover-padding-block: 9px;--jelly-popover-padding-inline: 11px;--jelly-popover-radius: 13px;--jelly-popover-font-size: 13px}:host([size="large"]){--jelly-popover-min-width: 220px;--jelly-popover-padding-block: 15px;--jelly-popover-padding-inline: 18px;--jelly-popover-radius: 18px;--jelly-popover-font-size: 16px}.panel{position:fixed;left:0;top:0;z-index:9998;min-width:var(--jelly-popover-min-width);max-width:min(360px,calc(100vw - 24px));background:var(--jelly-color-background-surface);border:1px solid var(--jelly-color-border-default);border-radius:var(--jelly-popover-radius);box-shadow:var(--jelly-shadow-raised);padding-block:var(--jelly-popover-padding-block);padding-inline:var(--jelly-popover-padding-inline);color:var(--jelly-color-foreground-default);font:400 var(--jelly-popover-font-size)/1.5 var(--jelly-font-text);outline:none;opacity:0;visibility:hidden}.panel[data-open]{opacity:1;visibility:visible}@media(forced-colors:active){.panel{border-color:CanvasText}}';
 class Qi extends HTMLElement {
   constructor() {
@@ -5961,7 +6012,7 @@ class Qi extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    if (L(), j(this), this.built)
+    if (S(), j(this), this.built)
       return;
     this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${Ui}</style>
@@ -6075,7 +6126,7 @@ class is extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    if (L(), j(this), this.built)
+    if (S(), j(this), this.built)
       return;
     this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${ts}</style>
@@ -6243,7 +6294,7 @@ class rs extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
+    S(), !this.built && (this.built = !0, this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${ss}</style>
 
       <div class="backdrop" part="backdrop"></div>
@@ -6293,7 +6344,7 @@ class rs extends HTMLElement {
   }
   // Everything that happens when the open attribute arrives
   afterOpen() {
-    this.closing = !1, this.dialog.getAnimations?.().forEach((t) => t.cancel()), this.dialog.style.opacity = "", this.dialog.style.transform = "", this.prevFocus = document.activeElement, this.restorePortal = Vt(this), this.modalActive = !0, document.addEventListener("keydown", this.onDocumentKey), Pt(), this.restoreInert = Rt(this), this.syncLabel(), !I() && this.dialog.animate && this.dialog.animate(
+    this.closing = !1, this.dialog.getAnimations?.().forEach((t) => t.cancel()), this.dialog.style.opacity = "", this.dialog.style.transform = "", this.prevFocus = document.activeElement, this.restorePortal = Vt(this), this.modalActive = !0, document.addEventListener("keydown", this.onDocumentKey), Pt(), this.restoreInert = Bt(this), this.syncLabel(), !I() && this.dialog.animate && this.dialog.animate(
       [
         { opacity: 0, transform: "translateY(12px) scale(0.97)" },
         { opacity: 1, offset: 0.55 },
@@ -6309,7 +6360,7 @@ class rs extends HTMLElement {
   }
   // Release every page-level effect the open dialog holds (idempotent)
   teardownModal() {
-    this.modalActive && (this.modalActive = !1, document.removeEventListener("keydown", this.onDocumentKey), this.restoreInert?.(), this.restoreInert = null, Bt(), this.restorePortal?.(), this.restorePortal = null);
+    this.modalActive && (this.modalActive = !1, document.removeEventListener("keydown", this.onDocumentKey), this.restoreInert?.(), this.restoreInert = null, Rt(), this.restorePortal?.(), this.restorePortal = null);
   }
   // Open the dialog (mirrors the native dialog API)
   showModal() {
@@ -6347,7 +6398,7 @@ class ns extends HTMLElement {
   }
   // Lifecycle method: Called automatically when the element is appended to the DOM
   connectedCallback() {
-    L(), !this.built && (this.built = !0, this.hasAttribute("side") || this.setAttribute("side", "end"), this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
+    S(), !this.built && (this.built = !0, this.hasAttribute("side") || this.setAttribute("side", "end"), this.attachShadow({ mode: "open", delegatesFocus: !0 }), this.shadowRoot.innerHTML = `
       <style>${os}</style>
 
       <div class="backdrop" part="backdrop"></div>
@@ -6394,7 +6445,7 @@ class ns extends HTMLElement {
   }
   // Everything that happens when the open attribute arrives
   afterOpen() {
-    this.closing = !1, this.sheet.getAnimations?.().forEach((t) => t.cancel()), this.sheet.style.opacity = "", this.sheet.style.transform = "", this.prevFocus = document.activeElement, this.restorePortal = Vt(this), this.modalActive = !0, document.addEventListener("keydown", this.onDocumentKey), Pt(), this.restoreInert = Rt(this), this.syncLabel(), this.slideIn(), requestAnimationFrame(() => this.sheet.focus()), g(this, "open");
+    this.closing = !1, this.sheet.getAnimations?.().forEach((t) => t.cancel()), this.sheet.style.opacity = "", this.sheet.style.transform = "", this.prevFocus = document.activeElement, this.restorePortal = Vt(this), this.modalActive = !0, document.addEventListener("keydown", this.onDocumentKey), Pt(), this.restoreInert = Bt(this), this.syncLabel(), this.slideIn(), requestAnimationFrame(() => this.sheet.focus()), g(this, "open");
   }
   // Everything that happens when the open attribute drops
   afterClose() {
@@ -6402,7 +6453,7 @@ class ns extends HTMLElement {
   }
   // Release every page-level effect the open drawer holds (idempotent)
   teardownModal() {
-    this.modalActive && (this.modalActive = !1, document.removeEventListener("keydown", this.onDocumentKey), this.restoreInert?.(), this.restoreInert = null, Bt(), this.restorePortal?.(), this.restorePortal = null);
+    this.modalActive && (this.modalActive = !1, document.removeEventListener("keydown", this.onDocumentKey), this.restoreInert?.(), this.restoreInert = null, Rt(), this.restorePortal?.(), this.restorePortal = null);
   }
   // The side attribute with start / end resolved against reading direction
   get resolvedSide() {
@@ -6481,37 +6532,37 @@ class ns extends HTMLElement {
 }
 customElements.define("jelly-drawer", ns);
 export {
-  le as BODY_FONT_STACK,
+  ae as BODY_FONT_STACK,
   he as DARK,
   gt as DARK_TOKENS,
   mt as DEFAULT_CONFIG,
   V as FOCUS_RING,
   ne as FONT_STACK,
-  Zt as HOVER_NOISE_SPEED,
+  _t as HOVER_NOISE_SPEED,
   Me as ICONS,
   $ as JellyBody,
-  z as JellyElement,
+  C as JellyElement,
   Xt as LIGHT,
   wt as LIGHT_TOKENS,
-  ae as MONO_FONT_STACK,
+  le as MONO_FONT_STACK,
   b as PALETTE,
-  as as VARIANT_CSS,
+  ls as VARIANT_CSS,
   j as canonicalizeSize,
   v as clamp,
   g as emit,
   dt as engine,
-  L as ensureThemeTokens,
+  S as ensureThemeTokens,
   H as escapeHTML,
   cs as getThemeMode,
-  G as horizontalStep,
-  Rt as inertOutside,
+  J as horizontalStep,
+  Bt as inertOutside,
   T as integrateSpring,
   ds as isDarkMode,
   A as isRTL,
-  ls as jellyHoverChannels,
+  as as jellyHoverChannels,
   ft as jellyIcon,
-  _ as jellyNoise,
-  J as jellyQuantize,
+  Z as jellyNoise,
+  G as jellyQuantize,
   Fe as jellyToast,
   It as listNavigate,
   Pt as lockScroll,
@@ -6534,7 +6585,7 @@ export {
   vt as trackAnchor,
   F as triggerHaptic,
   W as uniqueId,
-  Bt as unlockScroll,
+  Rt as unlockScroll,
   P as variantColors
 };
 //# sourceMappingURL=jelly.js.map
