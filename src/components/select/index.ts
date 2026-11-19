@@ -236,6 +236,12 @@ export class JellySelect extends JellyElement {
 
 		this.list.addEventListener("click", this);
 
+		// Hover: a combobox trigger is a button, so its surface wobbles under
+		// the pointer like one. Wired by the base class (un-park on enter,
+		// restart on move, settle on leave, no touch). A disabled select is not
+		// hovered.
+		this.wireHover();
+
 		// Rebuild rows when the light-DOM options change
 		this.mutationObserver = new MutationObserver(() => this.syncOptions());
 
