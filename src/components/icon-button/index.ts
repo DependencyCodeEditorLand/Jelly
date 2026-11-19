@@ -97,27 +97,9 @@ export class JellyIconButton extends JellyElement {
 
 		this.wirePress(this.button);
 
-		if (!this.reducedMotion) {
-			const elIndex = [
-				...document.querySelectorAll("jelly-icon-button"),
-			].indexOf(this);
-
-			this.addEventListener("pointerenter", (event: PointerEvent) => {
-				if (this.hasAttribute("disabled")) return;
-
-				this.updateHoverPointer(event.clientX, event.clientY);
-
-				this.startHoverLoop(elIndex);
-			});
-
-			this.addEventListener("pointermove", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-			});
-
-			this.addEventListener("pointerleave", () => {
-				this.stopHoverLoop();
-			});
-		}
+		// Hover: wired by the base class (see `wireHover`) - including the
+		// un-park on pointerenter and the restart on pointermove.
+		this.wireHover();
 	}
 
 	// Pointer capture keeps a drag routed to the button after the pointer leaves

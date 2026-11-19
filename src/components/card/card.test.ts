@@ -130,23 +130,82 @@ test("a card past the texture limits falls back to CSS", async () => {
 	host.remove();
 });
 
-test("the hover loop refuses a host taller than the viewport", async () => {
+test("the hover loop refuses a host past the hover area budget", async () => {
+	// Inside the texture limits, so this one really does have a canvas - but
+	// past HOVER_AREA_BUDGET, which is a repaint budget, not a viewport test:
+	// a tall card on a short window is still a control and must hover.
 	const host = mount(
-		'<jelly-card style="--jelly-radius: 12px; display: block; height: 1200px">Tall</jelly-card>',
+		'<jelly-card style="--jelly-radius: 12px; display: block; width: 2600px; height: 1800px">Huge</jelly-card>',
 	);
 
 	const el = host.querySelector("jelly-card") as JellyCard;
 
 	await settle(4);
 
-	// Inside the texture limits, so this one really does have a canvas.
 	expect(el.body).toBeTruthy();
+
+	expect(el.cssW * el.cssH).toBeGreaterThan(4_000_000);
 
 	el.dispatchEvent(
 		new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }),
 	);
 
 	expect(el._hoverRafId).toBe(0);
+
+	host.remove();
+});
+
+test("a tall card on a short viewport still hovers", async () => {
+	// Taller than the window, well inside the repaint budget: the pointer can
+	// see it, so it must respond. This is the half of "hover does not register
+	// every time" that the old `offsetHeight > window.innerHeight` rule caused.
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; display: block; width: 200px; height: 1200px">Tall</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	expect(el.offsetHeight).toBeGreaterThan(window.innerHeight);
+
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }),
+	);
+
+	expect(el._hoverRafId).not.toBe(0);
+
+	el.dispatchEvent(new PointerEvent("pointerleave"));
+
+	host.remove();
+});
+
+test("a parked control un-parks on the next pointerenter", async () => {
+	// A control that measured 0x0 at connect (here: hidden) parks itself. The
+	// park must not outlive the measurement: the pointer is proof of a box.
+	const host = mount(
+		'<jelly-card style="--jelly-radius: 12px; width: 200px; height: 120px; display: none">Hidden</jelly-card>',
+	);
+
+	const el = host.querySelector("jelly-card") as JellyCard;
+
+	await settle(4);
+
+	expect(el.parked).toBe(true);
+
+	// Revealed without giving the ResizeObserver a frame to fire: the pointer
+	// alone has to rebuild the membrane.
+	el.style.display = "block";
+
+	el.dispatchEvent(
+		new PointerEvent("pointerenter", { clientX: 10, clientY: 10 }),
+	);
+
+	expect(el.parked).toBe(false);
+
+	expect(el.body).toBeTruthy();
+
+	expect(el._hoverRafId).not.toBe(0);
 
 	host.remove();
 });

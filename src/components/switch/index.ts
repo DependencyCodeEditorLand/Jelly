@@ -270,6 +270,12 @@ export class JellySwitch extends JellyElement {
 		this.track.addEventListener("lostpointercapture", (event) =>
 			this.onUp(event),
 		);
+
+		// Hover: the track is a capsule surface like a button's, so it wobbles
+		// under the pointer the same way. Wired by the base class, which also
+		// un-parks the element and keeps the pointer position fresh; touch is
+		// excluded there, so a tap leaves only the press dent.
+		this.wireHover();
 	}
 
 	// Called whenever the shape (re)builds: size the thumb and seat it in place

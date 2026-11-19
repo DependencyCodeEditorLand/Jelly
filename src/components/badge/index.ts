@@ -142,26 +142,9 @@ export class JellyBadge extends JellyElement {
 			subtree: true,
 		});
 
-		// Hover: continuous simplex-noise wobble — same as jelly-button/jelly-card.
-		if (!this.reducedMotion) {
-			const elIndex = [
-				...document.querySelectorAll("jelly-badge"),
-			].indexOf(this);
-
-			this.addEventListener("pointerenter", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-
-				this.startHoverLoop(elIndex);
-			});
-
-			this.addEventListener("pointermove", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-			});
-
-			this.addEventListener("pointerleave", () => {
-				this.stopHoverLoop();
-			});
-		}
+		// Hover: wired by the base class (`wireHover`) - the same response as
+		// every other jelly surface, including the un-park on pointerenter.
+		this.wireHover();
 	}
 
 	// Lifecycle method: Called automatically when the element is appended to the

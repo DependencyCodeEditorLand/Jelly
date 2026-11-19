@@ -133,35 +133,11 @@ export class JellyButton extends JellyElement {
 
 		this.wirePress(this.button);
 
-		// Hover: continuous multi-channel simplex-noise wobble driven by a
-		// dedicated requestAnimationFrame loop (startHoverLoop / _hoverFrame)
-		// inside the JellyElement base class.  The loop applies membrane force
-		// through JellyState.hoverForce — completely independent of the press
-		// hold-state — so clicking adds its own energy on top without killing
-		// the hover, and the wobble persists at full amplitude as long as the
-		// pointer remains over the button.  Reduced motion skips entirely.
-		if (!this.reducedMotion) {
-			// Per-element noise seed so buttons don't pulse in lockstep
-			const elIndex = [
-				...document.querySelectorAll("jelly-button"),
-			].indexOf(this);
-
-			this.addEventListener("pointerenter", (event: PointerEvent) => {
-				if (this.hasAttribute("disabled")) return;
-
-				this.updateHoverPointer(event.clientX, event.clientY);
-
-				this.startHoverLoop(elIndex);
-			});
-
-			this.addEventListener("pointermove", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-			});
-
-			this.addEventListener("pointerleave", () => {
-				this.stopHoverLoop();
-			});
-		}
+		// Hover: the continuous noise-driven membrane wobble is wired by the
+		// base class (`wireHover`), which also un-parks a control that a
+		// zero-box measurement dropped and restarts a loop that retired
+		// itself. A disabled button is not hovered.
+		this.wireHover();
 
 		// Drive the closest light-DOM form for submit / reset buttons
 		this.button.addEventListener("click", () => this.driveForm());

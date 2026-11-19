@@ -156,28 +156,10 @@ export class JellyCheckbox extends JellyElement {
 			emit(this, "change");
 		});
 
-		// Hover: continuous simplex-noise wobble — same as jelly-button/jelly-badge.
-		if (!this.reducedMotion) {
-			const elIndex = [
-				...document.querySelectorAll("jelly-checkbox"),
-			].indexOf(this);
-
-			this.addEventListener("pointerenter", (event: PointerEvent) => {
-				if (this.hasAttribute("disabled")) return;
-
-				this.updateHoverPointer(event.clientX, event.clientY);
-
-				this.startHoverLoop(elIndex);
-			});
-
-			this.addEventListener("pointermove", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-			});
-
-			this.addEventListener("pointerleave", () => {
-				this.stopHoverLoop();
-			});
-		}
+		// Hover: wired by the base class (`wireHover`) - the same response as
+		// every other jelly surface, including the un-park on pointerenter.
+		// A disabled checkbox is not hovered.
+		this.wireHover();
 	}
 
 	// Kick the scale spring: +v expands (check), -v collapses (uncheck)

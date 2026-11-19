@@ -76,6 +76,24 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 	static MAX_CANVAS_AREA = 16_777_216;
 
+	/*
+	 * The largest surface the hover loop will keep repainting, in CSS pixels.
+	 * The texture limits above decide whether a canvas can exist at all; this
+	 * is the animation budget on top of that. A host past it can still be
+	 * pressed and painted, but a pointer resting on it would ask for a
+	 * full-surface repaint every frame, which no compositor can hold at
+	 * 60fps - the pointer would get a slideshow, not a wobble.
+	 *
+	 * This replaces a `offsetHeight > window.innerHeight` refusal. That rule
+	 * measured the window, not the surface: a tall card on a short window was
+	 * a control the pointer could see and could never hover, which is one
+	 * half of the "it does not register every time" report.
+	 */
+	static HOVER_AREA_BUDGET = 4_000_000;
+
+	// Source of the per-element hover noise seeds (see `hoverSeed`)
+	static hoverSeedCounter = 0;
+
 	body: JellyBody | null = null;
 
 	built = false;
@@ -133,6 +151,20 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	pressPointerId: number | null = null;
 
 	keyboardActive = false;
+
+	/*
+	 * Stable per-element noise seed for the hover channels. A counter, not
+	 * the element's index in the document: `indexOf` at build time is -1 for
+	 * every element that is not in the document yet, so controls built
+	 * before insertion all shared one seed and pulsed in lockstep.
+	 */
+	hoverSeed = ++JellyElement.hoverSeedCounter;
+
+	// The disabled predicate and wiring flag `wireHover` installs, so the
+	// shared scroll repair can resume a hover without re-deriving them.
+	_hoverWired = false;
+
+	_hoverDisabled: () => boolean = () => this.hasAttribute("disabled");
 
 	/*
 	 * Base-class listeners are bound as fields so subclasses keep handleEvent to
@@ -312,6 +344,21 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 		this.resizeObserver.observe(this);
 
+		/*
+		 * A `data-jelly-box` control can collapse inside a host that keeps its
+		 * own size (a checkbox whose inner control is hidden under a visible
+		 * label). Watching only the host would then strand a visible element in
+		 * `parked`: the box measured zero, the host never resized, so no
+		 * measurement was ever coming to release it. Observe the box as well, so
+		 * a park is always undone by the next measurement of what was actually
+		 * measured.
+		 */
+		const boxEl = this.shadowRoot?.querySelector("[data-jelly-box]");
+
+		if (boxEl) {
+			this.resizeObserver.observe(boxEl);
+		}
+
 		this.applyShape();
 	}
 
@@ -376,6 +423,14 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 * control the engine should be stepping, and `hidden` is not a DOM removal,
 	 * so `disconnectedCallback` never runs to drop it.
 	 *
+	 * A park is only ever a consequence of a *measured* zero box - it is never
+	 * set from an attribute, a timer or a guess. That matters because a park is
+	 * invisible: the element keeps its canvas, its body and its place in the
+	 * layout, so a park that outlives its measurement is a visible control the
+	 * engine refuses to touch. Three things undo it: the next ResizeObserver
+	 * measurement (the box is observed alongside the host), the next press, and
+	 * the next pointer (`ensureMembrane`).
+	 *
 	 * The physics body is kept - it is still the right body for this element -
 	 * so coming back is a resize and a repaint, not a rebuild.
 	 */
@@ -386,6 +441,35 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		this.stopHoverLoop();
 
 		engine.drop(this);
+	}
+
+	/*
+	 * The pointer is a measurement. A park is only ever the result of a zero
+	 * box, so a pointer standing on this element proves the box came back -
+	 * and for a park caused by an inner `data-jelly-box` collapsing, the host
+	 * ResizeObserver may never fire again. Rebuild here, synchronously, on the
+	 * same event, instead of waiting for a measurement that may not come.
+	 *
+	 * This is the same rebuild the press path performs; the pointer and the
+	 * press are both evidence that the control is on screen and reachable.
+	 *
+	 * Returns true when a membrane exists and the element is not parked.
+	 */
+	ensureMembrane(): boolean {
+		// A CSS-painted surface has no texture to deform: nothing to rebuild.
+		if (this.flat) {
+			return false;
+		}
+
+		if (this.parked || !this.body) {
+			if (!this.built) {
+				return false;
+			}
+
+			this.applyShape();
+		}
+
+		return !this.parked && this.body !== null && !this.flat;
 	}
 
 	// Size the canvas for the current shape and (re)build the physics body
@@ -1049,13 +1133,20 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 
 	// Press the jelly at a screen coordinate
 	pressAt(clientX: number, clientY: number, strength = 1.12): void {
-		if (this.reducedMotion || !this.body) {
+		if (this.reducedMotion) {
+			return;
+		}
+
+		// A press is evidence of a box too: rebuild a membrane that a zero-box
+		// measurement dropped, so the dent lands on the same event instead of
+		// waiting for the next ResizeObserver tick.
+		if (!this.ensureMembrane()) {
 			return;
 		}
 
 		const local = this.toLocal(clientX, clientY);
 
-		this.body.pressAtLocal(local.x, local.y, strength);
+		this.body!.pressAtLocal(local.x, local.y, strength);
 
 		this.requestFrame();
 	}
@@ -1218,45 +1309,160 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	_hoverElIndex = 0;
 
 	/**
-	 * Start the per-frame hover loop.  Called on pointerenter.
+	 * Start the per-frame hover loop. Called on pointerenter, and again from
+	 * pointermove / the scroll repair when a chain has retired itself.
 	 * `elIndex` gives each element a unique noise seed so they don't
 	 * pulse in lockstep.
 	 */
-	startHoverLoop(elIndex: number): void {
-		if (this._hoverRafId !== 0 || this.reducedMotion || !this.body) return;
-
-		// A parked element has no box: the membrane it would push is not on
-		// screen, and the loop would wake the engine every frame for nothing.
-		if (this.parked) return;
+	startHoverLoop(elIndex: number = this.hoverSeed): void {
+		/*
+		 * The two cases that are genuinely impossible to animate: a chain is
+		 * already running (a second one would double the force on the same
+		 * membrane), or the reader asked for stillness. Reduced motion is read
+		 * live here rather than at wiring time, so flipping the preference on
+		 * after the page loaded does not leave an element permanently deaf.
+		 */
+		if (this._hoverRafId !== 0 || this.reducedMotion) return;
 
 		/*
-		 * A host taller than the viewport is a document, not a control: the
-		 * pointer resting on it is reading, and the membrane under it is far
-		 * too large to repaint at 60fps. The physics would also be sampling a
-		 * pointer over a shape it can never meaningfully deform.
+		 * A parked element - or one whose body was released - cannot be hovered
+		 * until it is rebuilt. The old guard simply returned here, which made
+		 * every later pointerenter a no-op for any control that had once
+		 * measured 0x0 (first paint, hydration, a font swap, a collapsed
+		 * parent): nothing un-parked it, because the only documented wake was
+		 * the ResizeObserver, and the pointer is not the ResizeObserver.
+		 *
+		 * The pointer *is* proof of a box - a control can only be entered if it
+		 * is on screen - so this is the right moment to rebuild. It is the same
+		 * rebuild the press path runs, and it happens on this event, not on a
+		 * later frame.
 		 */
-		if (this.offsetHeight > window.innerHeight) return;
+		if (!this.ensureMembrane()) return;
+
+		/*
+		 * A surface past the hover budget cannot be repainted at 60fps. The
+		 * budget is the painted area, not the window: see HOVER_AREA_BUDGET.
+		 */
+		if (this.cssW * this.cssH > JellyElement.HOVER_AREA_BUDGET) return;
 
 		this._hoverElIndex = elIndex;
+
+		/*
+		 * The first response is immediate: write the force and wake the engine
+		 * now, on the same event, so the bulge is in the next paint. The old
+		 * order waited for the hover chain's own frame before the engine was
+		 * ever woken - two frames between the pointer arriving and the surface
+		 * moving, which is the difference between "jelly" and "delayed".
+		 */
+		this._applyHoverForce(performance.now());
+
+		this.requestFrame();
 
 		this._hoverRafId = requestAnimationFrame(this._hoverFrame);
 	}
 
-	/** Stop the hover loop and let residual energy dissipate naturally. */
+	/**
+	 * Stop the hover loop and let residual energy dissipate naturally.
+	 */
 	stopHoverLoop(): void {
-		if (this._hoverRafId === 0) return;
+		if (this._hoverRafId !== 0) {
+			cancelAnimationFrame(this._hoverRafId);
 
-		cancelAnimationFrame(this._hoverRafId);
+			this._hoverRafId = 0;
+		}
 
-		this._hoverRafId = 0;
-
-		// Don't zero hoverForce instantly - let the membrane settle through
-		// its natural damping, which reads as a smooth exhale.
-		if (this.body) {
+		/*
+		 * Don't zero hoverForce instantly - let the membrane settle through
+		 * its natural damping, which reads as a smooth exhale. Dropping the
+		 * force is what *starts* that settle; the body's own springs finish it.
+		 *
+		 * This runs even when the chain had already retired itself, so leaving
+		 * the control can never leave a force behind to freeze the membrane
+		 * mid-deformation.
+		 */
+		if (this.body && this.body.state.hoverForce !== 0) {
 			this.body.state.hoverForce = 0;
 
 			this.requestFrame();
 		}
+	}
+
+	/**
+	 * Wire the pointer's half of the membrane onto this host. One helper for
+	 * every surface that wobbles, so the response cannot differ between a
+	 * button and a card:
+	 *
+	 * - `pointerenter` starts the loop and un-parks a control that a zero-box
+	 *   measurement had dropped (see `startHoverLoop`);
+	 * - `pointermove` keeps the pointer position fresh and restarts a loop that
+	 *   retired itself - a surface that appears under a resting pointer, or one
+	 *   whose loop parked at the edge, is picked up by the next movement
+	 *   instead of needing a click on the parent;
+	 * - `pointerleave` / `pointercancel` settle the membrane instead of
+	 *   freezing it;
+	 * - touch never starts a hover. A tap is a press, and the press dent is
+	 *   what a finger should get; a noise loop started by a tap leaves the
+	 *   surface vibrating after the finger is gone.
+	 *
+	 * No build-time reduced-motion branch: the preference is checked live in
+	 * startHoverLoop.
+	 */
+	wireHover({
+		disabled = (): boolean => this.hasAttribute("disabled"),
+	}: { disabled?: () => boolean } = {}): void {
+		this._hoverWired = true;
+
+		this._hoverDisabled = disabled;
+
+		this.addEventListener("pointerenter", (event: PointerEvent) => {
+			if (event.pointerType === "touch" || disabled()) {
+				return;
+			}
+
+			this.updateHoverPointer(event.clientX, event.clientY);
+
+			this.startHoverLoop();
+		});
+
+		this.addEventListener("pointermove", (event: PointerEvent) => {
+			if (event.pointerType === "touch") {
+				return;
+			}
+
+			this.updateHoverPointer(event.clientX, event.clientY);
+
+			// Still on the control, but no chain is running: restart it. This
+			// is the dead zone repair - the pointer never left, so no
+			// pointerenter is coming. Gated on the membrane's own box so a
+			// pointer travelling over a switch's label (outside its track)
+			// does not wake the engine once per move for a bulge it cannot
+			// feel.
+			if (this._hoverRafId === 0 && !disabled() && this._hoverInside()) {
+				this.startHoverLoop();
+			}
+		});
+
+		this.addEventListener("pointerleave", () => this.stopHoverLoop());
+
+		this.addEventListener("pointercancel", () => this.stopHoverLoop());
+	}
+
+	/**
+	 * Restart the hover chain for a pointer that is already on the control but
+	 * never moved: a scroll can bring a surface under a resting cursor, and
+	 * neither pointerenter nor pointermove fires for that. Called by the shared
+	 * scroll repair below; a no-op unless `wireHover` wired this element.
+	 */
+	resumeHover(): void {
+		if (
+			!this._hoverWired ||
+			this._hoverDisabled() ||
+			this._hoverRafId !== 0
+		) {
+			return;
+		}
+
+		this.startHoverLoop();
 	}
 
 	/** Update the pointer position for the hover membrane force. */
@@ -1267,11 +1473,72 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	}
 
 	/**
-	 * One frame of the hover loop.  Samples multi-channel simplex noise
-	 * (matching the website's Staccato Phase/Color/Morph pattern) and
-	 * applies the resulting force to the membrane through
-	 * JellyState.hoverForce, which updateMembrane reads independently
-	 * of the press/click hold state.
+	 * Write one frame of hover force into the membrane. Samples multi-channel
+	 * simplex noise (matching the website's Staccato Phase/Color/Morph pattern)
+	 * and applies the result through JellyState.hoverForce, which updateMembrane
+	 * reads independently of the press/click hold state.
+	 */
+	_applyHoverForce(now: number): void {
+		const body = this.body;
+
+		if (!body) {
+			return;
+		}
+
+		// Update pointer-local position for the membrane influence
+		const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
+
+		body.state.pointerLocalX = local.x;
+
+		body.state.pointerLocalY = local.y;
+
+		// ── Multi-channel noise (Staccato pattern) ──
+		const i = this._hoverElIndex;
+
+		// Faster than Staccato's 0.0001 - hover needs visible variation
+		// within a second, not ~8 seconds.  0.0005 gives ~2s cycles.
+		const s = 0.0005;
+
+		// Force channel: drives the membrane bulge amplitude (6 levels)
+		const rawForce = jellyNoise(now * s, i * 101);
+
+		const force = jellyQuantize(rawForce, 6);
+
+		// Map from quantized [-1, 1] → [0.75, 1.0] - always pronounced
+		const fMapped = 0.75 + ((force + 1) / 2) * 0.25;
+
+		// Morph channel: spreads or tightens the bulge (5 levels)
+		const rawMorph = jellyNoise(now * s * 0.25, i * 307);
+
+		const morph = jellyQuantize(rawMorph, 5);
+
+		const morphM = 0.8 + ((morph + 1) / 2) * 0.4; // [0.8, 1.2]
+
+		// Combine channels into hoverForce.
+		// updateMembrane multiplies by insideLocalHoldBulgeForce * 24.
+		body.state.hoverForce = fMapped * morphM;
+	}
+
+	/**
+	 * True while the pointer is over the measured jelly box. One pixel of
+	 * grace on every edge: a pointer that enters exactly on the hairline is
+	 * inside the control, and the old test compared against the physics body's
+	 * size with no margin - so an edge entry could park the loop on its very
+	 * first frame, which is the "it only registers sometimes" report.
+	 */
+	_hoverInside(): boolean {
+		const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
+
+		const box = this.jellyBox();
+
+		return (
+			Math.abs(local.x) <= box.width / 2 + 1 &&
+			Math.abs(local.y) <= box.height / 2 + 1
+		);
+	}
+
+	/**
+	 * One frame of the hover loop.
 	 */
 	_hoverFrame = (): void => {
 		if (!this._hoverRafId) return;
@@ -1282,7 +1549,8 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		 * startHoverLoop refuses to start a second one while it is non-zero -
 		 * so leaving it set here would retire this element's hover for the rest
 		 * of the session, which is exactly the "the button no longer has its
-		 * hover" half of the copy-button report.
+		 * hover" half of the copy-button report. The next pointermove restarts
+		 * it, and startHoverLoop rebuilds the membrane it is missing.
 		 */
 		if (this.parked || !this.body) {
 			this._hoverRafId = 0;
@@ -1290,40 +1558,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 			return;
 		}
 
-		// Update pointer-local position for the membrane influence
-		const local = this.toLocal(this._hoverPointerX, this._hoverPointerY);
-
-		this.body.state.pointerLocalX = local.x;
-
-		this.body.state.pointerLocalY = local.y;
-
-		// ── Multi-channel noise (Staccato pattern) ──
-		const t = performance.now();
-
-		const i = this._hoverElIndex;
-
-		// Faster than Staccato's 0.0001 - hover needs visible variation
-		// within a second, not ~8 seconds.  0.0005 gives ~2s cycles.
-		const s = 0.0005;
-
-		// Force channel: drives the membrane bulge amplitude (6 levels)
-		const rawForce = jellyNoise(t * s, i * 101);
-
-		const force = jellyQuantize(rawForce, 6);
-
-		// Map from quantized [-1, 1] → [0.75, 1.0] - always pronounced
-		const fMapped = 0.75 + ((force + 1) / 2) * 0.25;
-
-		// Morph channel: spreads or tightens the bulge (5 levels)
-		const rawMorph = jellyNoise(t * s * 0.25, i * 307);
-
-		const morph = jellyQuantize(rawMorph, 5);
-
-		const morphM = 0.8 + ((morph + 1) / 2) * 0.4; // [0.8, 1.2]
-
-		// Combine channels into hoverForce.
-		// updateMembrane multiplies by insideLocalHoldBulgeForce * 24.
-		this.body.state.hoverForce = fMapped * morphM;
+		this._applyHoverForce(performance.now());
 
 		this.requestFrame();
 
@@ -1344,11 +1579,7 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 		 * engine's own frame alive against a constant bulge, which is the
 		 * same spin under a different owner.
 		 */
-		const inside =
-			Math.abs(local.x) <= this.body.width / 2 &&
-			Math.abs(local.y) <= this.body.height / 2;
-
-		if (!inside && this.body.isResting()) {
+		if (!this._hoverInside() && this.body.isResting()) {
 			this.body.state.hoverForce = 0;
 
 			this._hoverRafId = 0;
@@ -1380,4 +1611,75 @@ if (typeof document !== "undefined" && typeof MutationObserver === "function") {
 			attributeFilter: ["dir"],
 		});
 	}
+}
+
+/*
+ * A scroll moves a control under a pointer that never moves: no pointerenter
+ * and no pointermove fires, so a surface scrolled into place under a resting
+ * cursor stayed dead until the mouse was jiggled. One shared pair of listeners
+ * repairs that for every wired element - never one pair per element - by
+ * remembering where the pointer is and hit-testing once per scroll.
+ */
+if (
+	typeof document !== "undefined" &&
+	typeof document.elementFromPoint === "function"
+) {
+	let pointerX = 0;
+
+	let pointerY = 0;
+
+	let pointerLive = false;
+
+	window.addEventListener(
+		"pointermove",
+		(event: PointerEvent) => {
+			pointerLive = event.pointerType !== "touch";
+
+			pointerX = event.clientX;
+
+			pointerY = event.clientY;
+		},
+		{ passive: true, capture: true },
+	);
+
+	// A finger is not a hover: the last touch ends the pointer's hover rights
+	// until a real pointer moves again.
+	window.addEventListener(
+		"pointerdown",
+		(event: PointerEvent) => {
+			if (event.pointerType === "touch") {
+				pointerLive = false;
+			}
+		},
+		{ passive: true, capture: true },
+	);
+
+	window.addEventListener(
+		"scroll",
+		() => {
+			if (!pointerLive) {
+				return;
+			}
+
+			let node = document.elementFromPoint(
+				pointerX,
+				pointerY,
+			) as Element | null;
+
+			while (node) {
+				if (node instanceof JellyElement) {
+					node.resumeHover();
+
+					return;
+				}
+
+				const root = node.getRootNode();
+
+				node =
+					node.parentElement ??
+					(root instanceof ShadowRoot ? root.host : null);
+			}
+		},
+		{ passive: true, capture: true },
+	);
 }

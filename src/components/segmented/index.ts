@@ -134,6 +134,12 @@ export class JellySegmented extends JellyElement {
 		});
 
 		this.sync();
+
+		// Hover: the segmented bar is a tab surface, so its track wobbles under
+		// the pointer like a button's. The pill keeps its own spring; the hover
+		// force is independent of it. Wired by the base class, which un-parks
+		// the element and excludes touch.
+		this.wireHover();
 	}
 
 	// Lifecycle method: Called automatically when the element is appended to the DOM

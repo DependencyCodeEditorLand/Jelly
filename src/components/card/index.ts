@@ -69,7 +69,7 @@ export class JellyCard extends JellyElement {
 	// identity pins every radius to 0, so the old fast path flattened every
 	// card on it. The two guards that fast path existed for still hold: the
 	// oversized cap in `applyShape` flattens a document-sized host, and the
-	// hover loop's `offsetHeight > window.innerHeight` check refuses one.
+	// hover loop's HOVER_AREA_BUDGET refuses to repaint one at 60fps.
 
 	// The rounded surface the physics body takes (radius follows the token)
 	override shape(width: number, height: number): Shape {
@@ -125,29 +125,11 @@ export class JellyCard extends JellyElement {
 
 		this.syncSquish();
 
-		// Hover: continuous multi-channel simplex-noise wobble driven by a
-		// dedicated requestAnimationFrame loop - same as jelly-button.
-		// Runs independently of the press hold-state so clicking adds its
-		// own force on top without killing the hover wobble.
-		if (!this.reducedMotion) {
-			const elIndex = [
-				...document.querySelectorAll("jelly-card"),
-			].indexOf(this);
-
-			this.addEventListener("pointerenter", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-
-				this.startHoverLoop(elIndex);
-			});
-
-			this.addEventListener("pointermove", (event: PointerEvent) => {
-				this.updateHoverPointer(event.clientX, event.clientY);
-			});
-
-			this.addEventListener("pointerleave", () => {
-				this.stopHoverLoop();
-			});
-		}
+		// Hover: wired by the base class (`wireHover`) - the same response as
+		// every other jelly surface, including the un-park on pointerenter and
+		// the restart on pointermove. A card is a large surface, so the loop's
+		// cost limit is the painted area (HOVER_AREA_BUDGET), not the window.
+		this.wireHover();
 	}
 
 	/*
