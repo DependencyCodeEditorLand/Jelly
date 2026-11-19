@@ -111,8 +111,10 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	 * to paint: `display: none`, a collapsed parent, or a control the wiring
 	 * has not revealed yet. A parked element costs the engine nothing - it is
 	 * not stepped, it cannot throw a frame against a canvas with no size, and
-	 * `requestFrame()` is a no-op for it - and the ResizeObserver wakes it the
-	 * moment its box comes back.
+	 * `requestFrame()` is a no-op for it. Three things wake it, so a park can
+	 * never outlive its measurement: the next ResizeObserver delivery (the
+	 * host and its `data-jelly-box` are both observed), the next press, and
+	 * the next pointer (`ensureMembrane`).
 	 */
 	parked = false;
 
@@ -1090,7 +1092,8 @@ export class JellyElement extends HTMLElement implements JellyComponent {
 	requestFrame(): void {
 		// A parked element has no box to paint: waking it would put a component
 		// with a 0x0 host back into the loop, which is the state parking exists
-		// to prevent. The ResizeObserver un-parks and asks again.
+		// to prevent. `ensureMembrane()` un-parks it first - on a measurement, a
+		// press or a pointer - and then this asks again.
 		if (this.parked) {
 			return;
 		}
